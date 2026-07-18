@@ -1,0 +1,5 @@
+# Local tool state
+.claude/
+
+# Pre-git backup (baseline is preserved as the first commit; folder kept on disk only)
+_archive/
