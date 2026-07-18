@@ -3,3 +3,6 @@
 
 # Pre-git backup (baseline is preserved as the first commit; folder kept on disk only)
 _archive/
+
+# Cloud-sync temp artifacts
+.tmp.driveupload/
