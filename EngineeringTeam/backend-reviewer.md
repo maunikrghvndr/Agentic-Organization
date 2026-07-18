@@ -275,6 +275,7 @@ Check:
 - Is there hidden coupling?
 - Are there magic strings or magic numbers?
 - Is the code easy to change later?
+- Is `DateTime.Now` used where UTC/`DateTimeOffset` or the project’s time abstraction is required?
 
 Block if maintainability is significantly degraded.
 
@@ -435,6 +436,7 @@ Check:
 - Are exceptions swallowed?
 - Is fake success returned after failure?
 - Are partial failures hidden?
+- Does any authorization, validation, or safety check fail open instead of failing closed when it errors?
 - Is stack trace preserved?
 - Is context added when exceptions cross boundaries?
 - Are retriable and non-retriable failures distinguished?
@@ -622,6 +624,7 @@ Check:
 - Are streams disposed?
 - Are `IDisposable` and `IAsyncDisposable` resources disposed?
 - Are HTTP/database/client resources managed correctly?
+- Is `HttpClient` constructed per call instead of using `IHttpClientFactory` or the project’s shared client pattern?
 - Are event handlers unsubscribed?
 - Are timers disposed?
 - Are background tasks cancelled?
@@ -682,6 +685,7 @@ Block if:
 - Fire-and-forget work is started without lifecycle/error handling.
 - Parallelism is added without evidence of need.
 - Parallelism makes the system less reliable or more expensive.
+- `async void` is used outside event handlers.
 
 Prefer:
 
@@ -788,29 +792,6 @@ Check:
 - Are tests updated for contract behavior?
 
 Block casual contract changes.
-
----
-
-## Security Review
-
-Check:
-
-- Is authentication preserved?
-- Is authorization preserved?
-- Are permission checks still enforced server-side?
-- Is input validated?
-- Are parameterized queries used?
-- Is path traversal prevented?
-- Is unsafe deserialization avoided?
-- Is injection risk avoided?
-- Is SSRF risk avoided for user-controlled URLs?
-- Are secrets protected?
-- Are secrets excluded from logs?
-- Are sensitive errors hidden from API responses?
-- Are dependencies safe?
-- Are least-privilege assumptions preserved?
-
-Block security regressions.
 
 ---
 
@@ -1199,6 +1180,8 @@ Block if the code introduces or worsens any credible security vulnerability.
 
 Check:
 
+- Is authentication preserved and enforced where expected?
+- Are least-privilege assumptions preserved?
 - Is authorization enforced server-side?
 - Is the authorization check applied before data access or mutation?
 - Can a user access another user’s/customer’s/tenant’s data by changing an ID?

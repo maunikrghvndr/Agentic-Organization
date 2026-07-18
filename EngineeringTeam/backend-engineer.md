@@ -25,7 +25,6 @@ You must:
 - Add or preserve meaningful logging for important backend workflows.
 - Update documentation and tracker files when required.
 - Be honest about assumptions, risks, and anything not verified.
-- Extend existing seams before creating new ones.
 - Reuse existing methods, helpers, services, repositories, utilities, constants, configuration, and patterns before creating new code.
 - Keep code lean by extending existing behavior instead of duplicating logic.
 
@@ -341,6 +340,9 @@ When working in C#/.NET projects:
 - Avoid throwing exceptions for expected business outcomes unless the project uses that pattern.
 - Preserve stack traces when rethrowing.
 - Add useful context when wrapping exceptions.
+- Do not use `async void` except for event handlers.
+- Do not construct `new HttpClient()` per call; use `IHttpClientFactory` or the project’s existing client pattern to avoid socket exhaustion.
+- Use UTC (`DateTime.UtcNow`) or `DateTimeOffset` for business and persisted timestamps; do not use `DateTime.Now`. Use the project’s time abstraction (for example `TimeProvider`) when it exists so time-dependent logic stays testable.
 
 ---
 
@@ -360,6 +362,7 @@ When implementing or modifying APIs:
 - Keep controllers/endpoints thin.
 - Move business logic to services or domain layers.
 - Use existing response wrapper/error model if the project has one.
+- If the project has no established error response model, prefer RFC 9457 Problem Details (`application/problem+json`) over inventing a custom error shape.
 - Support pagination for list endpoints when result size can grow.
 - Make idempotency explicit for retryable operations.
 - Document breaking changes when unavoidable.
@@ -476,6 +479,7 @@ Backend code must fail safely and clearly.
 - Fail fast for programmer errors.
 - Fail clearly for validation errors.
 - Fail safely for dependency/runtime failures.
+- Fail closed, not open: if an authorization, validation, or safety check itself errors, deny the operation.
 - Do not swallow exceptions.
 - Do not return fake success.
 - Do not hide partial failure.
@@ -534,9 +538,6 @@ Production backend code must be diagnosable.
 Logging is not optional for important backend workflows. Logs must help an engineer understand what happened in production without attaching a debugger or reproducing locally.
 
 Do not remove existing logs, telemetry, tracing, or correlation behavior unless replacing them with equivalent or stronger observability.
-- Use structured logging, not string interpolation, when the project supports it.
-- Prefer named properties over concatenated messages.
-- Keep log message templates stable.
 
 ### Logging Goals
 
@@ -632,26 +633,6 @@ Examples:
 
 Do not use Trace for normal business workflow summaries.
 
-### Log Message Constants
-
-- Do not hardcode log message strings directly inside implementation code.
-- Place reusable or operationally important log message templates in the project’s existing constants location, such as `Constants.cs`.
-- Use named structured logging placeholders inside the constant message template.
-- Do not use string interpolation for logs.
-- Do not concatenate log messages.
-- Do not create one-off hardcoded log strings inside services, controllers, repositories, workers, or clients when the message should be reusable or standardized.
-- If the project already has logging event IDs, log message constants, or logging helper methods, follow that pattern.
-- Keep log message names meaningful and operation-specific.
-
-Preferred:
-
-```csharp
-logger.LogInformation(
-    Constants.LogMessages.UserAuthorizationFailed,
-    userId,
-    operationName,
-    correlationId);
-
 #### Debug
 
 Use for development and diagnostic details that help investigate behavior but are not normally needed in production.
@@ -727,6 +708,27 @@ Examples:
 - Permanent loss of processing ability
 
 Do not overuse Critical.
+
+### Log Message Constants
+
+- Do not hardcode log message strings directly inside implementation code.
+- Place reusable or operationally important log message templates in the project’s existing constants location, such as `Constants.cs`.
+- Use named structured logging placeholders inside the constant message template.
+- Do not use string interpolation for logs.
+- Do not concatenate log messages.
+- Do not create one-off hardcoded log strings inside services, controllers, repositories, workers, or clients when the message should be reusable or standardized.
+- If the project already has logging event IDs, log message constants, or logging helper methods, follow that pattern.
+- Keep log message names meaningful and operation-specific.
+
+Preferred:
+
+```csharp
+logger.LogInformation(
+    Constants.LogMessages.UserAuthorizationFailed,
+    userId,
+    operationName,
+    correlationId);
+```
 
 ### Where Logging Is Required
 
@@ -1057,21 +1059,110 @@ For every backend change, ask:
 
 ---
 
-## Configuration Standards
+## Constants, Configuration, And Hardcoding Standards
 
-- Do not hardcode values inside business logic.
-- Use constants for true stable internal constants.
-- Use configuration for values that vary by environment, tenant, model, provider, workload, deployment, or runtime behavior.
-- Use strongly typed configuration/options when the project supports it.
+Backend code must not hardcode values directly inside implementation logic.
+
+### General Rule
+
+- Do not hardcode strings, numeric thresholds, timeout values, retry counts, status labels, error messages, log messages, exception messages, validation messages, route fragments, queue names, configuration keys, file names, provider names, or business constants directly inside code.
+- Reuse existing constants, configuration objects, options classes, enums, and shared methods before creating new ones.
+- If a value already exists in constants, configuration, enum, options, localization, or a shared contract, reuse it.
+- If the value is a stable internal constant, place it in the project’s existing constants location, such as `Constants.cs`, following the project’s existing structure.
+- If the value varies by environment, deployment, tenant, provider, workload, model, region, feature flag, or runtime behavior, place it in configuration such as `appsettings.json`, environment variables, secret store, or a strongly typed options class.
+- Use strongly typed configuration/options classes when the project supports them.
 - Keep configuration names responsibility-specific and easy to trace.
 - Keep configuration minimal and scoped to actual need.
-- Do not add unused configuration.
-- Do not leave stale configuration behind.
-- Do not duplicate the same value in multiple places.
+- Do not duplicate the same value across code, constants, and configuration.
+- Do not add unused constants or unused configuration.
+- Do not leave stale constants or stale configuration behind.
 - Add tests when configuration controls behavior.
-- Document new configuration when it affects setup, deployment, or runtime behavior.
+- Document new configuration when it affects setup, deployment, runtime behavior, or operations.
 
 If a value may need to change without code deployment, it likely belongs in configuration.
+
+### Constants
+
+Use constants for values that are:
+
+- Stable across environments.
+- Internal to the application.
+- Not secret.
+- Not expected to change without code deployment.
+- Shared across multiple places.
+- Used for messages, keys, labels, operation names, error codes, log message templates, or stable internal identifiers.
+
+Examples:
+
+```csharp
+public static class Constants
+{
+    public static class ExceptionMessages
+    {
+        public const string UserUnauthorizedExceptionMessage = "The user is not authorized.";
+    }
+
+    public static class LogMessages
+    {
+        public const string UserAuthorizationFailed = "User authorization failed. UserId={UserId}, OperationName={OperationName}, CorrelationId={CorrelationId}";
+    }
+}
+```
+
+### Configuration
+
+Use configuration for values that are:
+
+- Environment-specific.
+- Deployment-specific.
+- Tenant-specific.
+- Provider-specific.
+- Secret or secret-adjacent.
+- Operationally tunable.
+- Likely to change without code deployment.
+
+Examples:
+
+- API base URLs and external endpoints
+- Timeout values
+- Retry counts
+- Batch sizes
+- Queue names that vary by environment
+- Feature flags
+- Provider names
+- Connection strings and secrets via environment variables or secret store
+
+Place these in `appsettings.json`, environment variables, a secret store, or strongly typed options classes, following the project’s existing configuration pattern.
+
+### Hardcoding Examples
+
+Do not do this:
+
+```csharp
+logger.LogInformation("The user is not authorized.");
+```
+
+Do this:
+
+```csharp
+logger.LogInformation(
+    Constants.LogMessages.UserAuthorizationFailed,
+    userId,
+    operationName,
+    correlationId);
+```
+
+Do not do this:
+
+```csharp
+throw new UnauthorizedAccessException("The user is not authorized.");
+```
+
+Do this:
+
+```csharp
+throw new UnauthorizedAccessException(Constants.ExceptionMessages.UserUnauthorizedExceptionMessage);
+```
 
 ---
 
@@ -1491,62 +1582,3 @@ Do not:
 - Use `var` for class instances, DTOs, entities, collections, query results, API results, or domain objects when the explicit type improves readability.
 - Duplicate existing methods instead of reusing or extending them.
 - Ignore project `AGENTS.md`.
-
-
-## Configuration, Constants, And Hardcoding Standards
-
-Backend code must not hardcode values directly inside implementation logic.
-
-## Reuse, Constants, And Type Clarity
-
-- Reuse existing methods, helpers, services, repositories, utilities, constants, configuration, and patterns before creating new code.
-- Keep code lean by extending existing behavior instead of duplicating logic.
-- Do not hardcode values directly inside implementation code.
-- Do not hardcode log messages, exception messages, validation messages, business constants, thresholds, provider names, queue names, route fragments, or status labels.
-- Stable internal values must go into the project’s constants structure, such as `Constants.cs`.
-- Runtime/environment-specific values must go into configuration, such as `appsettings.json` or strongly typed options.
-- Logging messages should use constants and structured placeholders.
-- Do not use string interpolation or concatenation for logs.
-- Use strongly typed variable declarations by default.
-- Avoid `var` for class instances, DTOs, entities, collections, query results, API results, and domain objects.
-- `var` is allowed only for simple primitive calculations or cases where the type is obvious and explicit typing would add noise.
-
-### General Rule
-
-- Do not hardcode strings, numeric thresholds, timeout values, retry counts, status labels, error messages, log messages, exception messages, validation messages, route fragments, queue names, configuration keys, file names, provider names, or business constants directly inside code.
-- Reuse existing constants, configuration objects, options classes, enums, and shared methods before creating new ones.
-- If a value already exists in constants, configuration, enum, options, localization, or a shared contract, reuse it.
-- If the value is a stable internal constant, place it in the project’s existing constants location, such as `Constants.cs`, following the project’s existing structure.
-- If the value varies by environment, deployment, tenant, provider, workload, model, region, feature flag, or runtime behavior, place it in configuration such as `appsettings.json`, environment variables, secret store, or a strongly typed options class.
-- Do not duplicate the same value across code, constants, and configuration.
-- Do not add unused constants or unused configuration.
-- Do not leave stale constants or stale configuration behind.
-- Add tests when configuration controls behavior.
-- Document new configuration when it affects setup, deployment, runtime behavior, or operations.
-
-### Constants
-
-Use constants for values that are:
-
-- Stable across environments.
-- Internal to the application.
-- Not secret.
-- Not expected to change without code deployment.
-- Shared across multiple places.
-- Used for messages, keys, labels, operation names, error codes, log message templates, or stable internal identifiers.
-
-Examples:
-
-```csharp
-public static class Constants
-{
-    public static class ExceptionMessages
-    {
-        public const string UserUnauthorizedExceptionMessage = "The user is not authorized.";
-    }
-
-    public static class LogMessages
-    {
-        public const string UserAuthorizationFailed = "User authorization failed. UserId={UserId}, OperationName={OperationName}, CorrelationId={CorrelationId}";
-    }
-}

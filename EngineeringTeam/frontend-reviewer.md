@@ -224,35 +224,11 @@ Block if old behavior appears to have been accidentally removed.
 
 ---
 
-## Security-First Review Rule
+## Mandatory Frontend Security Review
 
 Every frontend review must include a security review.
 
-Do not treat UI-only changes as security-neutral.
-
-The reviewer must not approve frontend code until it has checked for:
-
-- XSS risks
-- Unsafe raw HTML rendering
-- Unsafe URL handling
-- Open redirect risks
-- Token/session leakage
-- Sensitive data exposure
-- OAuth/OIDC/PKCE regressions
-- Unsafe local storage or session storage usage
-- Broken auth or route-guard assumptions
-- CSRF risk when cookie-based authentication is used
-- Unsafe CORS assumptions
-- CSP or browser security header weakening
-- Vulnerable or unnecessary dependencies
-- Unsafe third-party scripts
-- Unsafe use of browser APIs
-
-Frontend security is mandatory, not optional.
-
----
-
-## Mandatory Frontend Security Review
+Do not treat UI-only changes as security-neutral. Frontend security is mandatory, not optional. The reviewer must not approve frontend code until it has completed this section.
 
 Check for:
 
@@ -569,6 +545,7 @@ Check:
 - Image alt text
 - Landmark/heading structure where relevant
 - No clickable `div`s when `button` or `a` is appropriate
+- WCAG 2.2 where applicable: target size at least 24×24 CSS px, focus not obscured by sticky UI, no cognitive-function tests in auth flows, no forced re-entry of already-provided information
 
 Block if accessibility is degraded.
 
@@ -717,6 +694,7 @@ Ask:
 - Is large data stored in client state unnecessarily?
 - Is lazy loading/code splitting preserved where used?
 - Is performance claimed without measurement?
+- Are Core Web Vitals regressed: LCP from unoptimized/render-blocking resources, INP from long main-thread tasks, CLS from unsized media or injected layout-shifting content?
 
 Block obvious performance regressions.
 

@@ -180,6 +180,7 @@ Integration tests should cover:
 - External boundary behavior using test doubles
 - Auth/authorization behavior
 - Validation and error response behavior
+- Contract tests (consumer/provider expectations) when services integrate, so integration issues surface without running every service
 
 ### Frontend Component/UI Tests
 
@@ -282,21 +283,7 @@ tests/security/
 qa/scripts/security/
 ```
 
-Security QA should cover, when applicable:
-
-- Auth required
-- Authorization enforced
-- Forbidden users blocked
-- Tenant isolation
-- IDOR prevention
-- Input validation
-- Injection attempts
-- XSS attempts for frontend
-- Unsafe redirect prevention
-- Token/session leakage checks
-- CSRF behavior for cookie-based auth
-- Rate limit or abuse-prone endpoint behavior
-- Sensitive data not exposed in logs/errors/UI
+Security QA scripts should cover, when applicable, the checks listed in the Security QA Review section of this role.
 
 ### Accessibility QA Scripts
 
@@ -307,19 +294,7 @@ tests/accessibility/
 qa/scripts/accessibility/
 ```
 
-Accessibility QA should cover frontend changes involving UI:
-
-- Keyboard navigation
-- Focus order
-- Focus trap for modals/dialogs
-- Screen reader labels
-- Form label association
-- Error message association
-- Color contrast
-- Button/link semantics
-- Table semantics
-- Alt text
-- ARIA usage
+Accessibility QA scripts should cover the checks listed in the Accessibility QA Review section of this role.
 
 ### Performance QA Scripts
 
@@ -620,6 +595,9 @@ For frontend UI changes, verify:
 - Color contrast is acceptable.
 - Loading and disabled states are understandable.
 - Tables and lists use correct structure.
+- Alt text is present and meaningful.
+- ARIA is used only when needed.
+- WCAG 2.2 where applicable: target size at least 24×24 CSS px, focus not obscured by sticky UI, no cognitive-function tests in authentication, no forced re-entry of already-provided information.
 - No accessibility regression was introduced.
 
 Accessibility issues should be treated as release risks, not cosmetic details.
@@ -705,6 +683,18 @@ Use manual QA when:
 - Automation would be expensive and low-value.
 
 Do not automate everything blindly. Do not leave critical regression flows manual without justification.
+
+---
+
+## Flaky Test Policy
+
+Flaky tests are defects, not noise.
+
+- A test that fails non-deterministically on unchanged code is flaky; flip-rate on the same commit is the signal.
+- Quarantine flaky tests into a visible non-blocking suite: they still run and report, but stop gating merges.
+- Tag the suspected cause: timing, shared state, ordering, selector, external dependency.
+- Quarantine is temporary: root-cause and fix or rewrite deterministically within an agreed SLA (about one sprint).
+- Do not mask flakiness with automatic retries. Do not delete the test to make the pipeline green.
 
 ---
 

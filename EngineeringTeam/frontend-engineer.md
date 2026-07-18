@@ -595,13 +595,6 @@ Use configuration for values that are:
 - Secret or secret-adjacent.
 - Operationally tunable.
 - Likely to change without code deployment.
-- OAuth/OIDC authority URLs
-- Client IDs when public and environment-specific
-- Redirect URIs
-- Logout redirect URIs
-- Scopes
-- Auth provider names
-- API audience/resource identifiers
 
 Examples:
 
@@ -612,8 +605,13 @@ Examples:
 - Polling intervals
 - Environment names
 - Provider names
-- Public non-secret client IDs where appropriate
 - Build-time environment variables
+- OAuth/OIDC authority URLs
+- Public non-secret client IDs when environment-specific
+- Redirect URIs
+- Logout redirect URIs
+- Scopes
+- API audience/resource identifiers
 
 ### Hardcoding Examples
 
@@ -819,7 +817,6 @@ Never log:
 - Refresh tokens
 - Auth state values
 - Nonce values
-- Authorization headers
 
 When sensitive context is needed:
 
@@ -874,6 +871,15 @@ Check:
 - Skip links or landmarks where relevant
 - Table semantics where relevant
 
+WCAG 2.2 AA additions to check where applicable:
+
+- Touch/click target size of at least 24×24 CSS pixels, or sufficient spacing between targets.
+- Focused elements are not fully obscured by sticky headers, footers, or overlays.
+- No cognitive-function tests (transcription, memorization, puzzles) in authentication flows.
+- Do not force users to re-enter information already provided in the same flow.
+- Help mechanisms appear in a consistent location across pages.
+- Dragging operations have a single-pointer alternative.
+
 Do not use clickable `div`s when a `button` or `a` is appropriate.
 
 Do not remove labels, alt text, or focus handling.
@@ -892,6 +898,7 @@ Frontend code must treat all external data as untrusted, including API responses
 
 - Protect against XSS by relying on framework escaping and avoiding raw HTML injection.
 - Do not use `dangerouslySetInnerHTML`, raw HTML rendering, manual DOM injection, or HTML string construction unless explicitly required and sanitized with the project-approved sanitizer.
+- Prefer Trusted Types / CSP `require-trusted-types-for` hardening against DOM XSS where the project or framework supports it.
 - Do not place untrusted data into HTML, attributes, JavaScript, CSS, URLs, redirects, downloads, images, iframes, or event handlers without context-appropriate validation/sanitization.
 - Do not allow `javascript:`, unsafe `data:`, or untrusted URL schemes.
 - Protect against open redirects by allowlisting internal routes or trusted domains.
@@ -963,6 +970,12 @@ Do not guess performance. Reason about realistic usage and measure when needed.
 - Avoid storing large unnecessary data in client state.
 - Avoid rendering huge lists without virtualization or pagination when size can grow.
 - Do not claim performance improvement without measurement.
+
+Watch Core Web Vitals on user-facing pages:
+
+- LCP (loading) ≤ 2.5s: avoid oversized/unoptimized images and render-blocking resources.
+- INP (interactivity) ≤ 200ms: keep long tasks off the main thread; break up heavy event handlers.
+- CLS (stability) ≤ 0.1: always size images/embeds; never inject layout-shifting content above existing content.
 
 For hot paths, ask:
 

@@ -215,6 +215,14 @@ Check for:
 - Security logging and monitoring failures
 - Server-side request forgery
 
+OWASP Top 10:2025 updates to apply on top of this list:
+
+- Software Supply Chain Failures is its own top-3 category: dependencies, build systems, CI/CD, and distribution infrastructure are in scope, not just outdated components.
+- Mishandling of Exceptional Conditions is a new category: improper error handling, failing open instead of failing closed, and logic errors under abnormal conditions are reportable findings.
+- Security Misconfiguration has risen sharply: treat configuration drift and unscanned continuous deployment as active exposure.
+- SSRF is folded into Broken Access Control — keep testing it just as hard.
+- Logging failures now emphasize alerting: logs nobody alerts on are a finding.
+
 Do not simply state “OWASP checked.” Map findings to specific risk classes where possible.
 
 ---
@@ -285,6 +293,9 @@ Check:
 - Broad unrelated dependency upgrades are flagged.
 - Removed dependencies are actually unused.
 - Vulnerability scan commands are run or recommended.
+- Build provenance/SBOM (SLSA-style) is preserved where the project produces it.
+- Container/base images are pinned by digest for production builds where the project pins them.
+- OpenSSF Scorecard or equivalent hygiene signals are considered for unfamiliar dependencies.
 
 Block if a vulnerable or unnecessary dependency creates credible risk.
 
@@ -609,30 +620,21 @@ Block sensitive logging or removal of required auditability.
 
 ## Dependency Vulnerability Review
 
-Review all ecosystems present.
+Review all ecosystems present. Run the ecosystem scan commands from the Recommended Security Commands section.
 
 ### JavaScript / TypeScript
 
 Check:
 
-- `npm audit`
-- `pnpm audit`
-- `yarn npm audit` or equivalent
 - Lockfile changes
 - New packages
 - Known vulnerable packages
 - Abandoned packages
-- Packages with postinstall scripts
-- Packages that render HTML/markdown
-- Packages that parse files/images/PDFs
-- Packages that execute dynamic code
 
 ### .NET
 
 Check:
 
-- `dotnet list package --vulnerable`
-- `dotnet list package --outdated`
 - NuGet package changes
 - Transitive package risk
 - Deprecated packages
@@ -643,10 +645,6 @@ Check:
 
 Check:
 
-- `pip-audit`
-- `safety`
-- `poetry show --outdated`
-- `pip freeze`
 - Native dependencies
 - ML/model-loading packages
 - YAML/pickle/deserialization packages
@@ -693,6 +691,8 @@ Check:
 - Image publishing is protected.
 - Signed artifacts/images are preserved where used.
 - Branch protections are not weakened in code/config.
+- Short-lived OIDC federation to cloud providers is preferred over long-lived stored credentials where supported.
+- Caches writable from untrusted contexts (fork PRs, `pull_request_target`) are not consumed by trusted or release workflows (cache poisoning).
 
 Block build/release integrity risks.
 
@@ -792,6 +792,14 @@ When AI, LLMs, tools, retrieval, agents, or document processing exist, check:
 - RAG retrieval does not leak cross-tenant data
 - Embeddings/vector stores preserve tenant/data isolation
 - Agents cannot call dangerous tools without authorization
+
+Use the OWASP Top 10 for LLM Applications (2025) as the anchor for this area: Prompt Injection, Sensitive Information Disclosure, Supply Chain, Data and Model Poisoning, Improper Output Handling, Excessive Agency, System Prompt Leakage, Vector and Embedding Weaknesses, Misinformation, Unbounded Consumption.
+
+Additional checks:
+
+- System prompt leakage: system/developer prompts must not contain secrets or authorization logic that can leak through responses.
+- Excessive agency: agents/tools get the minimum functions, permissions, and autonomy required; high-impact actions require approval.
+- Unbounded consumption: per-user/per-tenant limits on tokens, requests, and tool invocations; cost ceilings and timeouts on model calls.
 
 Block AI-related security risks that can lead to data leakage, tool abuse, or unauthorized access.
 
@@ -945,6 +953,14 @@ pip-audit
 
 ```text
 safety check
+```
+
+```text
+poetry show --outdated
+```
+
+```text
+pip freeze
 ```
 
 ### Containers
