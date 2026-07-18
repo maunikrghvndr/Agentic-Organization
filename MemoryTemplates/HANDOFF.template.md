@@ -1,83 +1,21 @@
-# Agent Handoff
+# Handoff
 
-Use this when one agent finishes and another agent needs to continue.
+Normally the `## Handoff` section of the task memory file is enough — prefer that. Use this standalone template only for a large mid-task handoff that needs more room. Compact bullets; omit empty sections.
 
-Keep this compact. Do not copy full code or full chat history.
+## State
+- Task: / Phase done: / Next phase + role:
 
----
+## Done
+- What was completed (bullets, no code dumps).
 
-## Task
+## Changed
+- `path` — change.
 
-- Ticket:
-- Current phase:
-- Previous agent:
-- Next recommended agent:
-
----
-
-## What Was Done
-
-- Summary:
-
----
-
-## Files Changed
-
-- `path/to/file`
-  - Change:
-
----
-
-## Files Inspected But Not Changed
-
-- `path/to/file`
-  - Why inspected:
-
----
-
-## Important Decisions
-
-- Decision:
-  - Reason:
-
----
-
-## Existing Behavior Preserved
-
-- Behavior:
-
----
-
-## Tests
-
-- Added:
-- Updated:
-- Run:
-- Not run:
-
----
+## Decisions
+- Decision — reason.
 
 ## Open Issues
+- Issue — why it matters — suggested next step.
 
-- Issue:
-  - Why it matters:
-  - Suggested next step:
-
----
-
-## Risks
-
-- Risk:
-  - Mitigation:
-
----
-
-## Next Agent Instructions
-
-- Read:
-  - `AGENTS.md`
-  - `.ai-memory/TASKS/<ticket-id>.md`
-  - changed files listed above
-- Do not load unrelated role files.
-- Do not re-read the entire repo unless needed.
-- Focus on:
+## Next Session
+- Read: task memory + files above. Focus on: <one line>. Do not: <known trap, if any>.

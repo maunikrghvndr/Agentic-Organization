@@ -1,175 +1,37 @@
 # Project Memory
 
-This file stores compact, durable project context.
+Stable repo facts only. Compact bullets. Omit empty sections. Keep under ~100 lines — prune stale facts when updating. Never task details.
 
-Keep it short. Do not turn this into a giant architecture document.
+## Commands
+Exact invocations with flags — agents use these verbatim, never rediscover them.
+- Build:
+- Test (all / single project / single test):
+- Lint:
+- Run:
 
-Use this file to preserve stable project facts that help agents avoid rediscovering the same patterns.
+## Overview
+- Name / domain / app type / critical workflows:
 
----
+## Stack
+With versions — "React 18 + TypeScript 5 + Vite", not "React project".
+- Backend: <language+version, framework, DB, ORM, queue, auth, logging, tests>
+- Frontend: <framework+version, build, state, routing, styling/tokens, API client, auth, tests>
+- Infra: <hosting, CI/CD, containers, IaC, observability>
 
-## Project Overview
+## Structure
+- Key folders (backend / frontend / infra / tests / docs / QA):
 
-- Project name:
-- Business/domain purpose:
-- Main application type:
-- Primary users:
-- Critical workflows:
+## Hard Rules
+- <e.g. no `var` for class/DTO/entity/result types; no hardcoded messages; constants/config; update tracker; preserve validation/logging/telemetry/retries/idempotency/security checks>
 
----
+## Established Patterns
+- Backend: <controllers, services, repos, validation, error handling, logging, constants, config, tests — one line each, only the non-obvious>
+- Frontend: <components, hooks, API clients, state, forms, styling, localization, auth, tests>
+- QA: <test locations, script locations, report locations>
+- Security: <auth mechanism, token storage, CSRF/CORS/CSP, secrets, scanning>
 
-## Technology Stack
-
-### Backend
-
-- Language/framework:
-- API style:
-- Database:
-- ORM/data access:
-- Queue/background jobs:
-- Auth/authz:
-- Logging/telemetry:
-- Test framework:
-
-### Frontend
-
-- Framework:
-- Build tool:
-- State management:
-- Routing:
-- Styling/design system:
-- API client pattern:
-- Auth integration:
-- Test framework:
-
-### DevOps / Infrastructure
-
-- Hosting:
-- CI/CD:
-- Containers:
-- IaC:
-- Cloud services:
-- Observability:
-
----
-
-## Repository Structure
-
-```text
-project-root/
-  src/
-  tests/
-  docs/
-```
-
-Key folders:
-
-- Backend:
-- Frontend:
-- Infrastructure:
-- Tests:
-- Documentation:
-- QA scripts:
-
----
-
-## Hard Project Rules
-
-- Rule:
-- Rule:
-- Rule:
-
-Examples:
-
-- Do not use `var` for class/DTO/entity/result types.
-- Do not hardcode log messages.
-- Use constants/configuration.
-- Update code-change tracker for non-trivial changes.
-- Preserve validation/logging/telemetry/retries/idempotency/security checks.
-
----
-
-## Existing Backend Patterns
-
-- Controllers/endpoints:
-- Services:
-- Repositories/data access:
-- DTOs/contracts:
-- Validation:
-- Error handling:
-- Logging:
-- Constants:
-- Configuration:
-- Tests:
-
----
-
-## Existing Frontend Patterns
-
-- Pages/routes:
-- Components:
-- Hooks:
-- API clients:
-- State:
-- Forms:
-- Styling/tokens:
-- Localization:
-- Auth:
-- Tests:
-
----
-
-## Existing QA Patterns
-
-- Unit tests:
-- Integration tests:
-- E2E tests:
-- Smoke tests:
-- Regression tests:
-- Security tests:
-- Accessibility tests:
-- QA scripts:
-- Reports:
-
----
-
-## Existing Security Patterns
-
-- Authentication:
-- Authorization:
-- Token/session storage:
-- CSRF:
-- CORS:
-- CSP/security headers:
-- Secrets:
-- Dependency scanning:
-- Security tests:
-
----
-
-## Important Architecture Decisions
-
-### Decision 1
-
-- Date:
-- Decision:
-- Reason:
-- Consequence:
-
----
+## Architecture Decisions
+- <date> — decision — reason.
 
 ## Known Risks / Gotchas
-
-- Risk:
-- Why it matters:
-- How to avoid breaking it:
-
----
-
-## Agent Usage Notes
-
-- Backend tasks should use:
-- Frontend tasks should use:
-- Review tasks should use:
-- QA tasks should use:
-- Security tasks should use:
+- Risk — why it matters — how not to break it.

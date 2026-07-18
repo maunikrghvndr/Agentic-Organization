@@ -1,139 +1,36 @@
-# Task Memory: <TICKET-ID>
+# Task: <short-kebab-name>
 
-This file stores compact task-specific context.
+Compact bullets. Omit empty sections. Updated by every role that works this task. Goal is handoff, not transcript. On completion: promote durable learnings to PROJECT_MEMORY.md, then move this file to TASKS/_archive/.
 
-It should be updated by each agent that works on the task.
+## Summary
+- Goal: / Acceptance criteria: / Status: / Current phase + role:
 
-Keep it short. The goal is handoff, not a full transcript.
+## Plan
+- Phases and roles (from planner, if used):
 
----
+## Files
+- Inspected: `path` — why (only non-obvious ones)
+- Changed: `path` — what/why
 
-## Ticket Summary
+## Decisions
+- Decision — reason.
 
-- Ticket:
-- Goal:
-- Acceptance criteria:
-- Primary role:
-- Secondary roles if any:
-- Current status:
+## Behavior Preserved
+- Only where preservation was non-obvious or at risk.
 
----
+## Tests
+- Added: / Updated: / Run (with result): / Not run — why:
 
-## Classification
+## Findings (review / QA / security / debug phases)
+- Recommendation: / Blocking: / Non-blocking: / Severity + fix direction:
 
-- Selected role:
-- Reason:
-- Confidence:
-- Human clarification needed:
+## Risks / Follow-ups
+- Risk or follow-up.
 
----
-
-## Files Inspected
-
-- `path/to/file`
-  - Why relevant:
-
----
-
-## Files Changed
-
-- `path/to/file`
-  - Change made:
-  - Reason:
-
----
-
-## Existing Behavior Preserved
-
-- Behavior:
-- How it was preserved:
-
----
-
-## Decisions Made
-
-- Decision:
-  - Reason:
-  - Alternatives considered:
-
----
-
-## Backend Notes
-
-- Endpoint/service/repository changed:
-- Validation:
-- Logging/telemetry:
-- Persistence:
-- Config/constants:
-- Risks:
-
----
-
-## Frontend Notes
-
-- Pages/components/hooks changed:
-- UI behavior:
-- API integration:
-- Loading/error/empty states:
-- Accessibility:
-- Config/constants/localization:
-- Risks:
-
----
-
-## QA Notes
-
-- Tests added:
-- Tests updated:
-- Tests run:
-- Tests not run:
-- Regression risks:
-- QA script locations:
-
----
-
-## Review Notes
-
-- Reviewer:
-- Recommendation:
-- Blocking issues:
-- Non-blocking suggestions:
-- Required fixes:
-
----
-
-## Security Notes
-
-- Findings:
-- Severity:
-- OWASP category:
-- Affected files:
-- Recommended fix:
-- Verification:
-
----
-
-## Commands Run
-
-```text
-command here
-```
-
-Result:
-
-```text
-result here
-```
-
----
-
-## Risks / Follow-Ups
-
-- Risk:
-- Follow-up:
-
----
-
-## Handoff Summary
-
-Short summary for the next agent.
+## Handoff
+The next session trusts this section and does not re-explore the repo.
+- Next role:
+- Read first: `path:line` — why (minimal set; the next session reads only these)
+- Done + verified:
+- Remaining:
+- Settled decisions (do not relitigate):
