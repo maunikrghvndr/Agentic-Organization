@@ -8,7 +8,9 @@ Role library root (single source of truth — edit this one line if the library 
 C:\Users\mauni\source\repos\Agentic-Organization\EngineeringTeam\
 ```
 
-Load exactly **one** role file per phase from that folder. Do not copy role files into this repository.
+This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference a `CLAUDE.md` — this project uses `AGENTS.md` only.
+
+Load exactly **one** role file per phase from the folder above. Do not copy role files into this repository.
 
 ---
 

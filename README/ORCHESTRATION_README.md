@@ -7,7 +7,6 @@ A portable role library for coding agents (Claude Code, Codex, Cursor). Drop `AG
 ```text
 Agentic-Organization/
   AGENTS.md                master copy of the drop-in file (router + universal rules)
-  CLAUDE.md                one-line pointer; copy alongside AGENTS.md for tools that only auto-load CLAUDE.md
 
   EngineeringTeam/
     planner.md             decompose big/vague/cross-stack tasks, design, acceptance criteria
@@ -32,7 +31,7 @@ Agentic-Organization/
 
 ## Workflow
 
-1. Copy `AGENTS.md` (and optionally `CLAUDE.md`) into the target repo.
+1. Copy `AGENTS.md` into the target repo.
 2. Ask for a task. The agent infers one role, loads only that role file, and works under its rules plus the universal rules in `AGENTS.md`.
 3. Per-repo memory lives in `.ai-memory/` (created automatically): `PROJECT_MEMORY.md` for stable facts, `TASKS/` for per-task files, `TASKS/_archive/` for completed ones.
 
