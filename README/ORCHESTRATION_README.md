@@ -23,6 +23,7 @@ Agentic-Organization/
     PROJECT_MEMORY.template.md
     TASK_MEMORY.template.md
     HANDOFF.template.md
+    REFERENCE.template.md
 
   Router/                  optional: ticket-classification prompt (unused in drop-in workflow)
   Scripts/                 optional: headless ticket runners (unused in drop-in workflow)
@@ -33,7 +34,7 @@ Agentic-Organization/
 
 1. Copy `AGENTS.md` into the target repo.
 2. Ask for a task. The agent infers one role, loads only that role file, and works under its rules plus the universal rules in `AGENTS.md`.
-3. Per-repo memory lives in `.ai-memory/` (created automatically): `PROJECT_MEMORY.md` for stable facts, `TASKS/` for per-task files, `TASKS/_archive/` for completed ones.
+3. Per-repo memory lives in `.ai-memory/` (created automatically): `PROJECT_MEMORY.md` for stable facts, `TASKS/` for per-task files, `TASKS/_archive/` for completed ones, `wiki/` topic pages once memory outgrows one file, and `sources/` for read-only papers/specs distilled into `ref-` pages.
 
 ## Key Rules
 
@@ -41,7 +42,7 @@ Agentic-Organization/
 - **Phases run in fresh sessions** reading task memory — especially review/QA/security, so a reviewer never reviews its own reasoning.
 - **Rework loop:** reviewer/security/QA findings go back to the original engineer role; loop ends when no blocking issues remain.
 - **Cross-stack:** planner → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, each a fresh session.
-- **Memory is compact:** bullets only, omit empty sections, promote durable learnings to PROJECT_MEMORY, archive finished task files.
+- **Memory is compact and compounding:** bullets only, omit empty sections, promote durable learnings to PROJECT_MEMORY, archive finished task files. Knowledge is updated or reorganized (index + `wiki/` topic pages, distilled `ref-` pages for papers/specs) — never deleted for size.
 
 ## Maintaining The Library
 

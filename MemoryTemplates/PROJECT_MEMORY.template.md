@@ -1,6 +1,8 @@
 # Project Memory
 
-Stable repo facts only. Compact bullets. Omit empty sections. Keep under ~100 lines — prune stale facts when updating. Never task details.
+Stable repo facts only. Compact bullets. Omit empty sections. Never task details.
+
+Growth: when this file outgrows ~100 lines, split content into `.ai-memory/wiki/` topic pages and turn this file into an index — Commands stay at the top, then one line per page. Update facts instead of deleting knowledge: note changes with a date (`updated YYYY-MM-DD: was X, now Y — reason`); flag unresolved contradictions explicitly. Papers/specs/RFCs live read-only in `.ai-memory/sources/` and are distilled once into `wiki/ref-<name>.md` pages (see REFERENCE template).
 
 ## Commands
 Exact invocations with flags — agents use these verbatim, never rediscover them.

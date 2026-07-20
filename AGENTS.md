@@ -54,7 +54,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 - **Never load a second role file in the same session.** Review, QA, and security phases run in a fresh session so the reviewer is not reviewing its own reasoning.
 - **Rework loop:** reviewer/security/QA findings route back to the original engineer role as a new phase. Blocking issues must be fixed and re-reviewed. The loop ends when the reviewer returns no blocking issues.
 - **Cross-stack features:** `planner` → `backend-engineer` → `frontend-engineer` → reviewer(s) → `qa-engineer` as needed. Each phase is a fresh session that reads task memory first.
-- **Handoff contract:** at the end of a phase, the task file's Handoff section lists — next role; the exact files (with `path:line` anchors where useful) the next session must read; what is done and verified; what remains; settled decisions that must not be relitigated. The next session trusts this list: it reads those files first and does not re-explore the repo unless the list proves insufficient. Re-discovery of already-mapped context is wasted tokens.
+- **Handoff contract:** at the end of a phase, the task file's Handoff section lists — next role; the exact files (with `path:line` anchors where useful) and relevant memory `wiki/` pages the next session must read; what is done and verified; what remains; settled decisions that must not be relitigated. The next session trusts this list: it reads those files first and does not re-explore the repo unless the list proves insufficient. Re-discovery of already-mapped context is wasted tokens.
 
 ---
 
@@ -106,7 +106,9 @@ Use `.ai-memory/` in this repository; create it if missing:
 
 ```text
 .ai-memory/
-  PROJECT_MEMORY.md      stable facts only
+  PROJECT_MEMORY.md      stable facts; becomes an index of wiki/ pages as the project grows
+  wiki/                  topic pages (created only when PROJECT_MEMORY outgrows one file)
+  sources/               immutable reference sources: papers, specs, RFCs (or pointer files)
   TASKS/                 one compact file per non-trivial task
   TASKS/_archive/        completed task files
 ```
@@ -115,10 +117,14 @@ Rules:
 
 - Write compact bullets, not prose or transcripts. Omit empty template sections. Every line must earn its tokens.
 - First use in a repo: discover the exact build/test/lint/run commands (with flags) and record them at the top of `PROJECT_MEMORY.md`. Later sessions use and maintain these instead of rediscovering them.
-- `PROJECT_MEMORY.md` holds only stable repo facts: stack, structure, build/test commands, established patterns, hard rules, architecture decisions. Never task details. Keep it under ~100 lines; prune stale facts when updating.
+- `PROJECT_MEMORY.md` holds only stable repo facts: stack, structure, commands, established patterns, hard rules, architecture decisions. Never task details.
+- **Grow by reorganizing, never by deleting.** While small, `PROJECT_MEMORY.md` is a single flat file. When it outgrows ~100 lines, split content into `wiki/` topic pages (`architecture.md`, `backend-patterns.md`, `frontend-patterns.md`, `testing.md`, `gotchas.md`, ...) and turn `PROJECT_MEMORY.md` into an index: commands at the top, then one line per page. Sessions read the index first and open only the pages relevant to the task.
+- **Update, don't delete.** Remove a fact only because it is wrong or no longer true — and record that as an update with a short note (`updated 2026-07-20: was X, now Y — reason`). If two sources genuinely conflict and it cannot be resolved yet, flag the contradiction explicitly instead of silently picking one.
+- **Reference sources.** Papers, specs, and RFCs the implementation follows go in `sources/` (or a pointer file with URL/DOI when the original cannot be committed). Sources are read-only. On first use, ingest once: write a `wiki/ref-<name>.md` page distilling only what the implementation needs, with section/equation/page citations, the source version/date, a map from concepts to implementing files (`path:line`), and every intentional deviation ("source says X, we do Y because Z"). Sessions read the reference page, not the source; open the source only when the page cannot answer, then update the page.
+- **Lint on completion.** When a task that touched memory heavily completes, sweep for duplicate facts to merge, superseded claims to update, contradictions to flag, and index lines that no longer match their pages. Reconcile — never trim for length.
 - Task files use short kebab-case names (`backend-upload-validation.md`). At the end of each phase, update the task file: files touched, decisions, tests run, risks, recommended next phase.
-- When a task fully completes: promote any durable repo-stable learning to `PROJECT_MEMORY.md`, then move the task file to `TASKS/_archive/`.
-- One fact, one place: facts already in `PROJECT_MEMORY.md` are not repeated in task files. When updating `PROJECT_MEMORY.md`, merge and dedup overlapping facts instead of appending near-duplicates.
+- When a task fully completes: promote any durable repo-stable learning to `PROJECT_MEMORY.md`/`wiki/`, then move the task file to `TASKS/_archive/`.
+- One fact, one place: facts already in `PROJECT_MEMORY.md`/`wiki/` are not repeated in task files. When updating, merge and dedup overlapping facts instead of appending near-duplicates.
 - Do not read `TASKS/_archive/` files unless explicitly investigating past work.
 - Templates live in the role library's `MemoryTemplates\` folder.
 

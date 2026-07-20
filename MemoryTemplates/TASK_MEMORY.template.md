@@ -30,7 +30,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 ## Handoff
 The next session trusts this section and does not re-explore the repo.
 - Next role:
-- Read first: `path:line` — why (minimal set; the next session reads only these)
+- Read first: `path:line` + relevant `wiki/` pages — why (minimal set; the next session reads only these)
 - Done + verified:
 - Remaining:
 - Settled decisions (do not relitigate):
