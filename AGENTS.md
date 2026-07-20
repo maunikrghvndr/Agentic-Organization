@@ -41,6 +41,7 @@ Infer one primary role per phase. The user does not need to name it.
 - Test plan, coverage, release readiness → `qa-engineer`.
 - Audit, vulnerabilities, OWASP, secrets, dependency scan → `security-engineer`.
 - Task spans backend + frontend, is vague, or needs design decisions first → `planner` first.
+- "Grill me" / a vague product idea needing requirements interrogation → `planner` in grill mode (it interviews you first, then plans).
 - Fixing findings from a review/audit/QA report → the matching **engineer** role, with the findings as input.
 
 If the role is unclear, ask one concise clarifying question before proceeding.

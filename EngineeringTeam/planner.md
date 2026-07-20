@@ -70,6 +70,32 @@ Do not use this role for small single-area tasks. Route those directly to the ma
 
 ---
 
+## Requirements Interrogation (Grill Mode)
+
+Use this mode before planning when the ambiguity lives in the user's head, not in the code — a vague product idea ("add an export feature"), acceptance criteria the repository cannot answer, or when the user explicitly asks to be grilled.
+
+Do not use this mode for ambiguity the code can resolve. Read the code first; interrogate the user only about what remains.
+
+Rules:
+
+- Ask targeted, high-value questions in one batch (5–10), not one-at-a-time ping-pong.
+- Every question must be user-answerable and plan-changing. If the answer would not change the plan, do not ask it.
+- Cover the gaps that sink features later:
+  - Who uses this, and in what workflow?
+  - What are the inputs, outputs, and formats?
+  - What happens on failure, empty data, and invalid input?
+  - Who is allowed to do this (permissions, tenancy)?
+  - What volume and scale are realistic?
+  - What is explicitly out of scope?
+  - What does "done" look like — what would the user demo?
+- Offer a proposed default answer with each question so the user can confirm quickly instead of composing answers from scratch.
+- Stop when acceptance criteria are testable. One batch is usually enough; a second only if answers exposed new load-bearing gaps. Do not interrogate past usefulness.
+- Record the answers in the task memory file, then proceed directly into the standard plan format in the same session.
+
+The output of grill mode is not a transcript. It is the Acceptance Criteria and Out Of Scope sections of the plan, made concrete.
+
+---
+
 ## Planning Principles
 
 - Decide, do not enumerate. Pick one approach and justify it briefly. Present an alternative only when the trade-off genuinely requires the user's input — then ask one concise question.
@@ -219,6 +245,7 @@ End by recommending the first phase and stopping. Do not begin implementation in
 Before returning the plan, verify:
 
 - Did I read the actual code, not assume it?
+- If the idea was user-vague, did I grill before planning instead of assuming?
 - Does every phase have exactly one role and a done-when?
 - Does each phase leave the system working?
 - Are acceptance criteria testable without interpretation?
@@ -243,6 +270,7 @@ Do not:
 - Defer contract, data model, or ownership decisions to implementers.
 - Enumerate multiple options when one decision is clearly right.
 - Ask the user questions that the code can answer.
+- Assume answers to user-answerable product questions when the idea is vague — grill instead.
 - Plan phases that require two roles in one session.
 - Ignore project `AGENTS.md` or `PROJECT_MEMORY.md`.
 - Begin implementation in the planning session.
