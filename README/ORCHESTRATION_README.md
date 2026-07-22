@@ -2,6 +2,16 @@
 
 A portable role library for coding agents (Claude Code, Codex, Cursor). Drop `AGENTS.md` into any repo; the agent routes each task to one specialized role and follows that role's discipline.
 
+## Setup (once per machine)
+
+`AGENTS.md` points at this library by absolute path — the fenced line near the top:
+
+```text
+C:\Users\mauni\source\repos\Agentic-Organization\EngineeringTeam\
+```
+
+This is the **only** value that changes when the library lives somewhere else (a new machine, WSL, a clone, a teammate's checkout). Update that one line to wherever the `EngineeringTeam/` folder actually is, and everything else works unchanged. If the path is wrong, the agent cannot load role files and falls back to `AGENTS.md`'s own universal rules — functional but without the deep role behavior, so keep this line correct.
+
 ## Structure
 
 ```text
