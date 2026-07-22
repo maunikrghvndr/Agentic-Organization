@@ -2,15 +2,9 @@
 
 A portable role library for coding agents (Claude Code, Codex, Cursor). Drop `AGENTS.md` into any repo; the agent routes each task to one specialized role and follows that role's discipline.
 
-## Setup (once per machine)
+## Setup
 
-`AGENTS.md` points at this library by absolute path — the fenced line near the top:
-
-```text
-C:\Users\mauni\source\repos\Agentic-Organization\EngineeringTeam\
-```
-
-This is the **only** value that changes when the library lives somewhere else (a new machine, WSL, a clone, a teammate's checkout). Update that one line to wherever the `EngineeringTeam/` folder actually is, and everything else works unchanged. If the path is wrong, the agent cannot load role files and falls back to `AGENTS.md`'s own universal rules — functional but without the deep role behavior, so keep this line correct.
+Nothing manual. `AGENTS.md` points at this library by absolute path (the fenced line near the top). When that path does not resolve — a new machine, WSL, a clone, a teammate's checkout — the agent self-heals per the **Role library resolution** block in `AGENTS.md`: it looks in likely locations, and if it cannot find the library it offers to clone it from GitHub, then updates the path line itself. It always **asks permission** before writing the path or cloning, and falls back to `AGENTS.md`'s universal rules if you decline. You never edit the path by hand.
 
 ## Structure
 
@@ -58,5 +52,5 @@ Agentic-Organization/
 ## Maintaining The Library
 
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
-- The role library path appears exactly once, at the top of `AGENTS.md` — edit that one line if the library moves.
+- The role library path appears exactly once, at the top of `AGENTS.md`. The agent self-heals it (Role library resolution block) with the user's permission; no manual edit needed.
 - Coding-style rules (explicit types / no `var` abuse, no `any`, `Constants.cs` / `FrontendConstants` patterns, structured logging with constant templates, no hardcoding) live in the engineer role files and are enforced by the reviewer roles — keep both sides in sync when changing a style rule.

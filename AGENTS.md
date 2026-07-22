@@ -12,6 +12,15 @@ This file (`AGENTS.md`) is the single entry point. Do not look for, create, or r
 
 Load exactly **one** role file per phase from the folder above. Do not copy role files into this repository.
 
+**Role library resolution (the agent runs this before loading any role — the user never edits the path by hand):**
+
+1. Try the path above: can you read `EngineeringTeam/planner.md` there? If yes, proceed.
+2. If not (new machine, moved library, fresh clone), check a few likely locations quickly — the user's home and usual repo folders — for an `EngineeringTeam/` folder containing the role files. If found, ask the user to confirm, then update the path line above to match.
+3. If it is still not found, ask the user for permission to clone it from `https://github.com/maunikrghvndr/Agentic-Organization` to a standard location, then set the path line to the cloned `EngineeringTeam/` folder.
+4. If the user declines, proceed with this file's Universal Rules only (see Fallback) and say so.
+
+Ask permission before writing the path line or cloning. Once the path is correct, later sessions skip this.
+
 ---
 
 ## Available Roles
