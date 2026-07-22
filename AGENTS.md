@@ -60,7 +60,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 
 ## Universal Rules (all roles)
 
-- Read this file and the task memory first. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. On a large or unfamiliar codebase, use the Code & Source Graph (below) to locate them faster.
+- Read this file and the task memory first. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
 - Think before coding: state assumptions explicitly. If the task is ambiguous, present the interpretations instead of silently picking one. If you are confused, stop and name the confusion — do not proceed on a guess.
 - Define success criteria before starting: what verifiable check proves this works. Verify against them before finishing — do not stop at "it compiles" or "it looks right".
 - Surgical changes: clean up only your own mess. Remove imports, variables, and functions that YOUR change orphaned. Mention pre-existing dead code but do not delete it unless asked. Match existing style even where you would choose differently.
@@ -130,15 +130,14 @@ Rules:
 
 ---
 
-## Code & Source Graph (optional accelerator)
+## Code & Source Graph
 
-Graphify (MIT, local, deterministic AST parsing — no LLM, no API calls) turns a codebase and its documents/papers into a queryable graph, so the agent queries a map instead of grepping every file. This file drives it; the agent runs the commands. Use it when it pays — never depend on it.
+Graphify (MIT, local, deterministic AST parsing — no LLM, no API calls) turns a codebase and its documents/papers into a queryable graph, so the agent queries a map instead of grepping every file. This file drives it; the agent runs the commands.
 
-- **When:** a large or unfamiliar codebase, or when ingesting a document/paper into `sources/`. Skip it for a small repo you already know — building a graph costs more than reading a few files.
-- **Bootstrap (the agent runs this):** check `graphify --version`; if missing and the task warrants it, install once with `uv tool install graphifyy` (this adds a global dependency — confirm once per the Boundaries rule, then it is available to all later sessions); build or refresh incrementally with `graphify extract . --update` into `.ai-memory/graph/` (add it to the repo's `.gitignore` — it is a deterministic build artifact, regenerate anywhere; add `--no-cluster` on rapid iteration and cluster periodically).
+- **Bootstrap (the agent runs this):** check `graphify --version`. If present, build or refresh the graph incrementally with `graphify extract . --update` into `.ai-memory/graph/` (add that path to the repo's `.gitignore` — it is a deterministic build artifact, regenerate anywhere; add `--no-cluster` on rapid iteration and cluster periodically). If missing, ask the user once to install it with `uv tool install graphifyy` (a one-time global dependency, per the Boundaries rule); once installed it is available to all later sessions. If the user declines or the install is not possible (offline, sandboxed, no `uv`), take the normal route below.
 - **Query before grepping:** `graphify query "..."`, `graphify path A B`, `graphify explain X` to locate relevant files and concept→code paths.
 - **With `sources/`:** the graph gives fast concept→code lookup; the `wiki/ref-<name>.md` page still holds the intent and deviations the graph cannot derive. Complementary — the graph never replaces the ref page.
-- **Hard rule:** Graphify is an accelerator, never a dependency. If it is unavailable, the install is declined, or it errors, fall back to normal file exploration. The workflow must always work from `AGENTS.md` alone.
+- **Fallback (the normal route):** Graphify is an accelerator, never a dependency. Whenever it is absent, declined, or erroring, read and grep files directly. The workflow must always work from `AGENTS.md` alone.
 
 ---
 
