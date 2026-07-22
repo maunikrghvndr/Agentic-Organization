@@ -43,6 +43,7 @@ Agentic-Organization/
 - **Rework loop:** reviewer/security/QA findings go back to the original engineer role; loop ends when no blocking issues remain.
 - **Cross-stack:** planner → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, each a fresh session.
 - **Memory is compact and compounding:** bullets only, omit empty sections, promote durable learnings to PROJECT_MEMORY, archive finished task files. Knowledge is updated or reorganized (index + `wiki/` topic pages, distilled `ref-` pages for papers/specs) — never deleted for size.
+- **Optional graph accelerator:** on large/unfamiliar codebases or when ingesting papers, AGENTS.md drives the agent to build a local Graphify knowledge graph (MIT, deterministic, no LLM) and query it instead of grepping. Always falls back to normal file reading if the tool is absent — never a hard dependency, so the drop-in stays one file.
 
 ## Maintaining The Library
 
