@@ -142,6 +142,29 @@ Define where applicable:
 
 Do not write vague criteria like "works correctly" or "is fast."
 
+### EARS Format
+
+Write each criterion in EARS (Easy Approach to Requirements Syntax) so it is unambiguous and directly testable. Use the pattern that fits:
+
+- **Event-driven:** `WHEN <trigger> THE SYSTEM SHALL <response>`
+- **State-driven:** `WHILE <in state> THE SYSTEM SHALL <response>`
+- **Conditional/unwanted behavior:** `IF <condition> THEN THE SYSTEM SHALL <response>`
+- **Optional feature:** `WHERE <feature is included> THE SYSTEM SHALL <response>`
+- **Ubiquitous (always true):** `THE SYSTEM SHALL <response>`
+
+Examples:
+
+```text
+WHEN a user submits an export request with more than 10,000 rows
+  THE SYSTEM SHALL queue the export and return 202 with a job id.
+IF the uploaded file is not a supported type
+  THEN THE SYSTEM SHALL reject it with a 400 and a field-specific validation message.
+WHILE an export job is running
+  THE SYSTEM SHALL show progress state and disable the submit control.
+```
+
+Keep one testable behavior per criterion. Give each an id (`AC-1`, `AC-2`, ...) so implementation, review, and tests can reference it.
+
 ---
 
 ## Design Decision Standards
@@ -205,9 +228,9 @@ One or two sentences.
 
 ## Acceptance Criteria
 
-- Testable criterion.
-- Error/edge behavior.
-- Permission/state/persistence behavior where relevant.
+- `AC-1` WHEN <trigger> THE SYSTEM SHALL <response>.
+- `AC-2` IF <condition> THEN THE SYSTEM SHALL <response>.
+- `AC-3` <error/edge, permission, state, or persistence behavior in EARS form>.
 
 ## Design Decisions
 

@@ -172,6 +172,18 @@ Ask:
 - Did it make assumptions not supported by the task?
 - Is there a simpler implementation that satisfies the same requirement with less risk?
 
+### Acceptance Criteria Traceability
+
+If the task memory or plan lists acceptance criteria (`AC-1`, `AC-2`, ...), walk them one by one and state, per criterion, the code that satisfies it (`path:line`) and the test that proves it.
+
+Block on:
+
+- A criterion with no implementing code — silently dropped.
+- A criterion whose implementation satisfies a different behavior than stated — drift; say which is wrong, the code or the criterion.
+- A criterion with implementing code but no test, unless the gap is documented with a reason.
+
+Flag (non-blocking unless risky) behavior implemented that no criterion asked for — it must be intentional and recorded, not accidental scope.
+
 Block if the implementation does not clearly satisfy the requested task.
 
 ---
@@ -985,6 +997,7 @@ Brief summary of the implemented behavior.
 - Does it satisfy the task?
 - Any missing acceptance criteria?
 - Any unrelated scope added?
+- Traceability: `AC-n` → implementing `path:line` → covering test → Met / Partial / Not met / Not tested.
 
 ## Blocking Issues
 
@@ -1075,6 +1088,7 @@ Any assumptions, questions, or follow-up items.
 Before returning the review, verify that you checked:
 
 - Task correctness
+- Acceptance criteria traceability (each `AC-n` mapped to code and a test)
 - Existing behavior deletion
 - Simplicity
 - Overengineering

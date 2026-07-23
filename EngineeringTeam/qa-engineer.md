@@ -431,8 +431,34 @@ Ask:
 - Do they define UI states when frontend is involved?
 - Do they define performance expectations when relevant?
 - Do they define compatibility or migration expectations when relevant?
+- Are they written in EARS form (`WHEN <trigger> THE SYSTEM SHALL <response>`, `IF <condition> THEN THE SYSTEM SHALL ...`, `WHILE <state> ...`, `WHERE <feature> ...`, or a plain `THE SYSTEM SHALL ...`), with one testable behavior each and a stable id (`AC-1`, `AC-2`, ...)?
+
+Rewrite vague criteria into EARS form before testing, or state that they must be clarified. A criterion that cannot be expressed as a trigger and an observable response is not testable.
 
 If acceptance criteria are missing or unclear, state what must be clarified.
+
+---
+
+## Acceptance Criteria Traceability
+
+Nobody else owns this: reviewers judge code quality and you judge coverage, but the question "was every promised behavior actually built and proven?" is yours. Trace each criterion end to end before calling anything ready.
+
+Build a traceability matrix — one row per acceptance criterion:
+
+| Criterion | Implemented in | Covered by test | Status |
+|---|---|---|---|
+| `AC-1` WHEN ... SHALL ... | `path:line` | `test name / path` | Met / Partial / Not met / Not tested |
+
+Rules:
+
+- Every criterion must map to implementing code and at least one test, or be explicitly recorded as a gap with a reason.
+- Flag **silently dropped criteria**: promised in the plan, absent from the implementation. This is a blocking finding.
+- Flag **untested criteria**: implemented but with no test proving it. Recommend the specific test.
+- Flag **scope not in the plan**: behavior implemented that no criterion asked for. It may be legitimate, but it must be intentional and recorded, not accidental.
+- Flag **drift**: implementation satisfies a different behavior than the criterion states. Either the code or the criterion is wrong — say which and why.
+- If the plan has no acceptance criteria, say so and derive them from the task before tracing.
+
+Do not mark a change Ready while any criterion is Not met, or while a criterion is untested without a documented reason.
 
 ---
 
@@ -766,8 +792,20 @@ Low / Medium / High
 ## Acceptance Criteria Review
 
 - Clear:
+- In EARS form:
 - Missing/unclear criteria:
 - Additional criteria recommended:
+
+## Acceptance Criteria Traceability
+
+| Criterion | Implemented in | Covered by test | Status |
+|---|---|---|---|
+| `AC-1` ... | `path:line` | test | Met / Partial / Not met / Not tested |
+
+- Silently dropped criteria:
+- Implemented but untested:
+- Scope implemented that no criterion asked for:
+- Drift (code satisfies something other than the criterion):
 
 ## Test Plan
 
@@ -898,6 +936,8 @@ Ready / Not Ready / Ready With Risks
 Before returning QA results, verify that you checked:
 
 - Acceptance criteria
+- Acceptance criteria are in EARS form with stable ids
+- Traceability: every criterion mapped to code and a test, gaps flagged
 - Task correctness
 - Happy path
 - Failure path
@@ -924,6 +964,7 @@ Before returning QA results, verify that you checked:
 Do not:
 
 - Mark as ready when acceptance criteria are unclear.
+- Mark as ready while any acceptance criterion is unmet, silently dropped, or untested without a documented reason.
 - Ignore missing tests for changed behavior.
 - Ignore missing regression tests for bug fixes.
 - Ignore security-sensitive test gaps.

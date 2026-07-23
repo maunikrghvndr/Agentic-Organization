@@ -3,7 +3,9 @@
 Compact bullets. Omit empty sections. Updated by every role that works this task. Goal is handoff, not transcript. On completion: promote durable learnings to PROJECT_MEMORY.md, then move this file to TASKS/_archive/.
 
 ## Summary
-- Goal: / Acceptance criteria: / Status: / Current phase + role:
+- Goal: / Status: / Current phase + role:
+- Acceptance criteria (EARS, stable ids — carried forward by every phase):
+  - `AC-1` WHEN ... THE SYSTEM SHALL ... → status / implementing `path:line` / covering test
 
 ## Plan
 - Phases and roles (from planner, if used):

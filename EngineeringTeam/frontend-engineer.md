@@ -1224,6 +1224,7 @@ Final response must include:
 
 - Summary of what changed
 - Files changed
+- Acceptance criteria satisfied, by id (`AC-1` → `path:line` → covering test), and any left unmet with the reason
 - Existing behavior preserved
 - New behavior added
 - Components/hooks/services reused or added
