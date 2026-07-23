@@ -118,6 +118,7 @@ Use `.ai-memory/` in this repository; create it if missing:
   PROJECT_MEMORY.md      stable facts; becomes an index of wiki/ pages as the project grows
   wiki/                  topic pages (created only when PROJECT_MEMORY outgrows one file)
   sources/               immutable reference sources: papers, specs, RFCs (or pointer files)
+  graphify-out/          generated code/source graph — gitignored, regenerable, never hand-edited
   TASKS/                 one compact file per non-trivial task
   TASKS/_archive/        completed task files
 ```
@@ -144,7 +145,7 @@ Rules:
 Graphify (MIT) turns a codebase and its documents/papers into a queryable graph, so the agent queries a map instead of grepping every file. This file drives it; the agent runs the commands.
 
 - **Bootstrap (the agent runs this):** check `graphify --version`. If present, build or refresh the graph incrementally with `graphify extract . --code-only --update`. `--code-only` keeps extraction local and deterministic (tree-sitter AST, no API calls) — use it by default; add `--no-cluster` on rapid iteration and cluster periodically. If missing, ask the user once to install it with `uv tool install graphifyy` (a one-time global dependency, per the Boundaries rule); once installed it is available to all later sessions. If the user declines or the install is not possible (offline, sandboxed, no `uv`), take the normal route below.
-- **Where it is written:** Graphify always writes to a fixed `graphify-out/` folder in the repo (`graph.json`, `graph.html`, `GRAPH_REPORT.md`, `cache/`) — there is no output-path flag. Add `graphify-out/` to the repo's `.gitignore`: it is a regenerable build artifact, not memory. Durable knowledge still belongs in `.ai-memory/`.
+- **Where it is written:** the graph belongs under `.ai-memory/` with everything else the agent consults. Graphify has no output-path flag — it writes a fixed `graphify-out/` folder (`graph.json`, `graph.html`, `GRAPH_REPORT.md`, `cache/`) — so run it with `.ai-memory/` as the working directory, pointing at the repo root, e.g. from `.ai-memory/`: `graphify extract .. --code-only --update`. Then confirm where `graph.json` actually landed, record that path in `PROJECT_MEMORY.md`, and add it to the repo's `.gitignore`. Keep it regenerable: it is a derived artifact, so never hand-edit it and never treat it as the durable record — if it is lost, rebuild it. Knowledge that cannot be regenerated from code still lives in `PROJECT_MEMORY.md`, `wiki/`, and `sources/`.
 - **Documents and papers cost more than code:** ingesting PDFs/images/non-code sources requires an LLM backend (`--backend ...`), which sends that content to an external provider and costs tokens. Ask the user before ingesting any document, and never send sensitive or regulated material (clinical, legal, financial, PII/PHI) to an external backend without explicit approval. Code parsing with `--code-only` stays fully local.
 - **Query before grepping:** `graphify query "..."`, `graphify path A B`, `graphify explain X` to locate relevant files and concept→code paths.
 - **With `sources/`:** the graph gives fast concept→code lookup; the `wiki/ref-<name>.md` page still holds the intent and deviations the graph cannot derive. Complementary — the graph never replaces the ref page.
