@@ -126,6 +126,7 @@ If something remains unexplained, the diagnosis is incomplete. Say which part is
 - Evidence over plausibility. A story that fits is not a diagnosis; a mechanism you verified is.
 - Label confidence honestly: Confirmed / Probable / Hypothesis.
 - Never log, paste, or store secrets, tokens, or sensitive payloads in the report or task memory. Use safe identifiers.
+- Separate environment problems from code problems. If the cause is local tooling or machine state — a missing binary, a failed install, PATH, permissions, network or sandbox limits — say so plainly in the session and stop there. Do not write it into `.ai-memory/`: it is not a fact about the repository, and it will mislead the next session on a different machine.
 
 ---
 
