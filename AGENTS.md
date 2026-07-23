@@ -158,6 +158,8 @@ Graphify (MIT) turns a codebase and its documents/papers into a queryable graph,
 
 At the end of a phase, report: role used, task memory file updated, files changed, tests added/run, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done").
 
+Also state whether the Code & Source Graph was used: which queries were run and what they located, or that it was unavailable, or that it was available but not used and why. A graph that is built and then ignored is wasted work — this line makes that visible.
+
 ---
 
 ## Fallback
