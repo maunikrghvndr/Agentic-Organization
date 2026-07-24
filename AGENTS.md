@@ -27,7 +27,9 @@ Ask permission before writing the path line or cloning. Once the path is correct
 
 | Role | File | Use for |
 |---|---|---|
-| `planner` | `planner.md` | Decompose large/vague/multi-area tasks, design decisions, phase sequencing, acceptance criteria |
+| `analyst` | `analyst.md` | Capture user intent, run full grill mode, produce EARS acceptance criteria, promote them to a durable `wiki/spec-<feature>.md` |
+| `architect` | `architect.md` | System design decisions — data model, API shape, service boundaries, integration approach, tech choice, reuse mapping |
+| `planner` | `planner.md` | Sequence a settled feature into role-scoped phases with handoffs; run the pre-implementation completeness gate |
 | `backend-engineer` | `backend-engineer.md` | APIs, controllers, services, domain logic, repositories, DB, migrations, queues, workers, backend auth/validation/logging/tests |
 | `frontend-engineer` | `frontend-engineer.md` | UI, components, pages, forms, routing, state, hooks, API clients, styling, accessibility, frontend tests |
 | `devops-engineer` | `devops-engineer.md` | CI/CD pipelines, Dockerfiles, IaC, deployments, environments, build tooling |
@@ -49,8 +51,10 @@ Infer one primary role per phase. The user does not need to name it.
 - Pipelines, Docker, IaC, deploy, build tooling → `devops-engineer`.
 - Test plan, coverage, release readiness → `qa-engineer`.
 - Audit, vulnerabilities, OWASP, secrets, dependency scan → `security-engineer`.
-- Task spans backend + frontend, is vague, or needs design decisions first → `planner` first.
-- "Grill me" / a vague product idea needing requirements interrogation → `planner` in grill mode (it interviews you first, then plans).
+- New feature, vague product idea, missing acceptance criteria, "grill me", or "let's spec this out" → `analyst` first.
+- Intent settled, needs system design (new services, data model change, API shape, service boundaries, tech choice, or spans multiple domains) → `architect`.
+- Intent and (where relevant) design settled, needs phased sequencing across multiple roles → `planner`.
+- Task spans backend + frontend or is multi-role and clearly scoped → skip `analyst`/`architect` if not needed and go straight to `planner`.
 - Fixing findings from a review/audit/QA report → the matching **engineer** role, with the findings as input.
 
 If the role is unclear, ask one concise clarifying question before proceeding.
@@ -62,7 +66,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 - **One role per session.** Complete the phase, update task memory, recommend the next phase, and stop.
 - **Never load a second role file in the same session.** Review, QA, and security phases run in a fresh session so the reviewer is not reviewing its own reasoning.
 - **Rework loop:** reviewer/security/QA findings route back to the original engineer role as a new phase. Blocking issues must be fixed and re-reviewed. The loop ends when the reviewer returns no blocking issues.
-- **Cross-stack features:** `planner` → `backend-engineer` → `frontend-engineer` → reviewer(s) → `qa-engineer` as needed. Each phase is a fresh session that reads task memory first.
+- **Cross-stack features:** `analyst` (grill + spec) → `architect` (design, when needed) → `planner` (sequence + gate) → `backend-engineer` → `frontend-engineer` → reviewer(s) → `qa-engineer` as needed. Skip roles that add nothing (e.g., a straightforward multi-role change may go analyst → planner → engineers, no architect). Each phase is a fresh session that reads task memory first.
 - **Handoff contract:** at the end of a phase, the task file's Handoff section lists — next role; the exact files (with `path:line` anchors where useful) and relevant memory `wiki/` pages the next session must read; what is done and verified; what remains; settled decisions that must not be relitigated. The next session trusts this list: it reads those files first and does not re-explore the repo unless the list proves insufficient. Re-discovery of already-mapped context is wasted tokens.
 
 ---
@@ -70,6 +74,12 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 ## Universal Rules (all roles)
 
 - Read this file and the task memory first. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
+- **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange:
+  1. Restate the task in one line as you understand it.
+  2. Name every load-bearing assumption explicitly.
+  3. Ask any question that would change what you build. If none, say so.
+  4. Do not proceed until intent is confirmed — either the user answers, or the user accepts your restatement.
+  For a fully specified task this is a single line and 15 seconds; for an ambiguous one it becomes real questions. It is never skipped. When the task is a feature-sized ambiguity (vague product idea, missing acceptance criteria), stop this lightweight version and route to `analyst` for full-depth grill and durable spec production instead.
 - Think before coding: state assumptions explicitly. If the task is ambiguous, present the interpretations instead of silently picking one. If you are confused, stop and name the confusion — do not proceed on a guess.
 - Define success criteria before starting: what verifiable check proves this works. Verify against them before finishing — do not stop at "it compiles" or "it looks right".
 - Surgical changes: clean up only your own mess. Remove imports, variables, and functions that YOUR change orphaned. Mention pre-existing dead code but do not delete it unless asked. Match existing style even where you would choose differently.
@@ -131,6 +141,7 @@ Rules:
 - **Grow by reorganizing, never by deleting.** While small, `PROJECT_MEMORY.md` is a single flat file. When it outgrows ~100 lines, split content into `wiki/` topic pages (`architecture.md`, `backend-patterns.md`, `frontend-patterns.md`, `testing.md`, `gotchas.md`, ...) and turn `PROJECT_MEMORY.md` into an index: commands at the top, then one line per page. Sessions read the index first and open only the pages relevant to the task.
 - **Update, don't delete.** Remove a fact only because it is wrong or no longer true — and record that as an update with a short note (`updated 2026-07-20: was X, now Y — reason`). If two sources genuinely conflict and it cannot be resolved yet, flag the contradiction explicitly instead of silently picking one.
 - **Reference sources.** Papers, specs, and RFCs the implementation follows go in `sources/` (or a pointer file with URL/DOI when the original cannot be committed). Sources are read-only. On first use, ingest once: write a `wiki/ref-<name>.md` page distilling only what the implementation needs, with section/equation/page citations, the source version/date, a map from concepts to implementing files (`path:line`), and every intentional deviation ("source says X, we do Y because Z"). Sessions read the reference page, not the source; open the source only when the page cannot answer, then update the page.
+- **Feature specs are durable.** `analyst` produces `wiki/spec-<feature>.md` for every feature-sized task — the EARS acceptance criteria plus in/out scope. Update it with dated notes as the feature evolves; never delete criteria (only supersede them with a note). Task files in `TASKS/` are process; spec pages in `wiki/` are the contract that survives the task and gets archived-out with it. Reviewers, QA, and any later change to the feature read the spec page first.
 - **Lint on completion.** When a task that touched memory heavily completes, sweep for duplicate facts to merge, superseded claims to update, contradictions to flag, and index lines that no longer match their pages. Reconcile — never trim for length.
 - Task files use short kebab-case names (`backend-upload-validation.md`). At the end of each phase, update the task file: files touched, decisions, tests run, risks, recommended next phase.
 - When a task fully completes: promote any durable repo-stable learning to `PROJECT_MEMORY.md`/`wiki/`, then move the task file to `TASKS/_archive/`.

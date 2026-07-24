@@ -4,8 +4,10 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 
 ## Summary
 - Goal: / Status: / Current phase + role:
-- Acceptance criteria (EARS, stable ids — carried forward by every phase):
+- Spec (durable): `.ai-memory/wiki/spec-<feature>.md` (analyst owns; carries the EARS criteria across the feature's life)
+- Acceptance criteria (EARS, stable ids — mirrored here for the active task):
   - `AC-1` WHEN ... THE SYSTEM SHALL ... → status / implementing `path:line` / covering test
+- Design decisions (from architect, if that phase ran): key decisions by name, referenced from `wiki/architecture.md` or task memory.
 
 ## Plan
 - Phases and roles (from planner, if used):
