@@ -36,6 +36,27 @@ Agentic-Organization/
   _archive/                pre-restructure originals
 ```
 
+## Syncing AGENTS.md across all your repos
+
+Rather than dropping `AGENTS.md` into each repo by hand, use the sync script:
+
+```powershell
+# preview what would change (safe, no writes)
+.\Scripts\Sync-AgentsMd.ps1 -DryRun
+
+# copy or refresh AGENTS.md into every git repo under C:\Users\mauni\source\repos
+.\Scripts\Sync-AgentsMd.ps1
+```
+
+Behavior:
+
+- Idempotent — repos whose `AGENTS.md` already matches are skipped.
+- Overwrites customized copies (the library treats `AGENTS.md` as the single source of truth).
+- Skips the library repo itself and any non-git folder.
+- Descends one level under the parent folder (standard "repos folder" layout).
+
+Options: `-RepoRoot <path>` to point at a different parent, `-Source <path or URL>` to sync from anywhere else. Run after any change to `AGENTS.md` in this library and every repo picks up the update.
+
 ## Workflow
 
 1. Copy `AGENTS.md` into the target repo.
