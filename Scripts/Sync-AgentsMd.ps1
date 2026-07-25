@@ -26,15 +26,17 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Resolve source: allow http(s) URL as an alternative to a local path
+# Resolve source: allow http(s) URL as an alternative to a local path.
+# We read bytes (not text) so we never add a BOM, and never convert line endings.
 if ($Source -match '^https?://') {
-    $sourceContent = (Invoke-WebRequest -Uri $Source -UseBasicParsing).Content
-    $sourceLabel   = $Source
+    $sourceBytes = (Invoke-WebRequest -Uri $Source -UseBasicParsing).Content
+    if ($sourceBytes -is [string]) { $sourceBytes = [Text.Encoding]::UTF8.GetBytes($sourceBytes) }
+    $sourceLabel = $Source
 } else {
     if (-not (Test-Path $Source)) { throw "Source AGENTS.md not found: $Source" }
-    $Source        = (Resolve-Path $Source).Path
-    $sourceContent = Get-Content $Source -Raw
-    $sourceLabel   = $Source
+    $Source      = (Resolve-Path $Source).Path
+    $sourceBytes = [IO.File]::ReadAllBytes($Source)
+    $sourceLabel = $Source
 }
 
 if (-not (Test-Path $RepoRoot)) { throw "RepoRoot not found: $RepoRoot" }
@@ -46,9 +48,7 @@ if (Test-Path $Source) { $LibraryRoot = Split-Path $Source -Parent | Resolve-Pat
 
 # Hash the source once so per-target comparison is cheap
 $sourceHash = [BitConverter]::ToString(
-    (New-Object Security.Cryptography.SHA256Managed).ComputeHash(
-        [Text.Encoding]::UTF8.GetBytes($sourceContent)
-    )
+    (New-Object Security.Cryptography.SHA256Managed).ComputeHash($sourceBytes)
 ).Replace("-","")
 
 $repos = Get-ChildItem $RepoRoot -Directory | Where-Object {
@@ -64,11 +64,9 @@ foreach ($repo in $repos) {
     $target = Join-Path $repo.FullName "AGENTS.md"
 
     if (Test-Path $target) {
-        $targetContent = Get-Content $target -Raw
+        $targetBytes = [IO.File]::ReadAllBytes($target)
         $targetHash = [BitConverter]::ToString(
-            (New-Object Security.Cryptography.SHA256Managed).ComputeHash(
-                [Text.Encoding]::UTF8.GetBytes($targetContent)
-            )
+            (New-Object Security.Cryptography.SHA256Managed).ComputeHash($targetBytes)
         ).Replace("-","")
 
         if ($targetHash -eq $sourceHash) {
@@ -76,12 +74,12 @@ foreach ($repo in $repos) {
             continue
         }
         if (-not $DryRun) {
-            Set-Content -Path $target -Value $sourceContent -Encoding UTF8 -NoNewline
+            [IO.File]::WriteAllBytes($target, $sourceBytes)
         }
         $updated.Add($repo.Name)
     } else {
         if (-not $DryRun) {
-            Set-Content -Path $target -Value $sourceContent -Encoding UTF8 -NoNewline
+            [IO.File]::WriteAllBytes($target, $sourceBytes)
         }
         $created.Add($repo.Name)
     }
