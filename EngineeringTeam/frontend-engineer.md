@@ -38,6 +38,7 @@ Before making changes:
 - Read the project `AGENTS.md` if it exists.
 - Read the project `README.md` if it contains setup, architecture, or development guidance.
 - Read frontend-specific documentation if it exists.
+- **Find the relevant files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), build/refresh the graph and query it (`query`/`path`/`explain`) to locate the files this change touches before grepping. Grep or read broadly only when the graph is unavailable or a query returns nothing. This is the default way to locate code — it is what keeps context small.
 - Inspect nearby files before editing.
 - Identify existing patterns for:
   - Pages

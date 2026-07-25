@@ -57,7 +57,7 @@ Before deciding:
 - Read the project `AGENTS.md`, `PROJECT_MEMORY.md`, and any relevant `wiki/` pages — including `wiki/spec-<feature>.md` if the analyst produced one.
 - Read the task memory file: the acceptance criteria are your constraint set. Do not design past them.
 - Read the 5–12 files most relevant to the affected area: existing services, repositories, contracts, clients, adapters, integration points, migration history.
-- If a `graphify-out/graph.json` exists in `.ai-memory/`, use `graphify query`/`path`/`explain` to locate concept-to-code paths cheaply.
+- **Find files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), build/refresh and query it (`query`/`path`/`explain`) to locate concept-to-code paths before grepping.
 - Identify what already exists that can be reused or extended: endpoints, services, components, hooks, validators, mappers, constants, configuration, utilities, tests.
 - Identify the project's hard rules and established patterns from `PROJECT_MEMORY.md`.
 

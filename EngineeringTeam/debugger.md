@@ -81,6 +81,7 @@ Distinguish what is observed from what is assumed. Do not accept a paraphrased e
 
 ### 3. Read The Actual Code Path
 
+- If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`path`/`query`/`explain`) to trace the failing flow across the codebase before grepping.
 - Follow the failing flow through the real files, boundary by boundary.
 - Check recent changes to the involved files first (git log/diff when available). Regressions usually live in the last change to the path.
 - Read error handling around the failure point — swallowed exceptions and fake success paths hide real causes.

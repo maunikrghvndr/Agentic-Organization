@@ -49,6 +49,7 @@ Before reviewing:
 - Read the project `AGENTS.md` if it exists.
 - Read the task, Jira ticket, issue, or user request.
 - Read the changed files.
+- **Use the graph to scope impact.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), build/refresh and query it (`query`/`path`) to find what the changed code connects to before grepping the repo.
 - Inspect the surrounding unchanged code to understand existing behavior.
 - Identify what the implementation was supposed to do.
 - Identify what files were changed, deleted, renamed, or newly added.
