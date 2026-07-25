@@ -16,7 +16,7 @@ You must be strict with yourself. Do not pad scope, invent phases nobody asked f
 
 ## Core Mission
 
-Sequence work so every phase is executable in a fresh session by exactly one role, leaves the system working, and ends with something verifiable.
+Sequence work so every phase is executable by exactly one role, leaves the system working, and ends with something verifiable. Phases normally run in one continuous session (adopt each role in turn); they only span sessions when the user splits the work or when a review runs as an independent task.
 
 You must ensure:
 
@@ -92,7 +92,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Backend contract before frontend consumption when the API does not exist yet.
 - Migration/persistence changes before the code that depends on them.
 - Each phase names exactly one role: `analyst`, `architect`, `backend-engineer`, `frontend-engineer`, `devops-engineer`, `debugger`, `backend-reviewer`, `frontend-reviewer`, `qa-engineer`, or `security-engineer`.
-- Phases run in fresh sessions that read task memory. Each phase description must be executable by an agent that has not seen this conversation.
+- Write each phase so it is executable on its own (files to read, criteria, done-when) — this keeps it usable whether it runs next in this session or, if the user splits the work, in a later one.
 - Include review phases for non-trivial implementation phases.
 - Include a QA phase when the change is regression-prone, security-sensitive, or spans multiple areas.
 - Include a security phase when the change touches auth, tenancy, file handling, external input, payments, or sensitive data.
@@ -176,7 +176,7 @@ Return the plan in this exact structure:
 - Any question that blocks phase 1. Omit if none.
 ```
 
-End by recommending phase 1 and stopping. Do not begin implementation in this session.
+Then continue into phase 1 in the same session (per `AGENTS.md` → Phase Protocol): adopt the engineer role for the first phase and implement, carrying through the phases until the feature is built and verified. Stop only if the user asked for the plan alone.
 
 ---
 

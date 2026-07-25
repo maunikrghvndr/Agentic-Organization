@@ -46,7 +46,7 @@ Ask permission before writing the path line or cloning. Once the path is correct
 Infer one primary role per phase. The user does not need to name it.
 
 - Implementation task clearly in one area → that engineer role.
-- "Review this ..." → the matching reviewer role. Never review code with the same session/role that wrote it.
+- "Review this ..." → the matching reviewer role. Prefer a fresh session for independence; if reviewing in the same session that wrote the code, re-read it from scratch and review adversarially (see Phase Protocol).
 - "Why is this broken / failing / crashing?" → `debugger`.
 - Pipelines, Docker, IaC, deploy, build tooling → `devops-engineer`.
 - Test plan, coverage, release readiness → `qa-engineer`.
@@ -61,13 +61,12 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 
 ---
 
-## Phase Protocol
-
-- **One role per session.** Complete the phase, update task memory, recommend the next phase, and stop.
-- **Never load a second role file in the same session.** Review, QA, and security phases run in a fresh session so the reviewer is not reviewing its own reasoning.
-- **Rework loop:** reviewer/security/QA findings route back to the original engineer role as a new phase. Blocking issues must be fixed and re-reviewed. The loop ends when the reviewer returns no blocking issues.
-- **Cross-stack features:** `analyst` (grill + spec) → `architect` (design, when needed) → `planner` (sequence + gate) → `backend-engineer` → `frontend-engineer` → reviewer(s) → `qa-engineer` as needed. Skip roles that add nothing (e.g., a straightforward multi-role change may go analyst → planner → engineers, no architect). Each phase is a fresh session that reads task memory first.
-- **Handoff contract:** at the end of a phase, the task file's Handoff section lists — next role; the exact files (with `path:line` anchors where useful) and relevant memory `wiki/` pages the next session must read; what is done and verified; what remains; settled decisions that must not be relitigated. The next session trusts this list: it reads those files first and does not re-explore the repo unless the list proves insufficient. Re-discovery of already-mapped context is wasted tokens.
+- **Work the phases through to completion in one session — do not stop and tell the user to start a new session.** Adopt the current role, do its work under its role file's discipline, update task memory, then adopt the next role and continue: `analyst` → `architect` (if needed) → `planner` (if multi-phase) → the engineer role(s) → **implement**. Switch roles by loading the next role file's guidance when you reach that phase; you need not hold all role files at once, but switching within a session is expected and correct.
+- **Deliver the actual change.** Requirements, design, and planning are not the deliverable unless the user asked only for a spec/design/plan. If the user asked for the feature, carry the same session through to a working, verified implementation. Producing a spec and then stopping is a failure to do the task.
+- **Review independence (the one real reason to prefer a fresh session).** A reviewer, QA, or security phase must not rubber-stamp code the same session just wrote. **Strongly prefer** running the review as a fresh session/task so it is genuinely independent. If you do review in the same session, you MUST re-read the changed code from scratch and review it adversarially — as if a stranger wrote it — and never soften a finding because you wrote the code. Fix blocking findings and re-review (the rework loop) until none remain.
+- **Rework loop:** reviewer/security/QA findings route back to the engineer role. Blocking issues must be fixed and re-reviewed until the reviewer returns none.
+- **Cross-stack features:** `analyst` (grill + spec) → `architect` (design, when needed) → `planner` (sequence + gate) → `backend-engineer` → `frontend-engineer` → reviewer(s) → `qa-engineer` as needed. Skip roles that add nothing (a straightforward change may go analyst → engineer → review, no architect or planner).
+- **Handoff contract (for work that DOES span sessions).** When a phase genuinely hands off to a later session — because the user chose to split it, or the review runs as a separate task — the task file's Handoff section lists: next role; the exact files (`path:line`) and `wiki/` pages to read first; what is done and verified; what remains; settled decisions not to relitigate. The next session trusts this list and does not re-explore. Within a single session, this context is already in hand — just continue.
 
 ---
 

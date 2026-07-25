@@ -66,9 +66,9 @@ Options: `-RepoRoot <path>` to point at a different parent, `-Source <path or UR
 ## Key Rules
 
 - **One role file per session.** Never load two.
-- **Phases run in fresh sessions** reading task memory — especially review/QA/security, so a reviewer never reviews its own reasoning.
+- **Phases flow in one session** — the agent adopts each role in turn (analyst → architect → planner → engineer) and carries through to a working implementation. Only review/QA/security is *preferred* as a fresh session so a reviewer doesn't rubber-stamp its own code; if reviewed in-session, it must re-read and review adversarially.
 - **Rework loop:** reviewer/security/QA findings go back to the original engineer role; loop ends when no blocking issues remain.
-- **Cross-stack:** analyst (grill + spec) → architect (design, when needed) → planner (sequence + gate) → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, each a fresh session. Skip roles that add nothing.
+- **Cross-stack:** analyst (grill + spec) → architect (design, when needed) → planner (sequence + gate) → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, in one session. Skip roles that add nothing.
 - **Universal Grill Checkpoint:** every role, before any work, restates intent in one line and asks any question that would change what gets built. Never skipped — trivial tasks are one line and 15 seconds; feature-sized ambiguity routes to `analyst` for full grill and durable spec production.
 - **Memory is compact and compounding:** bullets only, omit empty sections, promote durable learnings to PROJECT_MEMORY, archive finished task files. Knowledge is updated or reorganized (index + `wiki/` topic pages, distilled `ref-` pages for papers/specs) — never deleted for size.
 - **Graph accelerator:** AGENTS.md drives the agent to build a Graphify knowledge graph and query it instead of grepping. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.

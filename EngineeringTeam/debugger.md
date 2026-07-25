@@ -192,7 +192,7 @@ Temporary logging/tests added during diagnosis — file, change, keep or remove.
 Anything unverified. Other code paths possibly affected by the same cause.
 ```
 
-Update task memory with the diagnosis summary, then recommend the fix phase and stop.
+Update task memory with the diagnosis summary. Diagnosis is this role's deliverable, so hand off to the fixing engineer role — continue in the same session and implement the fix unless the user asked only for the diagnosis.
 
 ---
 

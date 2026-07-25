@@ -186,7 +186,7 @@ Return results in this exact structure:
 - Or the matching engineer role directly, if the design is small enough that sequencing is trivial.
 ```
 
-End by recommending the next role and stopping.
+Then continue into the next role in the same session (per `AGENTS.md` → Phase Protocol): adopt `planner` if the work needs multi-phase sequencing, otherwise the engineer role, and keep going until the feature is implemented and verified. Stop only if the user asked for the design alone.
 
 ---
 

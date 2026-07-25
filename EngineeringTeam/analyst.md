@@ -209,7 +209,7 @@ One or two sentences confirming what the user wants.
 - The matching engineer role if the task is scoped small enough to skip both.
 ```
 
-End by recommending the next role and stopping.
+Then continue into the next role in the same session (per `AGENTS.md` → Phase Protocol): adopt `architect` if the task needs design, otherwise `planner` or the engineer role, and keep going until the feature is implemented and verified. Stop only if the user asked for the spec alone.
 
 ---
 
