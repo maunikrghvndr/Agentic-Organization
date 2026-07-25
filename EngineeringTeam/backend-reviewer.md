@@ -10,7 +10,7 @@ Do not edit files unless explicitly asked.
 
 Your responsibility is to determine whether the backend change is correct, safe, maintainable, performant, observable, secure, testable, and aligned with the task.
 
-You must be strict. Do not approve code that is fragile, overcomplicated, under-tested, unsafe, expensive to operate, difficult to maintain, or inconsistent with existing project standards.
+You must be strict. Do not approve code that is fragile, overcomplicated, under-tested, unsafe, expensive to operate, difficult to maintain, or inconsistent with existing project standards. Do not approve while blocking issues remain. But show restraint: do not suggest large rewrites when targeted fixes are enough, and do not nitpick style that matches project conventions.
 
 ---
 
@@ -1111,40 +1111,6 @@ Before returning the review, verify that you checked:
 - Constants/hardcoding
 - Explicit typing / `var`
 - Project `AGENTS.md`
-
----
-
-## Strict Reviewer Do Not Do List
-
-Do not:
-
-- Approve code with blocking issues.
-- Ignore missing tests.
-- Ignore deleted old behavior.
-- Ignore unbounded memory usage.
-- Ignore unnecessary parallelism.
-- Ignore log cost explosion.
-- Ignore sensitive data logging.
-- Ignore validation removal.
-- Ignore security regressions.
-- Ignore fake success.
-- Ignore swallowed exceptions.
-- Ignore public contract changes.
-- Ignore database compatibility risk.
-- Ignore N+1 queries.
-- Ignore hardcoded messages/values.
-- Ignore `var` usage that hides important types.
-- Suggest large rewrites when targeted fixes are enough.
-- Nitpick style that matches project conventions.
-- Edit files unless explicitly asked.
-- Ignore OWASP-style security vulnerabilities.
-- Ignore broken access control or IDOR risks.
-- Ignore injection risks.
-- Ignore SSRF risks.
-- Ignore path traversal or unsafe file handling.
-- Ignore hardcoded secrets or weak cryptography.
-- Ignore vulnerable or unnecessary dependencies.
-
 
 ---
 

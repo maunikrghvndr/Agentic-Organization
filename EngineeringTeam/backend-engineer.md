@@ -109,6 +109,8 @@ Every backend change must satisfy these principles:
 - Code must not create a second competing architecture.
 - Code must not optimize locally while damaging the system globally.
 - Code must produce enough operational signal to diagnose failures without local reproduction.
+- Code must be easy to review and easy to roll back.
+- No placeholder code, dead code, or copied code that does not match the project, in main projects.
 
 Prefer boring, explicit, reliable code over clever code.
 
@@ -322,7 +324,6 @@ When working in C#/.NET projects:
 - Do not use `var` for class instances, service instances, DTOs, entities, collections, query results, repository results, API results, or any value where the type is not immediately obvious.
 - Use explicit concrete or interface types when it improves readability, maintainability, or reviewability.
 - `var` is allowed only for simple local primitive calculations or cases where the type is obvious and adding an explicit type would create unnecessary noise.
-- Do not use `var` to hide important domain, DTO, entity, collection, task, or result types.
 - Use `async`/`await` correctly.
 - Do not block async code with `.Result`, `.Wait()`, or `.GetAwaiter().GetResult()`.
 - Pass `CancellationToken` through async call chains when available.
@@ -1474,6 +1475,7 @@ After coding:
 - Check logs and error handling for important flows.
 - Check telemetry/tracing impact if changed.
 - Check that sensitive data is not logged.
+- Confirm the change is minimal, sits in the right layer, reuses existing patterns, avoids parallel architecture, and is easy to review and roll back.
 
 ### 5. Report
 
@@ -1490,96 +1492,3 @@ Final response must include:
 - Documentation/tracker updates
 - Risks and assumptions
 - Anything intentionally not changed
-
----
-
-## Backend Review Self-Checklist
-
-Before considering the task complete, verify:
-
-- Is the change minimal?
-- Is the code readable?
-- Is the responsibility in the right layer?
-- Did I reuse existing patterns?
-- Did I avoid parallel architecture?
-- Did I preserve public contracts?
-- Did I preserve database contracts?
-- Did I preserve validation?
-- Did I preserve logging?
-- Did I preserve telemetry?
-- Did I preserve retries and idempotency?
-- Did I preserve security checks?
-- Did I avoid hardcoded values?
-- Did I avoid placeholder code?
-- Did I avoid unbounded concurrency/retries/queues?
-- Did I handle dependency failures?
-- Did I handle invalid input?
-- Did I add or update tests?
-- Did I avoid unnecessary abstraction?
-- Did I document behavior/config/logging changes?
-- Did I update the tracker if required?
-- Are log levels appropriate?
-- Are logs structured?
-- Are correlation IDs included where available?
-- Are secrets and sensitive payloads excluded from logs?
-- Is the change easy to review?
-- Is the change easy to roll back?
-
----
-
-## Strict Do Not Do List
-
-Do not:
-
-- Rewrite large sections unnecessarily.
-- Create parallel architecture.
-- Create duplicate service layers.
-- Create duplicate repository patterns.
-- Create duplicate validation systems.
-- Create duplicate configuration systems.
-- Create duplicate logging systems.
-- Create duplicate telemetry systems.
-- Create speculative abstractions.
-- Create service-class explosion.
-- Remove validation.
-- Weaken validation.
-- Bypass validation.
-- Remove logging.
-- Remove telemetry.
-- Remove tracing.
-- Remove correlation IDs.
-- Remove retries.
-- Remove idempotency.
-- Remove security checks.
-- Swallow exceptions.
-- Return fake success.
-- Hide partial failure.
-- Claim success when validation or persistence failed.
-- Hardcode values that belong in constants or configuration.
-- Add placeholder code in main projects.
-- Change public contracts casually.
-- Change database schema casually.
-- Change persisted data shape casually.
-- Rename routes, fields, config keys, or public methods casually.
-- Add unused configuration.
-- Add unused dependencies.
-- Leave stale configuration.
-- Leave dead code.
-- Leave copied code that does not match the project.
-- Make performance claims without measurement.
-- Log secrets.
-- Log raw tokens.
-- Log passwords.
-- Log connection strings.
-- Log sensitive payloads without explicit safe approval.
-- Add noisy logs in hot paths.
-- Log and rethrow the same exception at every layer.
-- Modify frontend or infrastructure files unless explicitly required.
-- Hardcode log messages directly inside implementation code.
-- Hardcode exception messages directly inside implementation code.
-- Hardcode validation messages directly inside implementation code.
-- Hardcode business constants directly inside implementation code.
-- Create new constants when an existing constant already represents the same meaning.
-- Use `var` for class instances, DTOs, entities, collections, query results, API results, or domain objects when the explicit type improves readability.
-- Duplicate existing methods instead of reusing or extending them.
-- Ignore project `AGENTS.md`.

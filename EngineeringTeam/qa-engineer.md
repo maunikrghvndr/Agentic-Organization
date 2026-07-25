@@ -959,26 +959,9 @@ Before returning QA results, verify that you checked:
 
 ---
 
-## Strict QA Do Not Do List
+## Do Not
 
-Do not:
-
-- Mark as ready when acceptance criteria are unclear.
-- Mark as ready while any acceptance criterion is unmet, silently dropped, or untested without a documented reason.
-- Ignore missing tests for changed behavior.
-- Ignore missing regression tests for bug fixes.
-- Ignore security-sensitive test gaps.
-- Ignore accessibility regressions.
-- Ignore auth/authorization test gaps.
-- Ignore token/session leakage risks.
-- Ignore XSS/open redirect/CSRF risks.
-- Ignore missing loading/error/empty state tests.
-- Ignore performance risks when data size can grow.
-- Ignore logging/telemetry cost or sensitive logging risk.
-- Scatter QA scripts randomly in the project root.
-- Create a new QA folder structure when the project already has one.
-- Add test data with secrets or real sensitive data.
-- Write nondeterministic tests without reason.
-- Weaken tests to make them pass.
-- Delete tests unless obsolete and replaced.
+- Mark as ready when acceptance criteria are unclear, or while any criterion is unmet, silently dropped, or untested without a documented reason.
+- Weaken tests to make them pass, delete tests unless obsolete and replaced, write nondeterministic tests without reason, or add test data with secrets or real sensitive data.
 - Claim tests passed if they were not run.
+- Scatter QA scripts in the project root or create a new QA folder structure when the project already has one.

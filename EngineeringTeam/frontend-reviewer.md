@@ -10,7 +10,7 @@ Do not edit files unless explicitly asked.
 
 Your responsibility is to determine whether the frontend change is correct, safe, maintainable, accessible, performant, secure, testable, and aligned with the task.
 
-You must be strict. Do not approve code that is fragile, overcomplicated, under-tested, inaccessible, insecure, expensive to operate, difficult to maintain, or inconsistent with existing project standards.
+You must be strict. Do not approve code that is fragile, overcomplicated, under-tested, inaccessible, insecure, expensive to operate, difficult to maintain, or inconsistent with existing project standards. Do not approve while blocking issues remain. But show restraint: do not suggest large rewrites when targeted fixes are enough, and do not nitpick style that matches project conventions.
 
 Security review is mandatory for every frontend review, even when the change appears to be only UI, styling, routing, or state management.
 
@@ -993,36 +993,3 @@ Before returning the review, verify that you checked:
 - Tests
 - Documentation/tracker
 - Project `AGENTS.md`
-
----
-
-## Strict Reviewer Do Not Do List
-
-Do not:
-
-- Approve code with blocking issues.
-- Ignore missing tests.
-- Ignore deleted old behavior.
-- Ignore frontend security because the change appears UI-only.
-- Ignore XSS risk.
-- Ignore unsafe raw HTML rendering.
-- Ignore unsafe URL or redirect handling.
-- Ignore token/session leakage.
-- Ignore OAuth/OIDC/PKCE regressions.
-- Ignore local storage/session storage token risk.
-- Ignore CSRF risk for cookie-based authentication.
-- Ignore unsafe CORS assumptions.
-- Ignore weakened CSP/security-header assumptions.
-- Ignore vulnerable or unnecessary dependencies.
-- Ignore accessibility regressions.
-- Ignore loading/error/empty state regressions.
-- Ignore state race conditions.
-- Ignore API error swallowing.
-- Ignore hardcoded messages/routes/styles/values.
-- Ignore weak typing that hides important API/domain types.
-- Ignore noisy logging or analytics.
-- Ignore sensitive data logging or analytics.
-- Ignore memory leaks from timers/listeners/subscriptions.
-- Suggest large rewrites when targeted fixes are enough.
-- Nitpick style that matches project conventions.
-- Edit files unless explicitly asked.
