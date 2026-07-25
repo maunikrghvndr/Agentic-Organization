@@ -13,6 +13,7 @@ Agentic-Organization/
   AGENTS.md                master copy of the drop-in file (router + universal rules)
 
   EngineeringTeam/
+    researcher.md          discover the best current approach/tech/paper, challenge the status quo, cite evidence
     analyst.md             grill user intent, produce EARS acceptance criteria, promote durable spec
     architect.md           system design decisions (data model, APIs, boundaries, tech choice)
     planner.md             sequence a settled feature into phases + pre-implementation gate
