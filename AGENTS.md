@@ -35,8 +35,19 @@ Ask permission before writing the path line or cloning. Once the path is correct
 | `frontend-engineer` | `frontend-engineer.md` | UI, components, pages, forms, routing, state, hooks, API clients, styling, accessibility, frontend tests |
 | `devops-engineer` | `devops-engineer.md` | CI/CD pipelines, Dockerfiles, IaC, deployments, environments, build tooling |
 | `debugger` | `debugger.md` | Reproduce bugs, diagnose failures, root-cause analysis (diagnosis only, no fixes) |
+| `data-engineer` | `data-engineer.md` | Pipelines, ingestion, ETL/ELT, transformation, data quality, orchestration, warehousing |
+| `data-scientist` | `data-scientist.md` | EDA, statistics, feature engineering, experimentation, model selection, offline evaluation |
+| `ml-engineer` | `ml-engineer.md` | Productionize models: training pipelines, serving/inference, feature parity, performance |
+| `mlops-engineer` | `mlops-engineer.md` | ML platform: tracking, registry, model CI/CD, retraining, drift/monitoring, rollout |
+| `ai-engineer` | `ai-engineer.md` | LLM app logic: integration, agents, tool calling, structured output, guardrails, eval harness |
+| `prompt-engineer` | `prompt-engineer.md` | Prompt design, templates, few-shot, prompt evaluation and optimization, versioning |
+| `rag-engineer` | `rag-engineer.md` | Retrieval: chunking, embeddings, vector stores (pgvector), hybrid search, reranking, retrieval eval |
+| `nlp-engineer` | `nlp-engineer.md` | Text processing, NER, entity linking (UMLS), classification, clinical NLP, OCR post-processing |
 | `backend-reviewer` | `backend-reviewer.md` | Review backend diffs/PRs/architecture |
 | `frontend-reviewer` | `frontend-reviewer.md` | Review frontend diffs/PRs/UI changes |
+| `data-reviewer` | `data-reviewer.md` | Review data-engineer/data-scientist work: pipeline correctness, data quality, analysis/model integrity |
+| `ml-reviewer` | `ml-reviewer.md` | Review ml-engineer/mlops work: reproducibility, train/serve parity, safe inference, lifecycle |
+| `ai-reviewer` | `ai-reviewer.md` | Review ai/prompt/rag/nlp work: eval rigor, LLM safety, prompt injection, retrieval isolation |
 | `qa-engineer` | `qa-engineer.md` | Test plans, coverage analysis, QA scripts, release validation |
 | `security-engineer` | `security-engineer.md` | Security audits, vulnerability/dependency/secret reviews |
 
@@ -52,6 +63,16 @@ Infer one primary role per phase. The user does not need to name it.
 - Pipelines, Docker, IaC, deploy, build tooling → `devops-engineer`.
 - Test plan, coverage, release readiness → `qa-engineer`.
 - Audit, vulnerabilities, OWASP, secrets, dependency scan → `security-engineer`.
+- **Data / ML / AI work** (route to the most specific role; each has its reviewer):
+  - Data pipelines, ingestion, ETL/ELT, transformation, data quality, warehousing → `data-engineer`.
+  - Analysis, statistics, feature engineering, model selection, offline evaluation → `data-scientist`.
+  - Productionizing models: training pipelines, serving/inference, feature parity → `ml-engineer`.
+  - ML platform: experiment tracking, registry, model CI/CD, retraining, drift/monitoring → `mlops-engineer`.
+  - LLM app logic: integration, agents, tool calling, structured output, guardrails → `ai-engineer`.
+  - Prompt design, templates, prompt evaluation/optimization → `prompt-engineer`.
+  - Retrieval, embeddings, vector search, chunking, reranking → `rag-engineer`.
+  - NER, entity linking (UMLS), classification, clinical NLP, OCR post-processing → `nlp-engineer`.
+  - Reviewing the above → `data-reviewer` (data-engineer/data-scientist), `ml-reviewer` (ml-engineer/mlops), `ai-reviewer` (ai/prompt/rag/nlp).
 - New feature, vague product idea, missing acceptance criteria, "grill me", or "let's spec this out" → `analyst` first.
 - "Research / evaluate / compare X", "what's the best or most current way to do X", "is there a newer/better approach, tool, or paper", or before adopting a new dependency → `researcher`.
 - Intent settled, needs system design (new services, data model change, API shape, service boundaries, tech choice, or spans multiple domains) → `architect`. If the design hinges on an external choice not yet investigated, run `researcher` first.

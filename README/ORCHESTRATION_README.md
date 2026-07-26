@@ -21,8 +21,19 @@ Agentic-Organization/
     frontend-engineer.md   implement frontend changes
     devops-engineer.md     CI/CD, Docker, IaC, deployments
     debugger.md            reproduce + root-cause (diagnosis only)
+    data-engineer.md       pipelines, ETL/ELT, data quality, warehousing
+    data-scientist.md      EDA, stats, feature engineering, model selection, offline eval
+    ml-engineer.md         productionize models: training pipelines, serving, feature parity
+    mlops-engineer.md      ML platform: tracking, registry, model CI/CD, drift/monitoring
+    ai-engineer.md         LLM app logic: integration, agents, tool calling, guardrails, eval
+    prompt-engineer.md     prompt design, few-shot, prompt evaluation/optimization
+    rag-engineer.md        retrieval: chunking, embeddings, vector search, reranking, eval
+    nlp-engineer.md        NER, entity linking (UMLS), classification, clinical NLP, OCR
     backend-reviewer.md    review backend diffs
     frontend-reviewer.md   review frontend diffs
+    data-reviewer.md       review data-engineer/data-scientist (quality, analysis/model integrity)
+    ml-reviewer.md         review ml-engineer/mlops (reproducibility, parity, lifecycle)
+    ai-reviewer.md         review ai/prompt/rag/nlp (eval rigor, LLM safety, injection, isolation)
     qa-engineer.md         test plans, coverage, QA scripts, release readiness
     security-engineer.md   security audits (audit only; fixes route to engineers)
 
