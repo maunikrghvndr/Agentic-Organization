@@ -38,6 +38,7 @@ Agentic-Organization/
     security-engineer.md   security audits (audit only; fixes route to engineers)
 
   MemoryTemplates/
+    CONSTITUTION.template.md
     PROJECT_MEMORY.template.md
     TASK_MEMORY.template.md
     HANDOFF.template.md
@@ -74,6 +75,14 @@ Options: `-RepoRoot <path>` to point at a different parent, `-Source <path or UR
 1. Copy `AGENTS.md` into the target repo.
 2. Ask for a task. The agent infers one role, loads only that role file, and works under its rules plus the universal rules in `AGENTS.md`.
 3. Per-repo memory lives in `.ai-memory/` (created automatically): `PROJECT_MEMORY.md` for stable facts, `TASKS/` for per-task files, `TASKS/_archive/` for completed ones, `wiki/` topic pages once memory outgrows one file, and `sources/` for read-only papers/specs distilled into `ref-` pages.
+
+## Spec-Driven Development (GitHub Spec Kit aligned)
+
+The library is spec-first for features and interoperates with GitHub Spec Kit rather than duplicating it:
+
+- **Constitution** — the project's highest-authority principles. `.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`. Every role complies; the planner gate and every reviewer verify compliance.
+- **If a repo uses Spec Kit** (`.specify/` present), the roles read/write its artifacts — `specs/<feature>/spec.md` (`analyst`), `plan.md` (`architect`), `tasks.md` (`planner`) — never a parallel `.ai-memory/wiki/spec-*`. No second source of truth.
+- **Flow:** constitution → `analyst` (specify + clarify, EARS) → `architect` (plan) → `planner` (tasks + analyze gate) → engineers (implement) → reviewers/qa — mapping 1:1 onto Spec Kit's `constitution → specify → clarify → plan → tasks → analyze → implement`, driven by the role system.
 
 ## Key Rules
 

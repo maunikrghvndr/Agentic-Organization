@@ -129,7 +129,9 @@ Keep one testable behavior per criterion. Give each an id (`AC-1`, `AC-2`, ...) 
 
 ---
 
-## Durable Feature Spec (`wiki/spec-<feature>.md`)
+## Durable Feature Spec
+
+**Spec Kit repos:** if `.specify/` exists, this feature's spec is `specs/<feature>/spec.md` (Spec Kit's `/speckit.specify` artifact) — read and update *that* file, and put your EARS acceptance criteria in it. Do not create a parallel `wiki/spec-*`. Comply with `.specify/memory/constitution.md`. Everything below applies to that file. **Otherwise** the spec is `.ai-memory/wiki/spec-<feature>.md` as described.
 
 Acceptance criteria are not task chatter — they are the behavioral contract of the feature. When the task closes, the criteria must survive it.
 

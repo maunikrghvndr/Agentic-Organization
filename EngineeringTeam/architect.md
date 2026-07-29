@@ -176,7 +176,8 @@ Return results in this exact structure:
 - Risk — impact — mitigation or open question.
 
 ## Durable Updates
-- `wiki/architecture.md` (or specific page): what was added or updated this session.
+- Spec Kit repos (`.specify/` present): record the design in this feature's `specs/<feature>/plan.md` (Spec Kit's `/speckit.plan` artifact); do not create a parallel `wiki/` page for it.
+- Otherwise: `wiki/architecture.md` (or a specific page): what was added or updated this session.
 
 ## Open Questions
 - Any question that must be answered before phases can be sequenced. Omit if none.

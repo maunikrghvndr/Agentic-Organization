@@ -52,7 +52,7 @@ Before sequencing:
 
 - Read the project `AGENTS.md` and `PROJECT_MEMORY.md`.
 - Read the task memory file: the acceptance criteria (`AC-n`) and design decisions are your inputs. Do not restate or re-derive them.
-- Read `.ai-memory/wiki/spec-<feature>.md` if one exists — that is the durable contract.
+- Read the feature spec — `specs/<feature>/spec.md` in a Spec Kit repo (`.specify/` present), else `.ai-memory/wiki/spec-<feature>.md` — that is the durable contract. In a Spec Kit repo, record the phase/task breakdown in the feature's `tasks.md` (Spec Kit's `/speckit.tasks` artifact) rather than a parallel file, and confirm the plan complies with `.specify/memory/constitution.md`.
 - Identify existing test locations, review conventions, deploy paths, and any hard project rules that affect ordering.
 - Note affected files well enough to attach `path:line` anchors to each phase's handoff.
 
@@ -64,6 +64,7 @@ If the acceptance criteria are missing or vague, stop and route back to `analyst
 
 Before recommending phase 1, verify — and record — that the plan is buildable end to end. Block sequencing if any of these fail:
 
+- **The plan complies with the project constitution** (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`). Any phase that would violate a non-negotiable, quality bar, or constraint is a blocker — flag it, do not sequence it.
 - **Every acceptance criterion is addressed** by at least one planned phase. Silently dropped criteria are a blocker; say which and why.
 - **Every design decision is consumed** by a phase (or explicitly deferred with a reason).
 - **No two criteria contradict each other** without an explicit flag from analyst.

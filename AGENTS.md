@@ -89,6 +89,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 - **Review independence (the one real reason to prefer a fresh session).** A reviewer, QA, or security phase must not rubber-stamp code the same session just wrote. **Strongly prefer** running the review as a fresh session/task so it is genuinely independent. If you do review in the same session, you MUST re-read the changed code from scratch and review it adversarially — as if a stranger wrote it — and never soften a finding because you wrote the code. Fix blocking findings and re-review (the rework loop) until none remain.
 - **Rework loop:** reviewer/security/QA findings route back to the engineer role. Blocking issues must be fixed and re-reviewed until the reviewer returns none.
 - **Cross-stack features:** (`researcher` when an external approach/tech/paper must be chosen first) → `analyst` (grill + spec) → `architect` (design, when needed) → `planner` (sequence + gate) → `backend-engineer` → `frontend-engineer` → reviewer(s) → `qa-engineer` as needed. Skip roles that add nothing (a straightforward change may go analyst → engineer → review, no researcher/architect/planner).
+- **Spec-driven flow (this is the default for features).** A feature-sized change is governed by the project constitution and proceeds spec-first: **constitution** (comply with it) → `analyst` = *specify + clarify* (the spec, EARS acceptance criteria) → `architect` = *plan* (technical design) → `planner` = *tasks + analyze* (phase breakdown + the pre-implementation gate) → engineers = *implement* → reviewers/`qa`. This maps 1:1 onto GitHub Spec Kit's `constitution → specify → clarify → plan → tasks → analyze → implement`. Trivial changes skip straight to the engineer with the Grill Checkpoint.
 - **Handoff contract (for work that DOES span sessions).** When a phase genuinely hands off to a later session — because the user chose to split it, or the review runs as a separate task — the task file's Handoff section lists: next role; the exact files (`path:line`) and `wiki/` pages to read first; what is done and verified; what remains; settled decisions not to relitigate. The next session trusts this list and does not re-explore. Within a single session, this context is already in hand — just continue.
 
 ---
@@ -96,6 +97,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 ## Universal Rules (all roles)
 
 - Read this file and the task memory first. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
+- **Read and obey the project constitution.** It is the highest-authority, project-specific rule set — `.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`. Comply with it in everything you produce; if a task would violate it, flag the conflict and stop rather than violating it. Every reviewer verifies constitution compliance as a blocking check. (The constitution overrides project convention but not these safety rules or a direct user instruction — surface the conflict when they clash.)
 - **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange:
   1. Restate the task in one line as you understand it.
   2. Name every load-bearing assumption explicitly.
@@ -147,6 +149,7 @@ Use `.ai-memory/` in this repository; create it if missing:
 
 ```text
 .ai-memory/
+  CONSTITUTION.md        project governing principles (ONLY when the repo has no Spec Kit constitution)
   PROJECT_MEMORY.md      stable facts; becomes an index of wiki/ pages as the project grows
   wiki/                  topic pages (created only when PROJECT_MEMORY outgrows one file)
   sources/               immutable reference sources: papers, specs, RFCs (or pointer files)
@@ -155,6 +158,9 @@ Use `.ai-memory/` in this repository; create it if missing:
 ```
 
 Rules:
+
+- **Project constitution.** The highest-authority project-specific rules (non-negotiables, quality/security bars, architecture principles, tech constraints). If the repo uses GitHub Spec Kit (`.specify/` exists), the constitution is `.specify/memory/constitution.md` — use it. Otherwise create `.ai-memory/CONSTITUTION.md` from the template only when the project actually has binding principles to record. Never maintain both. All roles read it and comply; reviewers verify compliance.
+- **Spec Kit interop — use it, do not duplicate it.** If the repo uses Spec Kit (`.specify/` present), its artifacts are the source of truth and you read/update *those*, never a parallel copy: the constitution at `.specify/memory/constitution.md`, and per-feature `specs/<feature>/spec.md` (the spec + EARS criteria — `analyst`), `plan.md` (design — `architect`), `tasks.md` (breakdown — `planner`). Do **not** create `.ai-memory/wiki/spec-*` alongside them — that is a second source of truth. If the environment exposes the `/speckit.*` commands, they produce these same artifacts. When the repo has no Spec Kit, use the library's own convention below (`wiki/spec-<feature>.md`).
 
 - Write compact bullets, not prose or transcripts. Omit empty template sections. Every line must earn its tokens.
 - First use in a repo: discover the exact build/test/lint/run commands (with flags) and record them at the top of `PROJECT_MEMORY.md`. Later sessions use and maintain these instead of rediscovering them.
