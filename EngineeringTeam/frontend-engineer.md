@@ -1180,6 +1180,7 @@ Create a minimal plan:
 
 - What files likely need changes?
 - What UI behavior is being added or fixed?
+- **Am I about to hand-roll a solved problem?** For any non-trivial functionality (date/number formatting, validation, state utilities, parsing, a UI primitive, etc.), do the build-vs-reuse check first (`AGENTS.md` → "Research before you build"): reuse the project's existing components/utilities, else prefer a mature, well-maintained library over custom code — reinventing is a defect. Record the decision.
 - What existing behavior must be preserved?
 - What tests are needed?
 - Are constants/configuration/localization affected?

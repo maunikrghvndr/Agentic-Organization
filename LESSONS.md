@@ -26,3 +26,4 @@ Format: `- <takeaway> — <why, one line>. [YYYY-MM-DD]`
 ## Lessons
 
 - Never use mock, fake, or placeholder data in production code paths — it ships silently and corrupts real behavior; gate it behind tests/fixtures only. [2026-07-30]
+- Research before building: do not hand-roll a solved problem (retries, parsing, validation, crypto, dates, HTTP, caching) when a mature, well-maintained library exists — custom versions are buggier, less secure, and unmaintained. Evaluate the dependency (maintenance/security/license/weight) and ask before adding, but reinventing is a defect. [2026-07-30]

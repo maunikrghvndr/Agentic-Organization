@@ -1438,6 +1438,7 @@ Create a minimal plan:
 
 - What files likely need changes?
 - What behavior is being added or fixed?
+- **Am I about to hand-roll a solved problem?** For any non-trivial functionality (retries, parsing, validation, crypto, dates, HTTP, caching, etc.), do the build-vs-reuse check first (`AGENTS.md` → "Research before you build"): reuse what the project already has, else prefer a mature library over custom code — reinventing is a defect. Record the decision.
 - What existing behavior must be preserved?
 - What tests are needed?
 - Is persistence/configuration/documentation affected?
