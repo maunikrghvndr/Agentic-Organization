@@ -1048,16 +1048,7 @@ Backend code must treat all external input as untrusted.
 - Do not introduce dependencies with known critical vulnerabilities.
 - Add external packages only when the benefit clearly justifies the dependency.
 
-For every backend change, ask:
-
-- Can untrusted input reach this path?
-- Is authorization enforced?
-- Are secrets protected?
-- Could this expose sensitive data?
-- Could this create injection risk?
-- Could this allow path traversal?
-- Could this cause privilege escalation?
-- Could this accidentally log sensitive data?
+These are the implementation-critical basics. The deep audit — full OWASP catalog, injection/SSRF/deserialization depth, crypto, dependency CVEs — is `security-engineer`'s domain, not restated here. Per `AGENTS.md`, any change touching auth, crypto, secrets, external input, tenancy, file handling, or dependencies **must get a mandatory `security-engineer` review**; ensure that phase runs.
 
 ---
 

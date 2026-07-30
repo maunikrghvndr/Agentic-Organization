@@ -1115,150 +1115,17 @@ Before returning the review, verify that you checked:
 
 ---
 
-## OWASP And Security Vulnerability Review
+## Security (flag and route — depth is `security-engineer`'s)
 
-Review the backend change against OWASP-aligned security risks.
+You do not run the full OWASP audit here; that is `security-engineer`, the owner. Your job: catch security-sensitive changes and make sure they got the **mandatory `security-engineer` review** (per `AGENTS.md`). A security-sensitive change that shipped without that pass is a blocking finding.
 
-Check for:
+Flag and route to `security-engineer` any change involving:
 
-- Broken access control
-- Missing or weakened authorization checks
-- Object-level authorization bugs
-- Function-level authorization bugs
-- Tenant isolation failures
-- IDOR / insecure direct object reference
-- Injection risks
-- SQL injection
-- NoSQL injection
-- Command injection
-- LDAP injection
-- XPath injection
-- Template injection
-- Unsafe deserialization
-- SSRF from user-controlled URLs
-- Path traversal
-- File upload abuse
-- Insecure file download paths
-- Sensitive data exposure
-- Secrets in code
-- Secrets in logs
-- Weak cryptography
-- Hardcoded keys
-- Insecure random values
-- Missing rate limiting on abuse-prone endpoints
-- Missing request size limits
-- Missing pagination or bounded queries
-- Mass assignment / over-posting
-- Insecure CORS assumptions
-- Insecure error responses
-- Security misconfiguration
-- Vulnerable or unnecessary dependencies
-- Missing audit logging for security-sensitive actions
+- Access control / authorization / tenancy / **IDOR** (a user reaching another user's or tenant's data by changing an id).
+- **Injection** (SQL/NoSQL/command/LDAP/XPath/template) or unsafe dynamic queries; sort/filter/search params that are not allowlisted.
+- **SSRF** from user-controlled URLs; path traversal; unsafe file upload/download.
+- **Secrets** in code/logs/responses; weak or custom crypto; insecure randomness; unsafe deserialization.
+- Mass assignment/over-posting; insecure CORS or error responses; missing rate limits/size limits on abuse-prone endpoints.
+- New or risky **dependencies**; missing audit logging for security-sensitive actions.
 
-Block if the code introduces or worsens any credible security vulnerability.
-
-### Access Control Review
-
-Check:
-
-- Is authentication preserved and enforced where expected?
-- Are least-privilege assumptions preserved?
-- Is authorization enforced server-side?
-- Is the authorization check applied before data access or mutation?
-- Can a user access another user’s/customer’s/tenant’s data by changing an ID?
-- Are tenant/client/user filters applied consistently?
-- Are admin-only operations protected?
-- Are role/permission checks explicit?
-- Are route guards backed by backend authorization?
-- Are object ownership checks preserved?
-- Are function-level permission checks preserved?
-
-Block if there is any IDOR, tenant isolation, or broken access control risk.
-
-### Injection Review
-
-Check:
-
-- Are SQL queries parameterized?
-- Are NoSQL queries protected from operator injection?
-- Are shell commands avoided or safely parameterized?
-- Are file paths normalized and constrained?
-- Are user-controlled values prevented from becoming code, expressions, templates, filters, or commands?
-- Are dynamic queries built safely?
-- Are search/filter/sort parameters allowlisted?
-
-Block if untrusted input can influence executable commands, queries, expressions, or unsafe paths.
-
-### SSRF Review
-
-If the code accepts or uses URLs, check:
-
-- Are user-controlled URLs validated?
-- Are allowed schemes restricted to safe values such as `https` where required?
-- Are internal IP ranges blocked when appropriate?
-- Are localhost, link-local, metadata service, and private network targets blocked when appropriate?
-- Are redirects handled safely?
-- Are DNS rebinding risks considered for sensitive flows?
-- Are outbound calls made only to allowlisted hosts when possible?
-
-Block if user input can cause the backend to call arbitrary internal or sensitive network locations.
-
-### File Handling Review
-
-If the code handles files, check:
-
-- Are file names sanitized?
-- Is path traversal prevented?
-- Are file extensions and content types validated?
-- Are file size limits enforced?
-- Are archive extraction risks handled?
-- Are temporary files cleaned up?
-- Are uploaded files scanned or isolated when required?
-- Are downloads authorized?
-- Are files stored outside executable paths?
-
-Block if file handling can expose, overwrite, execute, or read unauthorized files.
-
-### Secrets And Cryptography Review
-
-Check:
-
-- No secrets are hardcoded.
-- No secrets are committed.
-- No secrets are logged.
-- No credentials are returned in API responses.
-- Random values use cryptographically secure randomness when security-sensitive.
-- Passwords, tokens, and keys are not stored in plain text.
-- Encryption is not custom-built unless explicitly required and reviewed.
-- Existing approved crypto/security libraries are used.
-- Token expiration and validation are preserved.
-
-Block if secrets or cryptographic behavior are unsafe.
-
-### Dependency Vulnerability Review
-
-Check:
-
-- Were new dependencies added?
-- Are they necessary?
-- Are they maintained?
-- Do they have known critical/high vulnerabilities?
-- Do they introduce transitive risk?
-- Do they execute code dynamically?
-- Do they parse untrusted input?
-- Are version upgrades broad and unrelated?
-
-Block unnecessary or risky dependencies.
-
-### Security Logging And Audit Review
-
-Check:
-
-- Security-sensitive operations are audit logged when the project has an audit pattern.
-- Authorization failures are logged safely where useful.
-- Admin actions are logged when required.
-- Sensitive data access is logged when required.
-- Logs do not expose secrets or sensitive payloads.
-- Security logs include correlation/request IDs where available.
-
-Block if security-sensitive changes remove required auditability.
+You may still block directly on the obvious, high-frequency basics: parameterized queries, authorization enforced server-side **before** data access/mutation, and no secrets in logs. Anything deeper or uncertain goes to `security-engineer`.

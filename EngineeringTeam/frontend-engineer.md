@@ -940,17 +940,7 @@ For browser-based apps, SPAs, and public clients:
 - Do not redirect users to arbitrary user-controlled URLs after login or logout.
 - Use HTTPS for auth flows except approved local development.
 
-### Security Questions For Every Frontend Change
-
-Ask:
-
-- Can untrusted input reach the DOM?
-- Can untrusted input affect navigation, redirects, links, downloads, images, or iframes?
-- Could this expose tokens, secrets, PII, PHI, or sensitive business data?
-- Could this create XSS, CSRF, open redirect, unsafe CORS, token leakage, or authorization bypass risk?
-- Does the backend still enforce authorization?
-- Are auth tokens/session values stored safely?
-- Does this preserve PKCE/OIDC flow correctness?
+The rules above are what you need to implement securely. The deep audit (full OWASP browser taxonomy, SSRF-adjacent flows, supply-chain, detailed token/session policy) is `security-engineer`'s domain, not restated here. Per `AGENTS.md`, any change touching auth, tokens/session, rendering of untrusted content, external URLs, or dependencies **must get the mandatory `security-engineer` review** — build it right using the rules above, then ensure that pass runs.
 
 ---
 
