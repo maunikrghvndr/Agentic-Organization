@@ -11,6 +11,7 @@ Nothing manual. `AGENTS.md` points at this library by absolute path (the fenced 
 ```text
 Agentic-Organization/
   AGENTS.md                master copy of the drop-in file (router + universal rules)
+  LESSONS.md               shared, cross-project self-learned engineering takeaways (read by all repos)
 
   EngineeringTeam/
     researcher.md          discover the best current approach/tech/paper, challenge the status quo, cite evidence
@@ -92,6 +93,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Cross-stack:** analyst (grill + spec) → architect (design, when needed) → planner (sequence + gate) → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, in one session. Skip roles that add nothing.
 - **Universal Grill Checkpoint:** every role, before any work, restates intent in one line and asks any question that would change what gets built. Never skipped — trivial tasks are one line and 15 seconds; feature-sized ambiguity routes to `analyst` for full grill and durable spec production.
 - **Memory is compact and compounding:** bullets only, omit empty sections, promote durable learnings to PROJECT_MEMORY, archive finished task files. Knowledge is updated or reorganized (index + `wiki/` topic pages, distilled `ref-` pages for papers/specs) — never deleted for size.
+- **Self-learning (closed loop):** repo-specific knowledge goes in that repo's `.ai-memory/`; **general, transferable takeaways** ("never ship mock data in production") go in the library's shared `LESSONS.md`, which every repo reads and every agent contributes to. Stable universal lessons graduate into the role files. Inspired by Hermes' and Multica's skill-compounding, done in markdown with no runtime.
 - **Graph accelerator:** AGENTS.md drives the agent to build a Graphify knowledge graph and query it instead of grepping. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
 
 ## Maintaining The Library

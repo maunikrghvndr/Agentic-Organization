@@ -12,6 +12,8 @@ This file (`AGENTS.md`) is the single entry point. Do not look for, create, or r
 
 Load exactly **one** role file per phase from the folder above. Do not copy role files into this repository.
 
+The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
+
 **Role library resolution (the agent runs this before loading any role — the user never edits the path by hand):**
 
 1. Try the path above: can you read `EngineeringTeam/planner.md` there? If yes, proceed.
@@ -98,6 +100,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 
 - Read this file and the task memory first. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
 - **Read and obey the project constitution.** It is the highest-authority, project-specific rule set — `.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`. Comply with it in everything you produce; if a task would violate it, flag the conflict and stop rather than violating it. Every reviewer verifies constitution compliance as a blocking check. (The constitution overrides project convention but not these safety rules or a direct user instruction — surface the conflict when they clash.)
+- **Read the library's `LESSONS.md`** (at the library root, beside `EngineeringTeam/`) at the start of a task and apply its takeaways — they are cross-project engineering lessons the system has learned. See Self-Learning below.
 - **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange:
   1. Restate the task in one line as you understand it.
   2. Name every load-bearing assumption explicitly.
@@ -198,6 +201,24 @@ Graphify (MIT) turns a codebase and its documents/papers into a queryable graph,
 At the end of a phase, report: role used, task memory file updated, files changed, tests added/run, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done").
 
 Also state whether the Code & Source Graph was used: which queries were run and what they located, or that it was unavailable, or that it was available but not used and why. A graph that is built and then ignored is wasted work — this line makes that visible.
+
+---
+
+## Self-Learning (the closed loop)
+
+The system gets better by capturing what it learns. Two stores, kept strictly separate:
+
+- **Repo-specific knowledge → that repo's `.ai-memory/`** (build commands, this project's patterns, a particular gotcha). Stays local to the repo.
+- **General, transferable takeaways → the library's `LESSONS.md`** (at the library root, beside `EngineeringTeam/`). Shared across every repo.
+
+When a non-trivial task teaches you a durable, generalizable engineering lesson — a mistake never to repeat, or a principle that clearly applies beyond this one repo (e.g. "never ship mock data in production code paths") — append a one-line takeaway to the library `LESSONS.md`. Rules:
+
+- Keep it **general and reusable**, never repo-specific. If it only matters to this repo, it belongs in `.ai-memory/`, not `LESSONS.md`.
+- Do **not** restate a rule already in this file or a role file. Capture what experience taught that is not already written down (or reinforce one that keeps getting violated).
+- One line, checkable, dated. Update or merge; never add a near-duplicate.
+- Read `LESSONS.md` at the start of every task and apply it — that is the "learning" half of the loop.
+- The user periodically commits the library so the accumulated lessons are versioned and pushed. When a lesson becomes stable and universal, promote it into the relevant role file (where it is enforced) and remove it from `LESSONS.md`.
+- If a **role instruction itself** is wrong or misfires, record the takeaway in `LESSONS.md` **and** surface it to the user, so the library is improved rather than silently worked around.
 
 ---
 
