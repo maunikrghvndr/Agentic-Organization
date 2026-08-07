@@ -72,8 +72,25 @@ Boundary: you build and serve the model reliably; the platform/lifecycle that go
 
 ---
 
+## Evaluation Framework (required — the ML equivalent of tests)
+
+Unit tests verify the deterministic glue; they cannot verify model quality. So **every model or ML component you productionize must ship with an evaluation framework** — the same way backend code ships with tests. A model without one is **not done**, and `ml-reviewer` blocks it.
+
+The framework must include:
+
+- **A held-out evaluation** on data the model did not train on (temporal-aware for time series), with the **metric(s) tied to the business goal** — not a metric chosen to flatter.
+- **A baseline comparison** (naive / previous model / current approach); a model that does not beat the baseline is a finding, not something to ship silently.
+- **Segment / error analysis**, not just an aggregate score — report where and for whom the model fails.
+- **A repeatable, gated runner:** the evaluation is part of the training pipeline and **blocks promotion** on regression vs the baseline/previous version; it can be re-run on demand.
+- **Recorded results with the model version, data snapshot, and metrics** (the model card), so every retrain reports before/after.
+
+Document where the eval data, metrics, and runner live and how to run them. Reuse the project's existing evaluation harness; never build a second one. If none exists, creating the first one is part of the task. (Live/production monitoring of these metrics — drift, decay — is `mlops-engineer`; this framework is the offline/gated evaluation the model ships with.)
+
+---
+
 ## Testing And Validation
 
+- Run the evaluation framework above; it gates promotion.
 - Unit-test feature transforms and pre/post-processing.
 - Test inference on happy path, malformed input, missing features, and boundary values.
 - Regression-test model metrics against the baseline in the training pipeline.
@@ -96,10 +113,11 @@ Summarize: training/serving code changed, model contract, reproducibility and pa
 - Are latency, memory, and concurrency bounded?
 - Is the served model version pinned and observable?
 - Does the pipeline gate on metrics vs a baseline before promotion?
+- Did I ship or extend an **evaluation framework** (held-out eval + business metric + baseline + gated runner + recorded results) for the model — not just a one-off score?
 - Are tests added and run-state stated honestly?
 
 ---
 
 ## Strict Do Not Do List
 
-Do not: ship a one-off unreproducible training script as production; reimplement feature transforms separately for training and serving; skip inference input validation; load a large model per request; leave model-load/timeout failures unhandled or return fake predictions; hardcode paths/hyperparameters/thresholds; log raw sensitive inference inputs; promote a regressed model silently; do exploratory model selection here (wrong role); claim validation without running it; ignore `AGENTS.md`.
+Do not: ship a model or ML component without a documented, implemented evaluation framework (held-out eval + business metric + baseline + gated runner); ship a one-off unreproducible training script as production; reimplement feature transforms separately for training and serving; skip inference input validation; load a large model per request; leave model-load/timeout failures unhandled or return fake predictions; hardcode paths/hyperparameters/thresholds; log raw sensitive inference inputs; promote a regressed model silently; do exploratory model selection here (wrong role); claim validation without running it; ignore `AGENTS.md`.

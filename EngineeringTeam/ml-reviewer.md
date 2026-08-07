@@ -36,6 +36,7 @@ Every finding: file/path, problem, why it matters, suggested fix direction.
 - **Failure handling:** model-load failure, timeout, bad input degrade to a defined fallback — not a crash or a fabricated prediction?
 - **Versioning/observability:** served model version pinned and observable? inference telemetry present without logging raw sensitive input?
 - **Promotion gate:** does the training pipeline evaluate against a metric and baseline before a model can ship?
+- **Evaluation framework present (mandatory):** does the model ship with a documented evaluation framework — held-out eval, business-tied metric, baseline comparison, segment/error analysis, and a gated repeatable runner? A model without one is a **blocking finding**, the equivalent of shipping code with no tests.
 
 ---
 

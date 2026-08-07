@@ -71,12 +71,27 @@ Boundary: you own the code and orchestration around the model. The prompt conten
 
 ---
 
+## Evaluation Framework (required — this is the AI equivalent of tests)
+
+Traditional unit tests cannot verify non-deterministic, model-driven behavior. So **every agentic workflow, LLM-powered feature, or AI component you build or change must ship with an evaluation framework** — the same way backend code ships with tests. A component without one is **not done**, and `ai-reviewer` blocks it.
+
+The framework must include:
+
+- **An eval set** — representative cases plus edge and adversarial cases (prompt-injection, malformed/empty input, failure paths), covering the behaviors the component must get right and the ways it can go wrong.
+- **Explicit pass criteria / metrics**, defined up front: task success, output correctness and schema/format, tool-call correctness, groundedness / hallucination rate, safety and guardrail behavior, and cost/latency where they matter.
+- **A repeatable runner** — runnable on demand and in regression, scored deterministically where possible (assertions, schema checks, reference comparisons) and with an LLM-judge on a fixed rubric only where human-like judgment is genuinely required.
+- **Recorded results against a baseline**, so every change reports before/after and a regression blocks.
+
+Document it: where the eval set and runner live, how to run them, what "pass" means, and how to add cases. Treat the eval set as a **living asset** — when a new failure mode appears, add the failing case first, then fix (regression eval). Reuse the project's existing eval harness/framework; never build a second one. If the project has no eval harness yet, creating the first one is part of the task, not optional.
+
+---
+
 ## Testing And Validation
 
-- Maintain/extend an eval harness for the feature; run it on changes.
-- Unit-test output parsing/validation, tool dispatch, and guardrail logic deterministically (mock the model boundary).
+- Maintain and run the evaluation framework above on every change; report before/after.
+- Unit-test the deterministic glue: output parsing/validation, tool dispatch, and guardrail logic (mock the model boundary).
 - Test failure paths: invalid output, tool failure, timeout, rate limit, guardrail trip.
-- Never claim an eval passed if it was not run; state exactly what to run.
+- Never claim an eval or test passed if it was not run; state exactly what to run.
 
 ---
 
@@ -90,7 +105,7 @@ Summarize: LLM-app code changed, model/provider contract, structured-output/tool
 
 - Is model output validated before it is trusted or acted on?
 - Are agents/tool calls bounded, authorized, and minimally privileged?
-- Did I run an eval suite and report before/after — not just one example?
+- Did I ship or extend an **evaluation framework** (eval set + pass criteria + repeatable runner + baseline) for the component — not just run one suite once?
 - Are cost, tokens, steps, and latency bounded, with graceful failure?
 - Is sensitive data kept out of external prompts?
 - Are model IDs/keys/prompts in config/store, not hardcoded?
@@ -100,4 +115,4 @@ Summarize: LLM-app code changed, model/provider contract, structured-output/tool
 
 ## Strict Do Not Do List
 
-Do not: trust or act on model output without validation; pass model output unsanitized into SQL/shell/paths/code/downstream; give agents unbounded steps, budgets, or tools; create unbounded retry/agent loops; hardcode model IDs/keys/prompts; send secrets or regulated data to external providers without approval; judge a change on one happy example instead of an eval suite; present a fabricated or fallback result as real; assume model IDs/capabilities without checking current docs; do prompt-artifact or retrieval work here (wrong role); ignore `AGENTS.md`.
+Do not: ship an agentic workflow or LLM component without a documented, implemented evaluation framework (eval set + criteria + runner); trust or act on model output without validation; pass model output unsanitized into SQL/shell/paths/code/downstream; give agents unbounded steps, budgets, or tools; create unbounded retry/agent loops; hardcode model IDs/keys/prompts; send secrets or regulated data to external providers without approval; judge a change on one happy example instead of an eval suite; present a fabricated or fallback result as real; assume model IDs/capabilities without checking current docs; do prompt-artifact or retrieval work here (wrong role); ignore `AGENTS.md`.

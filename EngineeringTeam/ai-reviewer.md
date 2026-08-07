@@ -30,12 +30,13 @@ Every finding: file/path, problem, why it matters, suggested fix direction.
 
 ## Evaluation Rigor Review (applies to all four roles)
 
-- Is there an eval set, and was the change measured against it with before/after — not judged on one happy example?
+- **Does the agentic workflow / LLM / retrieval / NLP component ship with an evaluation framework** — a documented eval set (representative + adversarial), defined pass criteria/metrics, a repeatable runner, and recorded results against a baseline? For AI components this is mandatory, the equivalent of tests; **a component without one is a blocking finding**, not a nice-to-have.
+- Was the change measured against that eval set with before/after — not judged on one happy example?
 - Did the change improve the target without regressing the suite?
-- Is the eval set representative and does it include adversarial/edge cases?
+- Is the eval set representative and does it include adversarial/edge cases? Was a newly found failure mode added as a case?
 - Are results reproducible enough to trust (given nondeterminism, are properties tested rather than exact strings)?
 
-Block changes to prompts, models, retrieval, or NLP that ship without eval evidence.
+Block changes to prompts, models, retrieval, or NLP that ship without an evaluation framework or without eval evidence.
 
 ---
 
