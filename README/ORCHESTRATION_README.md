@@ -12,6 +12,7 @@ Nothing manual. `AGENTS.md` points at this library by absolute path (the fenced 
 Agentic-Organization/
   AGENTS.md                master copy of the drop-in file (router + universal rules)
   LESSONS.md               shared, cross-project self-learned engineering takeaways (read by all repos)
+  EVALS.md                 A/B protocol + log for measuring whether roles/sections earn their tokens
 
   EngineeringTeam/
     researcher.md          discover the best current approach/tech/paper, challenge the status quo, cite evidence
@@ -96,6 +97,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Memory is compact and compounding:** bullets only, omit empty sections, promote durable learnings to PROJECT_MEMORY, archive finished task files. Knowledge is updated or reorganized (index + `wiki/` topic pages, distilled `ref-` pages for papers/specs) — never deleted for size.
 - **Self-learning (closed loop):** repo-specific knowledge goes in that repo's `.ai-memory/`; **general, transferable takeaways** ("never ship mock data in production") go in the library's shared `LESSONS.md`, which every repo reads and every agent contributes to. Stable universal lessons graduate into the role files. Inspired by Hermes' and Multica's skill-compounding, done in markdown with no runtime.
 - **Progress board:** `.ai-memory/ROADMAP.md` is the per-repo glance view — every feature/task grouped Backlog / In Progress / Blocked / Done, linking to task files and specs. Read it to re-orient after a context switch; roles keep it current and completion moves items to Done. It's the index over `TASKS/`, the way `PROJECT_MEMORY` indexes `wiki/`.
+- **Measure before trimming:** the library's `EVALS.md` is a lightweight A/B protocol — run a real task with vs. without a role/section, compare quality and token cost, and let the verdict (KEEP / TRIM / CUT) drive what stays. Directional, not rigorous, but it turns "feels heavy" into evidence and is the honest antidote to a library that only ever grows.
 - **Graph accelerator:** AGENTS.md drives the agent to build a Graphify knowledge graph and query it instead of grepping. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
 
 ## Maintaining The Library

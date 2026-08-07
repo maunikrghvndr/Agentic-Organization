@@ -224,6 +224,7 @@ When a non-trivial task teaches you a durable, generalizable engineering lesson 
 - Read `LESSONS.md` at the start of every task and apply it — that is the "learning" half of the loop.
 - The user periodically commits the library so the accumulated lessons are versioned and pushed. When a lesson becomes stable and universal, promote it into the relevant role file (where it is enforced) and remove it from `LESSONS.md`.
 - If a **role instruction itself** is wrong or misfires, record the takeaway in `LESSONS.md` **and** surface it to the user, so the library is improved rather than silently worked around.
+- **Measure before you trim.** The library also holds `EVALS.md` at its root — a lightweight A/B protocol for checking whether a role or section actually improves output and what it costs. Before removing or trimming any role/section for weight, run (or ask the user to run) an eval to confirm it is not load-bearing, and record the verdict there. This is library-maintenance, not per-task work — do it when deliberately improving the library, not on every task.
 
 ---
 
