@@ -6,3 +6,6 @@ _archive/
 
 # Cloud-sync temp artifacts
 .tmp.driveupload/
+
+# Graphify derived graph (any level)
+graphify-out/
