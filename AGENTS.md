@@ -99,7 +99,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 
 ## Universal Rules (all roles)
 
-- Read this file and the task memory first. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
+- Read this file and the task memory first; skim `.ai-memory/ROADMAP.md` to re-orient on where the project stands. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
 - **Read and obey the project constitution.** It is the highest-authority, project-specific rule set — `.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`. Comply with it in everything you produce; if a task would violate it, flag the conflict and stop rather than violating it. Every reviewer verifies constitution compliance as a blocking check. (The constitution overrides project convention but not these safety rules or a direct user instruction — surface the conflict when they clash.)
 - **Read the library's `LESSONS.md`** (at the library root, beside `EngineeringTeam/`) at the start of a task and apply its takeaways — they are cross-project engineering lessons the system has learned. See Self-Learning below.
 - **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange:
@@ -155,6 +155,7 @@ Use `.ai-memory/` in this repository; create it if missing:
 ```text
 .ai-memory/
   CONSTITUTION.md        project governing principles (ONLY when the repo has no Spec Kit constitution)
+  ROADMAP.md             project progress board — glance view of every feature/task and its status
   PROJECT_MEMORY.md      stable facts; becomes an index of wiki/ pages as the project grows
   wiki/                  topic pages (created only when PROJECT_MEMORY outgrows one file)
   sources/               immutable reference sources: papers, specs, RFCs (or pointer files)
@@ -170,6 +171,7 @@ Rules:
 - Write compact bullets, not prose or transcripts. Omit empty template sections. Every line must earn its tokens.
 - First use in a repo: discover the exact build/test/lint/run commands (with flags) and record them at the top of `PROJECT_MEMORY.md`. Later sessions use and maintain these instead of rediscovering them.
 - `PROJECT_MEMORY.md` holds only stable repo facts: stack, structure, commands, established patterns, hard rules, architecture decisions. Never task details.
+- **Project roadmap — the progress board.** `.ai-memory/ROADMAP.md` is the one-glance view of where the project stands: one line per feature or non-trivial task, grouped **Backlog / In Progress / Blocked / Done**, each linking to its task file and spec. It is how you (or a fresh session) re-orient after a context switch and track progress — read it at the start of a task to see the big picture. `planner` adds items when it sequences work; the role working an item keeps its status current (→ In Progress, → Blocked with the blocker); completion moves the item to **Done** with a date and archives the task file. One line per item — detail lives in the task file, never restated here. Trivial changes are not tracked. In a Spec Kit repo, this is the cross-feature view above each feature's `tasks.md`.
 - **Grow by reorganizing, never by deleting.** While small, `PROJECT_MEMORY.md` is a single flat file. When it outgrows ~100 lines, split content into `wiki/` topic pages (`architecture.md`, `backend-patterns.md`, `frontend-patterns.md`, `testing.md`, `gotchas.md`, ...) and turn `PROJECT_MEMORY.md` into an index: commands at the top, then one line per page. Sessions read the index first and open only the pages relevant to the task.
 - **Update, don't delete.** Remove a fact only because it is wrong or no longer true — and record that as an update with a short note (`updated 2026-07-20: was X, now Y — reason`). If two sources genuinely conflict and it cannot be resolved yet, flag the contradiction explicitly instead of silently picking one.
 - **Reference sources.** Papers, specs, and RFCs the implementation follows go in `sources/` (or a pointer file with URL/DOI when the original cannot be committed). Sources are read-only. On first use, ingest once (the `researcher` role owns this, but any role may do it when researcher is not in play): write a `wiki/ref-<name>.md` page distilling only what the implementation needs, with section/equation/page citations, the source version/date, a map from concepts to implementing files (`path:line`), and every intentional deviation ("source says X, we do Y because Z"). Before relying on a source, confirm it is still current — a newer paper/version/approach may supersede it (`researcher`'s job). Sessions read the reference page, not the source; open the source only when the page cannot answer, then update the page.
@@ -201,7 +203,7 @@ Graphify (MIT) turns a codebase and its documents/papers into a queryable graph,
 
 ## Completion
 
-At the end of a phase, report: role used, task memory file updated, files changed, tests added/run, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done").
+At the end of a phase, report: role used, task memory file updated, **`ROADMAP.md` status updated** (item moved to In Progress / Blocked / Done as applicable), files changed, tests added/run, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done"). When a task completes, move its roadmap item to Done with a date and archive the task file.
 
 Also state whether the Code & Source Graph was used: which queries were run and what they located, or that it was unavailable, or that it was available but not used and why. A graph that is built and then ignored is wasted work — this line makes that visible.
 

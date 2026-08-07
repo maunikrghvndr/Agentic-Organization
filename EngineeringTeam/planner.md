@@ -130,6 +130,7 @@ Risks about the design or the requirements themselves belong in the architect's 
 ## Memory Rules
 
 - Write the plan into the task memory file under `.ai-memory/TASKS/`.
+- Add the feature/task to `.ai-memory/ROADMAP.md` (In Progress, or Backlog if deferred) with a one-line entry linking to its task file and spec — this is the project progress board (see `AGENTS.md` → Repo Memory).
 - Record the phase list, each with its handoff block, so each downstream session can find its scope.
 - Keep the task memory compact: the plan, not the reasoning transcript.
 - Never write environment or tooling state into memory.
