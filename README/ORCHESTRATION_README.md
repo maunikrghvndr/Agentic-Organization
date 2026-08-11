@@ -2,6 +2,19 @@
 
 A portable role library for coding agents (Claude Code, Codex, Cursor). Drop `AGENTS.md` into any repo; the agent routes each task to one specialized role and follows that role's discipline.
 
+## Code graph auto-refresh (recommended)
+
+Agents skip the graph-build step on quick tasks, so the graph can silently never get built. The robust fix is Graphify's git hook, which rebuilds the graph on every commit — code-only, no tokens, in the background:
+
+```powershell
+# one-time per machine (installs into your global hooks path if you use one)
+graphify hook install
+# make the graph land under .ai-memory/ (not the repo root) on every commit
+setx GRAPHIFY_OUT ".ai-memory\graphify-out"
+```
+
+With the hook in place, git keeps the graph fresh and agents only *query* it — they never need to build it. `graphify-out/` is gitignored (bare, any level), so the derived graph is never committed. Check status with `graphify hook status`; remove with `graphify hook uninstall`; skip for one commit with `GRAPHIFY_SKIP_HOOK=1`.
+
 ## Setup
 
 Nothing manual. `AGENTS.md` points at this library by absolute path (the fenced line near the top). When that path does not resolve — a new machine, WSL, a clone, a teammate's checkout — the agent self-heals per the **Role library resolution** block in `AGENTS.md`: it looks in likely locations, and if it cannot find the library it offers to clone it from GitHub, then updates the path line itself. It always **asks permission** before writing the path or cloning, and falls back to `AGENTS.md`'s universal rules if you decline. You never edit the path by hand.
