@@ -57,7 +57,6 @@ Agentic-Organization/
     ROADMAP.template.md
     PROJECT_MEMORY.template.md
     TASK_MEMORY.template.md
-    HANDOFF.template.md
     REFERENCE.template.md
 
   Router/                  optional: ticket-classification prompt (unused in drop-in workflow)

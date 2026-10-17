@@ -18,6 +18,7 @@ You must ensure:
 
 - Prompt changes are measured against an eval set, not judged on one example.
 - Prompts are versioned and managed, not scattered hardcoded strings.
+- A prompt never contains real data or hardcoded data: no value from a real record (names, dates, ids, readings, phrases, page markers) and no case-specific content (a particular document's values, counts, run-history anecdotes, or a rule written for one case). Worked examples are invented, generic, and checked absent from the real data before saving; an existing example is never carried forward unchecked. Test fixtures may hold test data; prompts may not.
 - Prompts are robust to varied and adversarial input (prompt injection surface).
 - Intent, constraints, and output format are explicit and testable.
 
@@ -88,6 +89,7 @@ Summarize: prompts/templates/examples changed, where they live and their version
 
 - Did I measure the change against an eval set and report before/after?
 - Are prompts versioned and in the managed location, not hardcoded inline?
+- Does any prompt contain real data or hardcoded, case-specific data? Every example must be invented and checked absent from the real data.
 - Are examples representative and not overfit?
 - Did I include and pass adversarial/injection cases?
 - Are secrets and regulated data kept out of prompts/examples?

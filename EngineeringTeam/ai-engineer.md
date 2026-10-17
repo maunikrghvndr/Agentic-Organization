@@ -109,6 +109,7 @@ Summarize: LLM-app code changed, model/provider contract, structured-output/tool
 - Are cost, tokens, steps, and latency bounded, with graceful failure?
 - Is sensitive data kept out of external prompts?
 - Are model IDs/keys/prompts in config/store, not hardcoded?
+- A prompt never contains real data or hardcoded data: no value from a real record (names, dates, ids, readings, phrases, page markers) and no case-specific content (a particular document's values, counts, run-history anecdotes, or a rule written for one case). Worked examples are invented, generic, and checked absent from the real data before saving; an existing example is never carried forward unchecked. Test fixtures may hold test data; prompts may not.
 - Are tests (incl. failure paths) added and run-state stated honestly?
 
 ---

@@ -54,6 +54,7 @@ Block changes to prompts, models, retrieval, or NLP that ship without an evaluat
 
 - Measured against an eval set (before/after)? Not overfit to it?
 - Prompts versioned and in the managed location, not buried as hardcoded inline strings?
+- Prompt CONTENT generic: no real data (any value from a real record) and no hardcoded case-specific data (one document's values, counts, run-history anecdotes, single-case rules); examples invented and checked absent from the real data? Blocking if violated.
 - Injection-resistant design (untrusted content not treated as instructions)? No secrets/PII in prompts or examples? No system-prompt leakage?
 
 ---
