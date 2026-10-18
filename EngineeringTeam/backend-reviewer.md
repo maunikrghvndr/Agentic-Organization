@@ -123,7 +123,7 @@ Examples:
 - Public contract was changed without justification.
 - Validation was removed, weakened, or bypassed.
 - Security/auth check was removed or weakened.
-- The diff touches an agent instruction or configuration file (`AGENTS.md` → Boundaries; canonical list in `_shared/rules-detail.md`) and the user did not approve the change under ask-first (a task-file description is not approval), or it did not get the mandatory `security-engineer` pass — review these files as executable code and run the hidden-text scan in `security-engineer.md` → Agent Configuration And Supply Chain Review. A changed command in `PROJECT_MEMORY.md` is reported the same way.
+- The diff touches an agent instruction or configuration file (`AGENTS.md` → Boundaries; canonical list in `_shared/rules-detail.md`) and the user did not approve the change under ask-first (a task-file description is not approval), or it did not get the mandatory `security-engineer` pass — review these files as executable code and run the hidden-text scan in `security-engineer.md` → Agent Configuration And Supply Chain Review. A changed command in `PROJECT_MEMORY.md` is reported as a finding (not ask-first; Tier 4 until the user confirms it).
 - Error is swallowed or fake success is returned.
 - Memory leak or unbounded memory growth risk.
 - Unbounded parallelism, retries, queueing, or task creation.

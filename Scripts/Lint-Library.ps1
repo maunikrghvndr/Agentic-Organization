@@ -14,7 +14,8 @@
 #   E5  a LESSONS line (LESSONS.md / LESSONS/*.md, under a "## Lessons" heading) not ending in a
 #       "[YYYY-MM-DD...]" date tag
 #   E6  hidden text (zero-width, bidi overrides/isolates, tag characters, soft hyphen, variation
-#       selectors, fillers) in AGENTS.md, EngineeringTeam/**, LESSONS.md, LESSONS/**, MemoryTemplates/**
+#       selectors, fillers) in AGENTS.md, EngineeringTeam/**, LESSONS.md, LESSONS/**, MemoryTemplates/**,
+#       README/**, Evals/**, EVALS.md, Scripts/**, Hooks/**
 # Warnings (exit 0):
 #   W1  AGENTS.md over 32,768 bytes (Codex default cap) or over 200 lines (Anthropic guidance)
 #   W2  >= 8 identical consecutive lines shared by two role files (trim candidates; feeds EVALS.md)
@@ -125,7 +126,7 @@ foreach ($f in $lessonFiles) {
 
 # ---- E6: hidden text in instruction files ----------------------------------------------------------
 $hiddenPattern = [regex]'[\u00AD\u034F\u061C\u115F\u1160\u180E\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF9-\uFFFB]|\uDB40[\uDC00-\uDC7F]|\uDB40[\uDD00-\uDDEF]'
-$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates)([\\/]|\.md$)' })
+$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates|README|Evals)([\\/]|\.md$)|^EVALS\.md$' }) + @(Get-ChildItem (Join-Path $LibraryRoot "Scripts"), (Join-Path $LibraryRoot "Hooks") -File -ErrorAction SilentlyContinue)
 foreach ($f in $instructionFiles) {
     $n = 0
     foreach ($line in ((Read-Utf8 $f.FullName) -split "`n")) {
