@@ -695,6 +695,8 @@ Check:
 
 Block build/release integrity risks.
 
+Agent instruction and configuration files are part of CI/CD integrity: a diff that touches `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.mcp.json`, `.cursor/**`, `.codex/**`, `.github/agents/**`, `.github/workflows/**`, `.vscode/tasks.json`, git hooks, any `SKILL.md`, `CONSTITUTION.md` or `LESSONS.md` is reviewed as executable code under the Agent Configuration And Supply Chain Review below; a change to them not described in the task file is blocking.
+
 ---
 
 ## Infrastructure And Cloud Security Review

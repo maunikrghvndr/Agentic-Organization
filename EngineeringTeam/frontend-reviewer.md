@@ -133,6 +133,7 @@ Examples:
 - Public component/API contract was changed without justification.
 - Accessibility was degraded.
 - Security vulnerability was introduced or ignored.
+- The diff touches agent instruction or configuration files (`AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.mcp.json`, `.cursor/**`, `.codex/**`, `.github/agents/**`, `.github/workflows/**`, `.vscode/tasks.json`, git hooks, any `SKILL.md`, `CONSTITUTION.md`, `LESSONS.md`) and the change is not described in the task file, or did not get the mandatory `security-engineer` pass — review these files as executable code, including a hidden-text check (zero-width and bidi characters, `<!--` blocks).
 - XSS risk was introduced.
 - Unsafe raw HTML rendering was introduced.
 - Token/session/auth data is exposed.
