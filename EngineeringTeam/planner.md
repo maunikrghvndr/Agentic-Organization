@@ -95,7 +95,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Each phase names exactly one role from the `AGENTS.md` role table — any engineer, reviewer, QA, security, debugger, researcher, analyst or architect role listed there; the table is the single catalog, never an enumeration here.
 - Write each phase so it is executable on its own (files to read, criteria, done-when) — this keeps it usable whether it runs next in this session or, if the user splits the work, in a later one.
 - Include review phases for non-trivial implementation phases.
-- Include a QA phase when the change is regression-prone, security-sensitive, or spans multiple areas.
+- Include a QA phase (traceability and convergence) for every feature-sized change, and for smaller changes when regression-prone, security-sensitive, or multi-area.
 - Include a security phase when the change touches auth, tenancy, file handling, external input, payments, or sensitive data.
 - Keep the number of phases as small as the work allows. Do not create ceremony.
 - A phase that runs unattended (CI, headless, scheduled) must not combine untrusted input, secret access and external write (Rule of Two) — split it or keep a human gate in the plan.
@@ -150,6 +150,15 @@ Return the plan in this exact structure:
 - Design: task memory / `wiki/architecture.md` — key decisions referenced by name.
 
 ## Pre-Implementation Gate
+
+| AC / decision / phase | Maps to | Status |
+|---|---|---|
+| `AC-1` | T01, T03 | covered / GAP — CRITICAL (constitution MUST or dropped AC) / HIGH / MEDIUM |
+| `<design decision>` | T02 | consumed / deferred: <reason> |
+| T04 | — | *unrequested*: no AC or decision asks for it — drop or justify |
+
+(Two directions: every AC and design decision → at least one phase; every phase → an AC or decision. Tag each failure CRITICAL / HIGH / MEDIUM.)
+
 - Every AC addressed: yes / list gaps.
 - Every design decision consumed: yes / list gaps.
 - No contradictions unresolved: yes / list.

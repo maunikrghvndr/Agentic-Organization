@@ -1000,7 +1000,8 @@ Brief summary of the implemented behavior.
 - Does it satisfy the task?
 - Any missing acceptance criteria?
 - Any unrelated scope added?
-- Traceability: `AC-n` → implementing `path:line` → covering test → Met / Partial / Not met / Not tested.
+- Traceability: `AC-n` → implementing `path:line` → covering test → Met / Partial / Not met / Not tested. If task memory already holds a QA traceability matrix, verify its rows for this diff instead of rebuilding it.
+- Constitution compliance (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`): compliant / violation (blocking).
 
 ## Blocking Issues
 

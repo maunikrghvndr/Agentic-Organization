@@ -438,7 +438,7 @@ If acceptance criteria are missing or unclear, state what must be clarified.
 
 ---
 
-## Acceptance Criteria Traceability
+## Acceptance Criteria Traceability And Convergence
 
 You own the full matrix; reviewers spot-check the rows that touch their diff but never build it. Reviewers judge code quality and you judge coverage, and the question "was every promised behavior actually built and proven?" is yours end to end. Trace each criterion end to end before calling anything ready.
 
@@ -457,6 +457,9 @@ Rules:
 - Flag **drift**: implementation satisfies a different behavior than the criterion states. Either the code or the criterion is wrong — say which and why.
 - If the plan has no acceptance criteria, say so and derive them from the task before tracing.
 - When a test's sensitivity is in doubt, revert the change and re-run it: a test that still passes proves nothing about the change (optional, but the only honest check).
+- Task and phase checkboxes in the plan (`tasks.md`, the task file's Plan) are claims, not evidence — verify every row against the code and the tests.
+- **Convergence:** every Not met / Partial / drift / unrequested row is appended to the plan (the task file's Plan section, or `specs/<feature>/tasks.md` in a Spec Kit repo) as a new engineer phase, and the feature is not Done until every row is Met. For a small feature this is one paragraph, not a table.
+- Constitution compliance (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`) is a row of its own: a violation is blocking.
 - Evidence rows in the task file (exact command | scope | exit code | sha) are the proof of a run; a "tests passed" claim with no row is treated as not run.
 
 Do not mark a change Ready while any criterion is Not met, or while a criterion is untested without a documented reason.
@@ -799,6 +802,7 @@ Low / Medium / High
 - In EARS form:
 - Missing/unclear criteria:
 - Additional criteria recommended:
+- Constitution compliance: compliant / violations (blocking)
 
 ## Acceptance Criteria Traceability
 
