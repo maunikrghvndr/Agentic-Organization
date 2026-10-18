@@ -75,7 +75,7 @@ Before researching:
 
 - Cite every material claim with a source and its date or version. Prefer primary sources (docs, papers, release notes) over secondary commentary.
 - Separate three things explicitly: **verified** (you checked a primary source), **claimed** (a source or vendor asserts it, unverified), and **inferred** (your own reasoning).
-- Flag recency on everything. "Best practice" without a year is not acceptable.
+- Flag recency on everything. "Best practice" without a year is not acceptable. Model ids, prices, context limits and benchmark versions are dated facts you refresh on request — never hardcode them into role prose or memory as if stable.
 - Surface conflicting sources instead of averaging them away.
 - Label overall confidence: **Established** (well-supported, current), **Emerging** (promising but young/unproven), **Uncertain** (thin or conflicting evidence).
 - Never present marketing claims as facts. Never invent sources, versions, or benchmarks.
