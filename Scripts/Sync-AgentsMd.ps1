@@ -16,6 +16,11 @@
 #   library treats AGENTS.md as a single source of truth per Maunik's
 #   workflow; per-repo customization is not supported here.
 # - Only descends one level under RepoRoot (standard "repos folder" layout).
+# - Warns (never blocks) when the source is over 32,768 bytes - Codex's default
+#   project_doc_max_bytes - naming the sections past the cap, and per target repo
+#   when a CLAUDE.md / .claude/CLAUDE.md / CLAUDE.local.md exists there, because
+#   Claude Code then ignores AGENTS.md unless the user-level
+#   claude-md-and-agents-md setting is on.
 
 [CmdletBinding()]
 param(
@@ -39,6 +44,19 @@ if ($Source -match '^https?://') {
     $sourceLabel = $Source
 }
 
+# Size check against the Codex default cap (32 KiB); name what would be truncated.
+$CodexCapBytes = 32768
+$sourceWarnings = New-Object System.Collections.Generic.List[string]
+if ($sourceBytes.Length -gt $CodexCapBytes) {
+    $sourceText = [Text.Encoding]::UTF8.GetString($sourceBytes)
+    $headText   = [Text.Encoding]::UTF8.GetString($sourceBytes, 0, $CodexCapBytes)
+    $allHeadings = [regex]::Matches($sourceText, '(?m)^## .+$') | ForEach-Object { $_.Value }
+    $keptHeadings = [regex]::Matches($headText, '(?m)^## .+$') | ForEach-Object { $_.Value }
+    $pastCap = @($allHeadings | Where-Object { $keptHeadings -notcontains $_ })
+    $lastKept = if ($keptHeadings.Count -gt 0) { $keptHeadings[-1] } else { '(none)' }
+    $sourceWarnings.Add("Source is $($sourceBytes.Length) bytes, over Codex's default $CodexCapBytes-byte cap. Truncated mid-section: '$lastKept'. Sections entirely past the cap: $(if ($pastCap.Count) { $pastCap -join ', ' } else { '(none)' }).")
+}
+
 if (-not (Test-Path $RepoRoot)) { throw "RepoRoot not found: $RepoRoot" }
 $RepoRoot = (Resolve-Path $RepoRoot).Path
 
@@ -59,9 +77,14 @@ $repos = Get-ChildItem $RepoRoot -Directory | Where-Object {
 $created   = New-Object System.Collections.Generic.List[string]
 $updated   = New-Object System.Collections.Generic.List[string]
 $unchanged = New-Object System.Collections.Generic.List[string]
+$shadowed  = New-Object System.Collections.Generic.List[string]
+$ClaudeShadowFiles = @('CLAUDE.md', 'CLAUDE.local.md', (Join-Path '.claude' 'CLAUDE.md'))
 
 foreach ($repo in $repos) {
     $target = Join-Path $repo.FullName "AGENTS.md"
+
+    $present = @($ClaudeShadowFiles | Where-Object { Test-Path (Join-Path $repo.FullName $_) })
+    if ($present.Count -gt 0) { $shadowed.Add("$($repo.Name): $($present -join ', ')") }
 
     if (Test-Path $target) {
         $targetBytes = [IO.File]::ReadAllBytes($target)
@@ -103,6 +126,12 @@ if ($updated.Count -gt 0) {
 if ($unchanged.Count -gt 0) {
     Write-Host "Unchanged ($($unchanged.Count)):" -ForegroundColor DarkGray
     $unchanged | ForEach-Object { Write-Host "  = $_" }
+}
+if ($sourceWarnings.Count -gt 0 -or $shadowed.Count -gt 0) {
+    Write-Host ""
+    Write-Host "Warnings:" -ForegroundColor Yellow
+    $sourceWarnings | ForEach-Object { Write-Host "  ! $_" }
+    $shadowed | ForEach-Object { Write-Host "  ! $_ - Claude Code will ignore AGENTS.md here unless the user-level 'claude-md-and-agents-md' setting is on" }
 }
 if ($DryRun) {
     Write-Host ""

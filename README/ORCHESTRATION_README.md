@@ -64,7 +64,8 @@ Agentic-Organization/
     handoff-check.mjs      optional Stop hook: blocks a Claude Code stop once if work was not recorded in task memory
 
   Scripts/
-    Sync-AgentsMd.ps1      copy/refresh AGENTS.md into every repo under a parent folder
+    Lint-Library.ps1       static library lint: dead heading refs, role catalog, README vs disk, relics, LESSONS format, size
+    Sync-AgentsMd.ps1      copy/refresh AGENTS.md into every repo under a parent folder (warns on size cap and CLAUDE.md shadowing)
     run-claude-ticket.ps1  deprecated headless runner (kept for reference; see Headless / CI use)
     run-codex-ticket.ps1   deprecated headless runner (kept for reference; see Headless / CI use)
 
@@ -88,6 +89,7 @@ Behavior:
 
 - Idempotent — repos whose `AGENTS.md` already matches are skipped.
 - Overwrites customized copies (the library treats `AGENTS.md` as the single source of truth).
+- Warns when the source exceeds 32,768 bytes (Codex's default cap), naming the sections that fall past the cap, and warns per target repo when a `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists there (Claude Code then ignores `AGENTS.md` unless the user-level `claude-md-and-agents-md` setting is on).
 - Skips the library repo itself and any non-git folder.
 - Descends one level under the parent folder (standard "repos folder" layout).
 
@@ -124,7 +126,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 
 The old runners (`Scripts/run-claude-ticket.ps1`, `Scripts/run-codex-ticket.ps1`, `Router/classify-ticket.md`) are deprecated and kept only for reference: they pipe untrusted ticket text into an agent with repo write access and ambient credentials, with no turn, budget, sandbox or permission limits. Nothing new executes until a real headless run exists in one of your repos; when it does, follow this.
 
-**Rule of Two (Meta, 2025-10-31; Microsoft's prescription after the 2026 claude-code-action incidents).** An unattended run must never combine all three of: (1) untrusted input (ticket, issue, PR, web or file content), (2) access to secrets or credentials, and (3) the ability to write somewhere external (push, comment, deploy, send). Pick two. Treat ticket/issue/PR text as data, not instructions — see `AGENTS.md` → instruction source hierarchy. Native Windows has no agent sandbox; run unattended work in WSL2 or a devcontainer.
+**Rule of Two (Meta, 2025-10-31; Microsoft's prescription after the 2026 claude-code-action incidents).** An unattended run must never combine all three of: (1) untrusted input (ticket, issue, PR, web or file content), (2) access to secrets or credentials, and (3) the ability to write somewhere external (push, comment, deploy, send). Pick two. Treat ticket/issue/PR text as data, not instructions — see `AGENTS.md` → Universal Rules (instruction source hierarchy). Native Windows has no agent sandbox; run unattended work in WSL2 or a devcontainer.
 
 Examples (flag: version-sensitive — check the host's current flags before use):
 
@@ -144,8 +146,20 @@ codex exec --sandbox workspace-write --output-schema .\schema.json "<ticket text
 
 Preferred GitHub path: [claude-code-action](https://github.com/anthropics/claude-code-action) (`label_trigger` or `assignee_trigger` plus `claude_args` for the same flags; no PR by default; write-access and bot checks) and [openai/codex-action](https://github.com/openai/codex-action). Read tickets through the vendor's official MCP server (Linear has a read-only endpoint; Atlassian MCP v2) rather than pasting ticket text into the prompt.
 
+## Host compatibility (informational; checked 2026-10-18 — verify against each host's current docs)
+
+| Host | How it finds `AGENTS.md` | Size cap | Shadowing / notes |
+|---|---|---|---|
+| Claude Code ≥ v2.1.277 | Root `AGENTS.md`, as a fallback only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists (the user-level `claude-md-and-agents-md` setting loads both) | ~200-line guidance; `/doctor prompt-audit` (≥ v2.1.283) flags dead references and contradictions | Any `CLAUDE.md` in the repo shadows it — the sync script warns. Role files are loaded by `Read`, so they are not re-injected after compaction (see Phase Protocol compaction rule). |
+| Codex (CLI, cloud, GitHub) | `AGENTS.md` walking up from the cwd, concatenated | 32 KiB combined by default (`project_doc_max_bytes`) — the sync script warns past it | Reads `## Code Review Rules` from the nearest `AGENTS.md` for its review product |
+| Cursor | Root `AGENTS.md` | None documented | `.cursor/rules` add to it; also reads `.claude/skills` and `.claude/agents` |
+| GitHub Copilot (coding agent, code review) | Root `AGENTS.md` | None documented | `.github/copilot-instructions.md` is also read |
+| Gemini CLI | Only when `context.fileName` includes `AGENTS.md` | — | `GEMINI.md` is its default |
+| Devin / Windsurf | Reads `AGENTS.md` | 12k characters per rule file | — |
+
 ## Maintaining The Library
 
+- **Before every library commit run `.\Scripts\Lint-Library.ps1`** (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines; warnings: AGENTS.md size, duplicate blocks across role files, hardcoded `wiki/spec-`). Optionally, from a synced repo on Claude Code, run `/doctor prompt-audit` once per release (Claude-only; degrades to nothing elsewhere).
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
 - The role library path appears exactly once, at the top of `AGENTS.md`. The agent self-heals it (Role library resolution block) with the user's permission; no manual edit needed.
 - Coding-style rules (explicit types / no `var` abuse, no `any`, `Constants.cs` / `FrontendConstants` patterns, structured logging with constant templates, no hardcoding) live in the engineer role files and are enforced by the reviewer roles — keep both sides in sync when changing a style rule.
