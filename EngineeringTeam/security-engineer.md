@@ -58,7 +58,6 @@ Use OWASP Top 10, OWASP ASVS, OWASP SCVS, NIST SSDF, and secure SDLC principles 
 
 Before reviewing:
 
-- Read the project `AGENTS.md` if it exists.
 - Read the project `README.md` if it contains setup, architecture, or deployment guidance.
 - Identify the technology stack.
 - Identify frontend frameworks.
@@ -793,7 +792,7 @@ When AI, LLMs, tools, retrieval, agents, or document processing exist, check:
 - Embeddings/vector stores preserve tenant/data isolation
 - Agents cannot call dangerous tools without authorization
 
-Use the OWASP Top 10 for LLM Applications (2025) as the anchor for this area: Prompt Injection, Sensitive Information Disclosure, Supply Chain, Data and Model Poisoning, Improper Output Handling, Excessive Agency, System Prompt Leakage, Vector and Embedding Weaknesses, Misinformation, Unbounded Consumption.
+Use the current edition of the OWASP Top 10 for LLM Applications as the anchor for this area (2026 at the time of writing; the category names below are the 2025 list — refresh them against the current edition when it differs): Prompt Injection, Sensitive Information Disclosure, Supply Chain, Data and Model Poisoning, Improper Output Handling, Excessive Agency, System Prompt Leakage, Vector and Embedding Weaknesses, Misinformation, Unbounded Consumption.
 
 Additional checks:
 

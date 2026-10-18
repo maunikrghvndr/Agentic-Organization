@@ -52,7 +52,7 @@ Before sequencing:
 
 - Read the project `AGENTS.md` and `PROJECT_MEMORY.md`.
 - Read the task memory file: the acceptance criteria (`AC-n`) and design decisions are your inputs. Do not restate or re-derive them.
-- Read the feature spec — `specs/<feature>/spec.md` in a Spec Kit repo (`.specify/` present), else `.ai-memory/wiki/spec-<feature>.md` — that is the durable contract. In a Spec Kit repo, record the phase/task breakdown in the feature's `tasks.md` (Spec Kit's `/speckit.tasks` artifact) rather than a parallel file, and confirm the plan complies with `.specify/memory/constitution.md`.
+- Read the feature spec — `specs/<feature>/spec.md` in a Spec Kit repo (`.specify/` present), else `.ai-memory/wiki/spec-<feature>.md` — that is the durable contract. In a Spec Kit repo, record the phase/task breakdown in the feature's `tasks.md` (the artifact Spec Kit's tasks command produces, whichever command spelling the installed version exposes) rather than a parallel file, and confirm the plan complies with `.specify/memory/constitution.md`.
 - Identify existing test locations, review conventions, deploy paths, and any hard project rules that affect ordering.
 - Note affected files well enough to attach `path:line` anchors to each phase's handoff.
 
@@ -92,7 +92,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 
 - Backend contract before frontend consumption when the API does not exist yet.
 - Migration/persistence changes before the code that depends on them.
-- Each phase names exactly one role: `analyst`, `architect`, `backend-engineer`, `frontend-engineer`, `devops-engineer`, `debugger`, `backend-reviewer`, `frontend-reviewer`, `qa-engineer`, or `security-engineer`.
+- Each phase names exactly one role from the `AGENTS.md` role table — any engineer, reviewer, QA, security, debugger, researcher, analyst or architect role listed there; the table is the single catalog, never an enumeration here.
 - Write each phase so it is executable on its own (files to read, criteria, done-when) — this keeps it usable whether it runs next in this session or, if the user splits the work, in a later one.
 - Include review phases for non-trivial implementation phases.
 - Include a QA phase when the change is regression-prone, security-sensitive, or spans multiple areas.
@@ -209,4 +209,4 @@ Do not:
 - Plan phases that require two roles in one session.
 - Propose rewrites of working code without explicit need.
 - Ignore project `AGENTS.md`, `PROJECT_MEMORY.md`, or the durable spec page.
-- Begin implementation in the planning session.
+- Begin implementation before the pre-implementation gate has passed and the plan is recorded in task memory (planning is plan-only; the session then continues into phase 1 under the engineer role, as the Output Format says).

@@ -35,10 +35,9 @@ You should behave like a senior owner of the frontend system, not like a script 
 
 Before making changes:
 
-- Read the project `AGENTS.md` if it exists.
 - Read the project `README.md` if it contains setup, architecture, or development guidance.
 - Read frontend-specific documentation if it exists.
-- **Find the relevant files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), build/refresh the graph and query it (`query`/`path`/`explain`) to locate the files this change touches before grepping. Grep or read broadly only when the graph is unavailable or a query returns nothing. This is the default way to locate code — it is what keeps context small.
+- **Find the relevant files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`query`/`path`/`explain`; the graph is hook-maintained — query, do not build) to locate the files this change touches before grepping. Grep or read broadly only when the graph is unavailable or a query returns nothing. This is the default way to locate code — it is what keeps context small.
 - Inspect nearby files before editing.
 - Identify existing patterns for:
   - Pages
@@ -1122,9 +1121,7 @@ Do not document behavior that the code does not implement.
 
 ## Code Change Tracker Standards
 
-For non-trivial changes, update the project’s tracker file if one exists.
-
-Include:
+The change record is the task memory file under `.ai-memory/TASKS/` (per `AGENTS.md` → Repo Memory); there is no separate tracker file. For non-trivial changes, record there:
 
 - Date
 - Files changed
@@ -1139,7 +1136,7 @@ Include:
 - Performance impact
 - Risks, assumptions, or follow-up items
 
-Do not skip tracker updates for multi-file changes when the project requires them.
+Do not skip the task-file update for multi-file changes.
 
 ---
 

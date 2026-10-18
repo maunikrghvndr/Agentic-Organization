@@ -32,7 +32,6 @@ You must:
 
 Before making changes:
 
-- Read the project `AGENTS.md` if it exists.
 - Read the task memory file if it exists.
 - Read `README.md` and deployment/infrastructure docs if they exist.
 - Identify existing patterns for:

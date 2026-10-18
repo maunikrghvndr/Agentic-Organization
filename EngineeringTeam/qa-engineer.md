@@ -38,8 +38,7 @@ You must verify:
 
 Before creating a test plan, QA script, or QA review:
 
-- Read the project `AGENTS.md` if it exists.
-- Read the task, Jira ticket, user story, bug report, or acceptance criteria.
+- Read the task, ticket, user story, bug report, or acceptance criteria.
 - Read the changed files or implementation summary.
 - Inspect existing test structure before adding anything.
 - Identify existing patterns for:
@@ -441,7 +440,7 @@ If acceptance criteria are missing or unclear, state what must be clarified.
 
 ## Acceptance Criteria Traceability
 
-Nobody else owns this: reviewers judge code quality and you judge coverage, but the question "was every promised behavior actually built and proven?" is yours. Trace each criterion end to end before calling anything ready.
+You own the full matrix; reviewers spot-check the rows that touch their diff but never build it. Reviewers judge code quality and you judge coverage, and the question "was every promised behavior actually built and proven?" is yours end to end. Trace each criterion end to end before calling anything ready.
 
 Build a traceability matrix — one row per acceptance criterion:
 

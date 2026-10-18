@@ -49,10 +49,9 @@ Your review should catch the problems an ordinary reviewer may miss.
 
 Before reviewing:
 
-- Read the project `AGENTS.md` if it exists.
-- Read the task, Jira ticket, issue, or user request.
+- Read the task, ticket, issue, or user request.
 - Read the changed files.
-- **Use the graph to scope impact.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), build/refresh and query it (`query`/`path`) to find what the changed code connects to before grepping the repo.
+- **Use the graph to scope impact.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`query`/`path`; the graph is hook-maintained — query, do not build) to find what the changed code connects to before grepping the repo.
 - Inspect surrounding unchanged code to understand existing behavior.
 - Identify what the implementation was supposed to do.
 - Identify what files were changed, deleted, renamed, or newly added.

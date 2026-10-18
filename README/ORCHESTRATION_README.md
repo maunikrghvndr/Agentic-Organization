@@ -59,9 +59,16 @@ Agentic-Organization/
     TASK_MEMORY.template.md
     REFERENCE.template.md
 
-  Router/                  optional: ticket-classification prompt (unused in drop-in workflow)
-  Scripts/                 optional: headless ticket runners (unused in drop-in workflow)
-  _archive/                pre-restructure originals
+  Hooks/
+    handoff-check.mjs      optional Stop hook: blocks a Claude Code stop once if work was not recorded in task memory
+
+  Scripts/
+    Sync-AgentsMd.ps1      copy/refresh AGENTS.md into every repo under a parent folder
+    run-claude-ticket.ps1  deprecated headless runner (kept for reference; see Headless / CI use)
+    run-codex-ticket.ps1   deprecated headless runner (kept for reference; see Headless / CI use)
+
+  Router/
+    classify-ticket.md     deprecated ticket-classification prompt (AGENTS.md routes instead)
 ```
 
 ## Syncing AGENTS.md across all your repos
@@ -97,11 +104,11 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 
 - **Constitution** — the project's highest-authority principles. `.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`. Every role complies; the planner gate and every reviewer verify compliance.
 - **If a repo uses Spec Kit** (`.specify/` present), the roles read/write its artifacts — `specs/<feature>/spec.md` (`analyst`), `plan.md` (`architect`), `tasks.md` (`planner`) — never a parallel `.ai-memory/wiki/spec-*`. No second source of truth.
-- **Flow:** constitution → `analyst` (specify + clarify, EARS) → `architect` (plan) → `planner` (tasks + analyze gate) → engineers (implement) → reviewers/qa — mapping 1:1 onto Spec Kit's `constitution → specify → clarify → plan → tasks → analyze → implement`, driven by the role system.
+- **Flow:** constitution → `analyst` (specify + clarify, EARS) → `architect` (plan) → `planner` (tasks + analyze gate) → engineers (implement) → reviewers/qa — the same artifact sequence Spec Kit produces (`constitution → specify → clarify → plan → tasks → analyze → implement`, plus its optional `checklist` and `converge` gates, covered here by the planner gate and `qa-engineer` traceability), driven by the role system.
 
 ## Key Rules
 
-- **One role file per session.** Never load two.
+- **One role file per phase.** Load the role for the current phase and switch in-session by loading the next role file when the phase changes (`AGENTS.md` → Phase Protocol). Never hold two at once.
 - **Phases flow in one session** — the agent adopts each role in turn (analyst → architect → planner → engineer) and carries through to a working implementation. Only review/QA/security is *preferred* as a fresh session so a reviewer doesn't rubber-stamp its own code; if reviewed in-session, it must re-read and review adversarially.
 - **Rework loop:** reviewer/security/QA findings go back to the original engineer role; loop ends when no blocking issues remain.
 - **Cross-stack:** analyst (grill + spec) → architect (design, when needed) → planner (sequence + gate) → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, in one session. Skip roles that add nothing.
@@ -110,7 +117,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Self-learning (closed loop):** repo-specific knowledge goes in that repo's `.ai-memory/`; **general, transferable takeaways** ("never ship mock data in production") go in the library's shared `LESSONS.md`, which every repo reads and every agent contributes to. Stable universal lessons graduate into the role files. Inspired by Hermes' and Multica's skill-compounding, done in markdown with no runtime.
 - **Progress board:** `.ai-memory/ROADMAP.md` is the per-repo glance view — every feature/task grouped Backlog / In Progress / Blocked / Done, linking to task files and specs. Read it to re-orient after a context switch; roles keep it current and completion moves items to Done. It's the index over `TASKS/`, the way `PROJECT_MEMORY` indexes `wiki/`.
 - **Measure before trimming:** the library's `EVALS.md` is a lightweight A/B protocol — run a real task with vs. without a role/section, compare quality and token cost, and let the verdict (KEEP / TRIM / CUT) drive what stays. Directional, not rigorous, but it turns "feels heavy" into evidence and is the honest antidote to a library that only ever grows.
-- **Graph accelerator:** AGENTS.md drives the agent to build a Graphify knowledge graph and query it instead of grepping. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
+- **Graph accelerator:** the Graphify git hook (above) keeps the graph fresh on every commit, and `AGENTS.md` drives the agent to *query* it instead of grepping — it builds the graph only when no hook maintains it. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
 
 ## Maintaining The Library
 

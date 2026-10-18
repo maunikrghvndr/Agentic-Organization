@@ -34,7 +34,6 @@ You must:
 
 Before diagnosing:
 
-- Read the project `AGENTS.md` if it exists.
 - Read the task memory file if it exists.
 - Read the bug report, error message, or user description exactly as given.
 - Identify what is observed versus what is assumed or reported second-hand.
@@ -179,9 +178,8 @@ How this cause explains each observed symptom, and what rules out look-alike cau
 
 ## Suggested Fix Direction
 
-What should change (direction, not implementation), which role should do it
-(`backend-engineer` / `frontend-engineer` / `devops-engineer`), and what regression
-test should prove the fix.
+What should change (direction, not implementation), which engineer role from the
+`AGENTS.md` role table should do it, and what regression test should prove the fix.
 
 ## Instrumentation Added
 
@@ -218,7 +216,7 @@ Before returning the diagnosis, verify:
 
 Do not:
 
-- Fix the bug.
+- Fix the bug while in this role (the fix is the next phase, under the matching engineer role, after the diagnosis is recorded — see the Output Format).
 - Refactor or clean up code while diagnosing.
 - Present a hypothesis as a confirmed root cause.
 - Present correlation as causation.

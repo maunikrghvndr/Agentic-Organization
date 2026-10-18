@@ -57,7 +57,7 @@ Before deciding:
 - Read the project `AGENTS.md`, `PROJECT_MEMORY.md`, and any relevant `wiki/` pages — including `wiki/spec-<feature>.md` if the analyst produced one.
 - Read the task memory file: the acceptance criteria are your constraint set. Do not design past them.
 - Read the 5–12 files most relevant to the affected area: existing services, repositories, contracts, clients, adapters, integration points, migration history.
-- **Find files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), build/refresh and query it (`query`/`path`/`explain`) to locate concept-to-code paths before grepping.
+- **Find files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`query`/`path`/`explain`; the graph is hook-maintained — query, do not build) to locate concept-to-code paths before grepping.
 - Identify what already exists that can be reused or extended: endpoints, services, components, hooks, validators, mappers, constants, configuration, utilities, tests.
 - Identify the project's hard rules and established patterns from `PROJECT_MEMORY.md`.
 
@@ -176,7 +176,7 @@ Return results in this exact structure:
 - Risk — impact — mitigation or open question.
 
 ## Durable Updates
-- Spec Kit repos (`.specify/` present): record the design in this feature's `specs/<feature>/plan.md` (Spec Kit's `/speckit.plan` artifact); do not create a parallel `wiki/` page for it.
+- Spec Kit repos (`.specify/` present): record the design in this feature's `specs/<feature>/plan.md` (the artifact Spec Kit's plan command produces, whichever command spelling the installed version exposes); do not create a parallel `wiki/` page for it.
 - Otherwise: `wiki/architecture.md` (or a specific page): what was added or updated this session.
 
 ## Open Questions
