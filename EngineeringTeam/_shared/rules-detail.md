@@ -14,6 +14,21 @@ Lossless progressive disclosure (2026-10-18): `AGENTS.md` keeps a compact form o
 
 - **Handoff contract (for work that DOES span sessions).** When a phase genuinely hands off to a later session — because the user chose to split it, or the review runs as a separate task — the task file's Handoff section lists: next role; the exact files (`path:line`) and `wiki/` pages to read first; what is done and verified; what remains; settled decisions not to relitigate. The next session trusts this list and does not re-explore. Within a single session, this context is already in hand — just continue, unless a compaction occurred (see Compaction / re-entry).
 
+## Agent configuration files (Boundaries)
+
+Executable code for review purposes — any change is ask-first, reviewed as code, and gets the `security-engineer` pass. The list is illustrative of classes, not exhaustive: anything a host, editor, git or a package manager reads as instructions, settings, hooks or lifecycle commands counts.
+
+- Instruction files: `AGENTS.md`, `AGENT.md`, `CLAUDE.md`, `CLAUDE.local.md`, `GEMINI.md`, `.cursorrules`, `.clinerules`, `.windsurfrules`, `.github/copilot-instructions.md`, `.github/instructions/**`, `.github/prompts/**`, any `SKILL.md`, `CONSTITUTION.md` / `.specify/memory/constitution.md`, `.specify/**` (templates and scripts), `LESSONS.md`, `LESSONS/**`, and in the library repo `EngineeringTeam/**`, `MemoryTemplates/**`, `Scripts/**`, `Hooks/**`.
+- Host settings, agents, hooks, MCP: `.claude/**`, `.codex/**`, `.cursor/**`, `.gemini/**`, `.windsurf/**`, `.junie/**`, `.aiassistant/**`, `.kiro/**`, `.roo/**`, `.github/agents/**`, `.github/hooks/**`, `.mcp.json`, `.vscode/mcp.json`.
+- Editor and container execution: `.vscode/tasks.json`, `.vscode/launch.json`, `.vscode/settings.json`, `*.code-workspace`, `.idea/runConfigurations/**`, `.devcontainer/**`, `.envrc`, `mise.toml`.
+- Git: `.github/workflows/**`, tracked hook dirs (`.husky/**`, `.githooks/**`, `lefthook.yml`, `.pre-commit-config.yaml`, any `core.hooksPath` target), `.gitattributes` (a `-diff`, `binary` or `merge=` attribute on an instruction file hides it from review), `.gitmodules` (`update = !cmd` executes).
+- Package-manager lifecycle and registry config: `package.json` scripts (`preinstall`, `postinstall`, `prepare`), `.npmrc`, `.yarnrc*`, `NuGet.Config`, `Directory.Build.props/targets`, `pyproject.toml` build hooks, `.cargo/config.toml`, `build.rs`, `Makefile`, `justfile`, `Taskfile.yml`.
+- `.ai-memory/PROJECT_MEMORY.md` Commands block: not ask-first, but a changed recorded command is a reviewer finding and is Tier 4 until the user confirms it.
+
+## Rule of Two (unattended runs)
+
+An unattended run (CI, headless `-p`/`codex exec`, scheduled) may hold at most two of: (A) untrusted input — ticket, issue, PR, web or file content; (B) access to secrets, credentials, private data or sensitive systems; (C) the ability to change state or communicate externally — push, comment, deploy, send, any outbound request. A job that needs all three is split into runs that each hold two, or keeps a human approval between (A) and (C). Prose does not enforce this; the enforcing controls are the job's token scopes (`contents: read`, no PR creation), the sandbox, and the approval gate. (Meta, 2025-10-31; Microsoft's prescription after the 2026 claude-code-action incidents.)
+
 ## Measure before you trim (Self-Learning)
 
 - **Measure before you trim.** The library also holds `EVALS.md` at its root — a lightweight A/B protocol for checking whether a role or section actually improves output and what it costs. Before removing or trimming any role/section for weight, run (or ask the user to run) an eval to confirm it is not load-bearing, and record the verdict there. This is library-maintenance, not per-task work — do it when deliberately improving the library, not on every task.
@@ -29,3 +44,15 @@ When a non-trivial task teaches you a durable, generalizable engineering lesson 
 ## Parallelism: one writer (Phase Protocol)
 
 - **Parallelism: one writer.** Default is one session, sequential roles, one writer. The only sanctioned parallelism is read-only fan-out: the matching reviewer, `security-engineer` and `qa-engineer` may review the same frozen diff concurrently when the host can run subagents or parallel sessions, otherwise one after another (same outcome, only wall-clock differs). Writer phases never run concurrently on overlapping files; a planner phase marked `[P]` may run in a separate worktree or session only when its `Owns:` paths are disjoint from every other `[P]` phase. After fan-out the engineer merges and deduplicates all findings into the task file before fixing; any one reviewer's Blocking is blocking. A phase running in a worktree does not write `TASKS/`, `ROADMAP.md` or `PROJECT_MEMORY.md` — it reports, and the parent records after merge (memory stays single-writer).
+
+## Mandatory security review (Phase Protocol)
+
+- **Mandatory security review (blocking, never skippable).** Any change that touches authentication, authorization, cryptography, secrets, external/untrusted input, tenancy/multi-tenant isolation, file upload/download, SSRF-prone URL handling, PII/PHI/financial data, or adds/updates a dependency MUST get a `security-engineer` review before it is considered done — even a small change, even solo. The engineer and reviewer roles carry only implementation-critical security basics; the full audit depth (OWASP, injection, SSRF, PKCE/OAuth/OIDC, crypto, dependency CVEs) lives in `security-engineer`, which is the owner. If a reviewer spots a security-sensitive change that did not get this pass, that is a blocking finding.
+
+## Model and effort (Phase Protocol)
+
+- **Model and effort.** Never switch the main-session model between phases — the prompt cache is a strict prefix and a switch is a full miss. Route cheap work (classification, file discovery) to subagents or headless flags on a small model; reviewers, QA and security never run on a small model. Tune effort on one model before splitting models, and log any routing change as an `EVALS.md` row.
+
+## Grill Checkpoint (Universal Rule)
+
+- **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange: (1) restate the task in one line as you understand it; (2) name every load-bearing assumption explicitly; (3) ask any question that would change what you build — if none, say so; (4) do not proceed until intent is confirmed — either the user answers, or the user accepts your restatement. For a fully specified task this is a single line and 15 seconds; for an ambiguous one it becomes real questions. It is never skipped. **Non-interactive runs** (`-p`, `codex exec`, a routine or CI job — no user can answer): write the restatement and the assumptions into the task file Summary; proceed only if every assumption is a stated default, no load-bearing question remains and the run satisfies the Rule of Two (`_shared/rules-detail.md`); otherwise stop and emit the open questions as the run's output. When the task is a feature-sized ambiguity (vague product idea, missing acceptance criteria), stop this lightweight version and route to `analyst` for full-depth grill and durable spec production instead.

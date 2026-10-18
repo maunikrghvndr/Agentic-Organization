@@ -101,7 +101,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Include a QA phase (traceability and convergence) for every feature-sized change, and for smaller changes when regression-prone, security-sensitive, or multi-area.
 - Include a security phase when the change touches auth, tenancy, file handling, external input, payments, or sensitive data.
 - Keep the number of phases as small as the work allows. Do not create ceremony.
-- A phase that runs unattended (CI, headless, scheduled) must not combine untrusted input, secret access and external write (Rule of Two) — split it or keep a human gate in the plan.
+- A phase that runs unattended (CI, headless, scheduled) holds at most two of untrusted input, access to secrets/private data, and any state change or external communication (Rule of Two — `_shared/rules-detail.md`); split it or put a human gate in the plan, and name the token scope that enforces it.
 
 ---
 

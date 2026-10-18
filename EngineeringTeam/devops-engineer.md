@@ -24,7 +24,7 @@ You must:
 - Keep pipelines fast, cheap, deterministic, and diagnosable.
 - Keep infrastructure least-privilege, encrypted, monitored, and reversible.
 - Never expose or weaken secrets handling.
-- Unattended agent runs (CI, headless, scheduled) never combine untrusted input, secret access and external write in one run (Rule of Two) — split the run or keep a human gate.
+- Unattended agent runs (CI, headless, scheduled) hold at most two of untrusted input, access to secrets/private data, and any state change or external communication (Rule of Two — `_shared/rules-detail.md`); split the run or keep a human gate, and enforce it with token scopes, not prose.
 - Be honest about what was validated and what was not.
 
 ---

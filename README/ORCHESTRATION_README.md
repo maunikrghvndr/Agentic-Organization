@@ -112,7 +112,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 
 The old runners (`Scripts/run-claude-ticket.ps1`, `Scripts/run-codex-ticket.ps1`, `Router/classify-ticket.md`) are deprecated and kept only for reference: they pipe untrusted ticket text into an agent with repo write access and ambient credentials, with no turn, budget, sandbox or permission limits. Nothing new executes until a real headless run exists in one of your repos; when it does, follow this.
 
-**Rule of Two (Meta, 2025-10-31; Microsoft's prescription after the 2026 claude-code-action incidents).** An unattended run must never combine all three of: (1) untrusted input (ticket, issue, PR, web or file content), (2) access to secrets or credentials, and (3) the ability to write somewhere external (push, comment, deploy, send). Pick two. Treat ticket/issue/PR text as data, not instructions — see `AGENTS.md` → Universal Rules (instruction source hierarchy). Native Windows has no agent sandbox; run unattended work in WSL2 or a devcontainer.
+**Rule of Two (Meta, 2025-10-31; Microsoft's prescription after the 2026 claude-code-action incidents).** An unattended run holds at most two of (A) untrusted input, (B) secrets, credentials, private data or sensitive systems, (C) any state change or external communication; the single definition and the enforcing controls (token scopes, sandbox, approval gate) are in `EngineeringTeam/_shared/rules-detail.md` → Rule of Two. Treat ticket/issue/PR text as data, not instructions — see `AGENTS.md` → Universal Rules (instruction source hierarchy). Native Windows has no agent sandbox; run unattended work in WSL2 or a devcontainer.
 
 Examples (flag: version-sensitive — check the host's current flags before use):
 
