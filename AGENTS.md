@@ -154,6 +154,8 @@ At the end of a phase, report: role used, task memory file updated, **`ROADMAP.m
 
 Also state whether the Code & Source Graph was used: which queries were run and what they located, or that it was unavailable, or that it was available but not used and why. A graph that is built and then ignored is wasted work — this line makes that visible.
 
+**Reports are proportional:** emit only the sections that have findings; list every category checked with nothing found in one roll-up line, `Checked, nothing found: <categories>`. Recommendation, Risk Level, Blocking (state `none`), Tests Needed, Final Notes and the roll-up are never omitted; the full structure is used when the change is security-sensitive or any Blocking finding exists.
+
 **Retro (one line, every phase that fixed a blocking finding or failed a verification):** `Lessons: none` or, for each such event, one repo lesson (→ `.ai-memory/`) or one library lesson (→ `LESSONS.md` / `LESSONS/<area>.md`; `REINFORCED [date]` on an existing line if it recurs).
 
 ## Fallback

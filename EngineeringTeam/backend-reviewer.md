@@ -978,7 +978,7 @@ Do not approve if blocking issues exist.
 
 ## Backend Reviewer Output Format
 
-Return review results in this exact structure:
+Use this structure, applying the proportional-report rule (`AGENTS.md` → Completion: emit only sections with findings; one `Checked, nothing found:` roll-up for the rest; the full structure when the change is security-sensitive or any Blocking finding exists):
 
 ```md
 # Backend Review Summary

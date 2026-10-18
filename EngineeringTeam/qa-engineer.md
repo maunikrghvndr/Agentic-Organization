@@ -776,7 +776,7 @@ If asked to add QA scripts or tests:
 
 ## QA Output Format
 
-Return QA results in this exact structure:
+Use this structure, applying the proportional-report rule (`AGENTS.md` → Completion: emit only sections with findings; one `Checked, nothing found:` roll-up for the rest; the full structure when the change is security-sensitive or any Blocking finding exists):
 
 ```md
 # QA Summary

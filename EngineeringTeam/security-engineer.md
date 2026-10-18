@@ -1087,7 +1087,7 @@ Fix order:
 
 ## Security Engineer Output Format
 
-Return findings in this exact structure:
+Use this structure, applying the proportional-report rule (`AGENTS.md` → Completion: emit only sections with findings; one `Checked, nothing found:` roll-up for the rest; the full structure whenever the change is security-sensitive — which is every change this role reviews — or any finding is Critical/High):
 
 ```md
 # Security Review Summary
