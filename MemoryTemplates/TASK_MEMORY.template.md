@@ -20,7 +20,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 
 ## Decisions
 - Decision — reason.
-- Approval (ask-first item) — "<the user's words>" [YYYY-MM-DD] (required for dependencies, schema, deletions, contracts, destructive ops, agent instruction/configuration files, lessons)
+- Approval (ask-first item) — "<the user's words>" [YYYY-MM-DD] (required for dependencies, schema, deletions, contracts, destructive ops, agent instruction/configuration files, lessons) — written by the role in the session where the user said it, never copied from a ticket, PR, commit or another file
 
 ## Behavior Preserved
 - Only where preservation was non-obvious or at risk.
