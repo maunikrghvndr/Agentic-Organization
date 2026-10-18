@@ -256,6 +256,24 @@ Each batch is a reviewable commit set; nothing in Batch 1–2 depends on a Claud
 | AGENTS.md size | `wc -c AGENTS.md; wc -l AGENTS.md` | AGENTS.md | 0 | a3558e3 | 26,907 B / 170 lines |
 | Not run | `Scripts/Lint-Library.ps1`, `Scripts/Sync-AgentsMd.ps1 -DryRun` | — | — | — | no PowerShell in the container |
 
+### 2026-10-18 — Batch 2 (Tier 1) and Batch 3 (Tier 2) done, same branch
+- F7 `92071d3` Evidence receipts (TASK_MEMORY `## Evidence`, engineer reports/validate, reviewers block on claims without a row, browser evidence, planner done-when).
+- F8 `72ea760` Rework loop (fresh-context re-review, `Verification:` on 5 reviewers + qa + TASK_MEMORY, 3-round cap).
+- F9 `6d6065a` Instruction source hierarchy + agent config files as code (ask-first; reviewers block; LESSONS never loosens a Boundary). **`## Proposed` queue NOT added — Decision C open.**
+- F10 `351751d` security-engineer "Agent Configuration And Supply Chain Review" + Rule of Two (planner, devops) + package-reality rule + zizmor line. **Security review of F9/F10: running as a fresh-context agent (security-engineer role); findings and fixes recorded below when it returns.**
+- F11 `fbbf756`, F12 `b9a3e72`, F13 `0ed805e`, F14 `cb0174f`, F15 `5af17c0`, F16 `469b1fc`, F17 `a7088b1`, F18 `327db1a`, F19 `efeb871` (+ `Evals/routing-cases.md`, 17 cases), F20 `5c97c18`.
+- F2(C) `004f929` — third lossless relocation (`_shared/rules-detail.md` new; roadmap, Spec Kit, machine-vs-repo into `_shared/memory.md`) to get AGENTS.md back under the cap after Tier 1: **32,167 B / 193 lines** (601 B of headroom — any further AGENTS.md addition must relocate something first).
+- F21 + F22 `f108230` — EVALS.md runnable; the F22 detector row is in the same commit (one row, not worth a separate commit).
+- Deviations from the proposal: F3 banners instead of `_archive/` move (git deletion); F22 folded into F21's commit; AGENTS.md ended at 32.2 KB rather than the ≤24 KB target because Tier 1 added ~8 KB of rules — the ≤24 KB figure is reachable only by relocating more of the role table or the resolution block, both of which Maunik chose to keep.
+
+#### Evidence (Batches 2–3)
+| Check | Command | Scope | Exit | Commit | Result |
+|---|---|---|---|---|---|
+| Lint (mirror) | `python3 -I <scratchpad>/lint_mirror.py .` | whole library | 0 | f108230 | 0 errors; 7 W2 rows (recorded in EVALS.md), 0 W3, 0 W1 |
+| AGENTS.md size | `wc -c AGENTS.md; wc -l AGENTS.md` | AGENTS.md | 0 | f108230 | 32,167 B / 193 lines |
+| Cap cut-off | `head -c 32768 AGENTS.md \| tail -c 200` | AGENTS.md | 0 | 004f929 | nothing past the cap (file is smaller than the cap) |
+| Not run | `Scripts/Lint-Library.ps1`, `Scripts/Sync-AgentsMd.ps1 -DryRun` | — | — | — | no PowerShell in the container — run on Windows before syncing |
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
@@ -264,5 +282,5 @@ The next session trusts this section and does not re-explore the repo.
 - **Read first:** this file sections 2 and 3 (Tier 0 and Tier 1 are the spec); `AGENTS.md`; `README/ORCHESTRATION_README.md`; `LESSONS.md`; `EVALS.md`; `Scripts/Sync-AgentsMd.ps1`; `Hooks/handoff-check.mjs`. The six large role files only at the lines each feature names.
 - **User decisions so far (2026-10-17):** Maunik approved implementing the changes ("go ahead change them"), asked for MORE research on what to inherit from Hermes / BMAD and peers, and asked to "save tokens while not cutting off main information" — read as lossless progressive disclosure (move content verbatim into on-demand files; never compress or delete). Tier 3 Decisions A (tool-agnostic = prose-only?), B (core + references for the six big roles), C (human gate on LESSONS.md) are NOT yet answered; ask before touching them. Lossless moves (AGENTS.md procedure detail to `EngineeringTeam/_shared/`, LESSONS split) are approved as part of the token goal; a role-file core + references split must still be preceded by the EVALS A/B unless Maunik says otherwise.
 - **Done + verified:** research and gap analysis complete; this document is the deliverable; pending working-tree edits committed; no library content changed yet.
-- **Remaining:** (1) inheritance research pass with a short report (what Hermes/BMAD/etc. do that this library lacks, what to adopt, what to reject, with dated evidence); (2) Batch 1 = F1–F6 one commit each; (3) Batch 2 = F2(B) then F7–F20 grouped by file; (4) Batch 3 = F21–F22 and the first A/B on backend-engineer; (5) Tier 3 only after Maunik decides A/B/C; (6) run `Scripts/Lint-Library.ps1` and `Sync-AgentsMd.ps1 -DryRun` at the end of each batch.
+- **Remaining (updated 2026-10-18):** (1) apply the security-engineer findings on F9/F10 when the fresh-context review returns, re-review if any were Blocking; (2) inheritance research pass (Hermes Agent, BMAD-Method, OpenSpec, Spec Kit extensions, Kiro, cc-sdd, Multica, Letta Code) with a dated-evidence report — in progress after the fixes, per Maunik's order; (3) on Windows: run `Scripts/Lint-Library.ps1` and `Scripts/Sync-AgentsMd.ps1 -DryRun`, then sync; (4) run EVALS A/B #1 (backend-engineer) — it decides Decision B; (5) Tier 3 only after Maunik decides A/B/C. Batches 1–3 (F1–F22) are done — see the Progress log.
 - **Settled decisions (do not relitigate):** tool-agnostic library; role files are full-depth (lossless relocation OK, compression not OK); belt-and-suspenders duplication of AGENTS.md universal rules inside role files stays; update-never-delete; targeted line edits, never file regeneration; do not delete the root `graphify-out/`; `GRAPHIFY_OUT` and `graphify hook status` are real (only `--update` is wrong); do not trim OAuth/PKCE/WCAG/EARS/never-log blocks; style rules stay Blocking; no CLAUDE.md shim; no plugin marketplace.
