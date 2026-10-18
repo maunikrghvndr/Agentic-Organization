@@ -28,30 +28,14 @@ Agentic-Organization/
   LESSONS/                 area files the index maps to roles: backend.md, frontend.md, data-ml-ai.md, tooling-agent-workflow.md
   EVALS.md                 A/B protocol + log for measuring whether roles/sections earn their tokens
 
-  EngineeringTeam/
-    researcher.md          discover the best current approach/tech/paper, challenge the status quo, cite evidence
-    analyst.md             grill user intent, produce EARS acceptance criteria, promote durable spec
-    architect.md           system design decisions (data model, APIs, boundaries, tech choice)
-    planner.md             sequence a settled feature into phases + pre-implementation gate
-    backend-engineer.md    implement backend changes
-    frontend-engineer.md   implement frontend changes
-    devops-engineer.md     CI/CD, Docker, IaC, deployments
-    debugger.md            reproduce + root-cause (diagnosis only)
-    data-engineer.md       pipelines, ETL/ELT, data quality, warehousing
-    data-scientist.md      EDA, stats, feature engineering, model selection, offline eval
-    ml-engineer.md         productionize models: training pipelines, serving, feature parity
-    mlops-engineer.md      ML platform: tracking, registry, model CI/CD, drift/monitoring
-    ai-engineer.md         LLM app logic: integration, agents, tool calling, guardrails, eval
-    prompt-engineer.md     prompt design, few-shot, prompt evaluation/optimization
-    rag-engineer.md        retrieval: chunking, embeddings, vector search, reranking, eval
-    nlp-engineer.md        NER, entity linking (UMLS), classification, clinical NLP, OCR
-    backend-reviewer.md    review backend diffs
-    frontend-reviewer.md   review frontend diffs
-    data-reviewer.md       review data-engineer/data-scientist (quality, analysis/model integrity)
-    ml-reviewer.md         review ml-engineer/mlops (reproducibility, parity, lifecycle)
-    ai-reviewer.md         review ai/prompt/rag/nlp (eval rigor, LLM safety, injection, isolation)
-    qa-engineer.md         test plans, coverage, QA scripts, release readiness
-    security-engineer.md   security audits (audit only; fixes route to engineers)
+  EngineeringTeam/         23 role files — the catalog (name, file, use-for) is the AGENTS.md role table, not repeated here:
+                           researcher analyst architect planner backend-engineer frontend-engineer devops-engineer debugger
+                           data-engineer data-scientist ml-engineer mlops-engineer ai-engineer prompt-engineer rag-engineer nlp-engineer
+                           backend-reviewer frontend-reviewer data-reviewer ml-reviewer ai-reviewer qa-engineer security-engineer
+    _shared/               on-demand detail relocated verbatim from AGENTS.md: graph.md (Code & Source Graph procedure), memory.md (Repo Memory detail)
+
+  Evals/
+    routing-cases.md       one-line tickets with the expected role (incl. near-misses and the negative trivial case); results go in EVALS.md
 
   MemoryTemplates/
     CONSTITUTION.template.md

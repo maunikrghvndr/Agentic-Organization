@@ -66,7 +66,9 @@ Infer one primary role per phase. The user does not need to name it.
 - Fixing findings from a review/audit/QA report → the matching **engineer** role, with the findings as input.
 - Bug report / "fix this bug" → `debugger` (diagnosis) → the matching engineer (fix only; anything outside the diagnosis is logged as a deviation in the task file) → `qa-engineer` (re-run the original reproduction plus the suite; verdict Ready / Not Ready / Ready With Risks).
 
-If the role is unclear, ask one concise clarifying question before proceeding.
+- **Not for (the four confusable pairs):** `data-engineer` is not analysis or modelling (`data-scientist`); `ai-engineer` is not prompt wording (`prompt-engineer`); `debugger` never fixes (the engineer does, as the next phase); an engineer never reviews its own diff (the reviewer does, in a fresh context).
+
+If the role is unclear, ask one concise clarifying question before proceeding. The role table above is the single catalog; no other file enumerates roles.
 
 ## Phase Protocol
 
