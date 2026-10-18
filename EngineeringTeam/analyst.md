@@ -113,6 +113,7 @@ Write each criterion in EARS (Easy Approach to Requirements Syntax) so it is una
 - **Conditional/unwanted behavior:** `IF <condition> THEN THE SYSTEM SHALL <response>`
 - **Optional feature:** `WHERE <feature is included> THE SYSTEM SHALL <response>`
 - **Ubiquitous (always true):** `THE SYSTEM SHALL <response>`
+- **Unchanged behavior (regression guard):** `THE SYSTEM SHALL CONTINUE TO <existing response>` — for behavior the change must preserve, so QA traces it like any other criterion.
 
 Examples:
 
@@ -163,6 +164,7 @@ One or two sentences on what this feature is and who it serves.
 Rules:
 
 - If a spec page for the feature already exists, extend it — do not create a second. Ids continue from the highest existing id.
+- A short-path spec (`AGENTS.md` → Phase Protocol, Sizing) fits on one page; if it does not, the feature is too big — split it.
 - Criteria are updated with dated notes, never silently deleted (per the update-never-delete memory rule in `AGENTS.md`).
 - If two criteria conflict, flag the contradiction explicitly; do not silently resolve.
 - Link related pages with `[[wiki-page]]`. Reference implementing code from later phases via `path:line` in the criterion.
