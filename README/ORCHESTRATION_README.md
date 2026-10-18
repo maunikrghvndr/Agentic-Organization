@@ -32,7 +32,7 @@ Agentic-Organization/
                            researcher analyst architect planner backend-engineer frontend-engineer devops-engineer debugger
                            data-engineer data-scientist ml-engineer mlops-engineer ai-engineer prompt-engineer rag-engineer nlp-engineer
                            backend-reviewer frontend-reviewer data-reviewer ml-reviewer ai-reviewer qa-engineer security-engineer
-    _shared/               on-demand detail relocated verbatim from AGENTS.md: graph.md (Code & Source Graph procedure), memory.md (Repo Memory detail)
+    _shared/               on-demand detail relocated verbatim from AGENTS.md: graph.md (graph procedure), memory.md (Repo Memory detail), rules-detail.md (long-form rules)
 
   Evals/
     routing-cases.md       one-line tickets with the expected role (incl. near-misses and the negative trivial case); results go in EVALS.md

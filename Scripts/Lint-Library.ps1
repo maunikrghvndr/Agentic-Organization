@@ -84,6 +84,7 @@ if ($readme -match '(?s)## Structure.*?```text\s*\n(.*?)```') {
         if ($line.Trim() -eq '' -or $line -match '^\S') { continue }   # root line / blanks
         $indent = ($line -replace '^(\s*).*$', '$1').Length
         $name = ($line.Trim() -split '\s{2,}')[0]
+        if ($name -match '\s') { continue }   # continuation text, not a path
         $depth = [math]::Floor($indent / 2) - 1
         if ($depth -lt 0) { $depth = 0 }
         $stack = @($stack[0..([math]::Max($depth - 1, 0))] | Where-Object { $_ })
