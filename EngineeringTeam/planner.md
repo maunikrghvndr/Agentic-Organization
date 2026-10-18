@@ -95,6 +95,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Backend contract before frontend consumption when the API does not exist yet.
 - Migration/persistence changes before the code that depends on them.
 - Each phase names exactly one role from the `AGENTS.md` role table — any engineer, reviewer, QA, security, debugger, researcher, analyst or architect role listed there; the table is the single catalog, never an enumeration here.
+- Each phase gets a stable id `T<nn>` and an `Owns:` line naming the exact paths it may write. One optional `[P]` marker is allowed only when the phase's `Owns:` is disjoint from every other `[P]` phase and it has no forward dependency — `[P]` phases may run in separate worktrees/sessions; everything else is sequential (one writer). In a Spec Kit repo the same ids go into `tasks.md`.
 - Write each phase so it is executable on its own (files to read, criteria, done-when) — this keeps it usable whether it runs next in this session or, if the user splits the work, in a later one.
 - Include review phases for non-trivial implementation phases.
 - Include a QA phase (traceability and convergence) for every feature-sized change, and for smaller changes when regression-prone, security-sensitive, or multi-area.
@@ -109,6 +110,8 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 Each phase in the plan carries a compact handoff block the next session can use verbatim:
 
 - Role for this phase.
+- Owns: the exact paths this phase may write.
+- Boundaries: files not to touch; ask-first items that apply.
 - Files to read first: `path:line` anchors + relevant `wiki/` pages.
 - Acceptance criteria this phase must satisfy: `AC-n`.
 - Design decisions this phase must honor: refer by name.
@@ -122,7 +125,7 @@ Each phase in the plan carries a compact handoff block the next session can use 
 Identify only risks the sequencing introduces or exposes:
 
 - Phase ordering that leaves the system broken between steps.
-- Parallel work that could conflict.
+- Parallel work that could conflict (`[P]` phases whose `Owns:` overlap are a planning error).
 - Dependencies on external systems, migrations, or approvals that could block.
 - Gaps between the spec and the design that surface at sequencing time — route back to `analyst` or `architect`.
 
@@ -170,14 +173,16 @@ Return the plan in this exact structure:
 
 ## Phases
 
-### Phase 1 — `<role>`
+### T01 — `<role>`  (append `[P]` only if Owns is disjoint from every other `[P]` phase)
+- Owns: `<exact paths>`
+- Boundaries: <files not to touch; ask-first items>
 - Read first: `path:line` + `wiki/...`
 - Satisfies: `AC-n`, `AC-m`
 - Honors design: <named decisions>
 - Done-when: <verifiable check> — verified by <self-check / project test command / CI / independent review>
 - Next: `<role>`
 
-### Phase 2 — `<role>`
+### T02 — `<role>`
 - ...
 
 ## Out Of Scope
