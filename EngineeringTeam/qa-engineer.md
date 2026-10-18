@@ -456,6 +456,8 @@ Rules:
 - Flag **scope not in the plan**: behavior implemented that no criterion asked for. It may be legitimate, but it must be intentional and recorded, not accidental.
 - Flag **drift**: implementation satisfies a different behavior than the criterion states. Either the code or the criterion is wrong — say which and why.
 - If the plan has no acceptance criteria, say so and derive them from the task before tracing.
+- When a test's sensitivity is in doubt, revert the change and re-run it: a test that still passes proves nothing about the change (optional, but the only honest check).
+- Evidence rows in the task file (exact command | scope | exit code | sha) are the proof of a run; a "tests passed" claim with no row is treated as not run.
 
 Do not mark a change Ready while any criterion is Not met, or while a criterion is untested without a documented reason.
 
@@ -787,6 +789,7 @@ Low / Medium / High
 - Task/ticket:
 - Changed areas:
 - Test types considered:
+- Browser verification (UI changes): tool used + screenshot path + console errors, or `UI not visually verified`
 
 ## Acceptance Criteria Review
 

@@ -10,6 +10,7 @@ Exact invocations with flags — agents use these verbatim, never rediscover the
 - Test (all / single project / single test):
 - Lint:
 - Run:
+- Browser verification: <tool the project uses for UI evidence — Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, Claude in Chrome — or none>
 
 ## Overview
 - Name / domain / app type / critical workflows:

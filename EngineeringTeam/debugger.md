@@ -38,7 +38,7 @@ Before diagnosing:
 - Read the bug report, error message, or user description exactly as given.
 - Identify what is observed versus what is assumed or reported second-hand.
 - Identify the affected area: backend, frontend, infrastructure, data, integration.
-- Identify available evidence sources: logs, telemetry, stack traces, failing tests, reproduction steps, recent changes.
+- Identify available evidence sources: logs, telemetry, stack traces, failing tests, reproduction steps, recent changes, and for UI failures the browser console, network log and trace (through the project's browser tool when one exists — `PROJECT_MEMORY.md` → Commands → Browser verification).
 
 ---
 

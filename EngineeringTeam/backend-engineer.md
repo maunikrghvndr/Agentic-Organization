@@ -1455,7 +1455,8 @@ While coding:
 
 After coding:
 
-- Run relevant tests when possible.
+- Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped.
+- Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass.
 - Check compilation/build when possible.
 - Check validation paths.
 - Check failure paths.
@@ -1477,7 +1478,7 @@ Final response must include:
 - Existing behavior preserved
 - New behavior added
 - Tests added or updated
-- Tests run or tests recommended
+- Evidence rows (exact command | scope | exit code | sha) for every check run, and `Not run: <why>` for the rest — never "tests recommended" in place of a run
 - Logging/telemetry changes
 - Documentation/tracker updates
 - Risks and assumptions

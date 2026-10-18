@@ -118,6 +118,7 @@ Use this for issues that must be fixed before merge.
 Examples:
 
 - Code does not satisfy the task.
+- "Tests passed" claimed with no Evidence row in the task file (exact command, scope, exit code, sha) — unverified is not verified.
 - Existing behavior was accidentally deleted or broken.
 - Public contract was changed without justification.
 - Validation was removed, weakened, or bypassed.

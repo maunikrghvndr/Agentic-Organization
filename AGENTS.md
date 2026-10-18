@@ -95,7 +95,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 - **Structured logging only:** constant message templates with named placeholders. Never string interpolation or concatenation for logs. Never log secrets, tokens, passwords, connection strings, or sensitive payloads.
 - **C#:** explicit types by default. `var` only for simple primitive locals where the type is obvious. Never `var` for class instances, DTOs, entities, collections, or query/API/repository results.
 - **TypeScript:** no `any`. Explicit types for API responses, DTOs, domain objects, props, and state.
-- Add or update tests for behavior changes. Never claim tests passed if they were not run.
+- Add or update tests for behavior changes. Never claim tests passed if they were not run: every check is an Evidence row in the task file (command, scope, exit code, sha), and a changed behavior shows a test failing before and passing after, with no existing test modified to pass.
 - Update documentation/tracker files when behavior, configuration, architecture, security, or testing changes.
 
 ## Boundaries
@@ -145,7 +145,7 @@ Graphify (MIT) turns a codebase and its documents into a queryable graph, so the
 - **Fallback (the normal route):** Graphify is an accelerator, never a dependency. Whenever it is absent, declined, or erroring, read and grep files directly. Say once that the graph is unavailable and continue — do not investigate the tooling unless the user asks. The workflow must always work from `AGENTS.md` alone.
 ## Completion
 
-At the end of a phase, report: role used, task memory file updated, **`ROADMAP.md` status updated** (item moved to In Progress / Blocked / Done as applicable), files changed, tests added/run, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done"). When a task completes, move its roadmap item to Done with a date and archive the task file.
+At the end of a phase, report: role used, task memory file updated, **`ROADMAP.md` status updated** (item moved to In Progress / Blocked / Done as applicable), files changed, tests added/run **as the task file's Evidence rows (exact command | scope | exit code | sha; `Not run: <why>` for the rest) — a claim without a command and exit code is "not verified"**, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done"). When a task completes, move its roadmap item to Done with a date and archive the task file.
 
 Also state whether the Code & Source Graph was used: which queries were run and what they located, or that it was unavailable, or that it was available but not used and why. A graph that is built and then ignored is wasted work — this line makes that visible.
 

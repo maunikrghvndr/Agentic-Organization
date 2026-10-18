@@ -126,6 +126,7 @@ Use this for issues that must be fixed before merge.
 Examples:
 
 - Code does not satisfy the task.
+- "Tests passed" claimed with no Evidence row in the task file (exact command, scope, exit code, sha) — unverified is not verified.
 - Existing UI behavior was accidentally deleted or broken.
 - Existing route behavior was broken.
 - Existing API integration was broken.

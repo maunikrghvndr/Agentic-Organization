@@ -109,7 +109,7 @@ Each phase in the plan carries a compact handoff block the next session can use 
 - Files to read first: `path:line` anchors + relevant `wiki/` pages.
 - Acceptance criteria this phase must satisfy: `AC-n`.
 - Design decisions this phase must honor: refer by name.
-- Done-when: the verifiable check that closes this phase.
+- Done-when: the verifiable check that closes this phase, plus how it is verified (self-check / project test command / CI / independent review) — the engineer records it as an Evidence row.
 - Next phase: role name (or "done").
 
 ---
@@ -162,7 +162,7 @@ Return the plan in this exact structure:
 - Read first: `path:line` + `wiki/...`
 - Satisfies: `AC-n`, `AC-m`
 - Honors design: <named decisions>
-- Done-when: <verifiable check>
+- Done-when: <verifiable check> — verified by <self-check / project test command / CI / independent review>
 - Next: `<role>`
 
 ### Phase 2 — `<role>`

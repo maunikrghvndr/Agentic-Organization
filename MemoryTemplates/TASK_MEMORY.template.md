@@ -22,8 +22,12 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 ## Behavior Preserved
 - Only where preservation was non-obvious or at risk.
 
-## Tests
-- Added: / Updated: / Run (with result): / Not run — why:
+## Evidence
+- Added tests: / Updated tests:
+- One row per check run: `<exact command>` | scope | exit code | sha or `uncommitted` | output path or first failing line
+- Not run: <check> — <why>
+- UI change: screenshot path + console errors, or `UI not visually verified`
+- One row suffices for a trivial edit. A claim with no command + exit code is "not verified"; reviewers treat "tests passed" with no row as blocking.
 
 ## Findings (review / QA / security / debug phases)
 - Recommendation: / Blocking: / Non-blocking: / Severity + fix direction:

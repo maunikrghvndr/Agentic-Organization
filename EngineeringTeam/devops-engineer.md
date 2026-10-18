@@ -232,7 +232,7 @@ Final response must include:
 - Summary of what changed
 - Files changed
 - Pipeline/infra behavior added or preserved
-- How it was validated, or exact commands to validate
+- Evidence rows (exact command | scope | exit code | sha) for every validation run, and `Not run: <why>` for the rest — never a bare "commands to validate" in place of a run
 - Rollback procedure
 - Secrets/permissions touched (names only)
 - Cost and security impact

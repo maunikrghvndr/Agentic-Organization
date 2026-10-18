@@ -1196,9 +1196,10 @@ While coding:
 
 After coding:
 
-- Run relevant tests when possible.
+- Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped.
+- Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass.
 - Check build/typecheck/lint when possible.
-- Check rendering behavior.
+- Check rendering behavior. For any UI change, if a browser tool is available (the project's Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, Claude in Chrome — see `PROJECT_MEMORY.md` → Commands → Browser verification), open the running app and record a screenshot path and the console errors in the task file's Evidence; otherwise write `UI not visually verified`.
 - Check loading, empty, error, and success states.
 - Check form validation paths.
 - Check API failure paths.
@@ -1221,7 +1222,7 @@ Final response must include:
 - New behavior added
 - Components/hooks/services reused or added
 - Tests added or updated
-- Tests run or tests recommended
+- Evidence rows (exact command | scope | exit code | sha) for every check run, and `Not run: <why>` for the rest — never "tests recommended" in place of a run
 - Accessibility impact
 - Performance impact
 - Constants/configuration changes
