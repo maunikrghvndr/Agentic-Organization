@@ -12,6 +12,7 @@ This file lives in the **role library** (beside `EngineeringTeam/`), read from t
 ## What does NOT belong here
 
 - **Repo-specific facts** (build commands, this project's patterns, a particular gotcha) → those go in that repo's `.ai-memory/` (`PROJECT_MEMORY.md` / `wiki/`), never here.
+- **Machine-local facts and personal corrections** → the host's own per-machine memory (Claude Code auto memory, Codex memories), never here and never in a repo's `.ai-memory/`.
 - **Restatements of rules already in `AGENTS.md` or a role file** → don't duplicate. Capture what experience taught that isn't already written down.
 
 ## Rules for this file
