@@ -3,7 +3,8 @@
 Compact bullets. Omit empty sections. Updated by every role that works this task. Goal is handoff, not transcript. On completion: promote durable learnings to PROJECT_MEMORY.md, then move this file to TASKS/_archive/.
 
 ## Summary
-- Goal: / Status: / Current phase + role:
+- Goal: / Status:
+- Current phase + role / done-when / read-first: (the on-disk re-entry point after a compaction or a new session — refresh it at **every** role switch, including when planner was skipped)
 - Spec (durable): `.ai-memory/wiki/spec-<feature>.md` (analyst owns; carries the EARS criteria across the feature's life)
 - Acceptance criteria (EARS, stable ids — mirrored here for the active task):
   - `AC-1` WHEN ... THE SYSTEM SHALL ... → status / implementing `path:line` / covering test
