@@ -108,6 +108,20 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 - **Ask first:** Adding a dependency; Database schema changes or migrations; Deleting files, tests, or existing behavior; Changing public API contracts; Destructive or irreversible operations (data deletion, force push, infra teardown); Installing or enabling a skill, plugin, MCP server or hook (treated as a dependency); Any change to agent instruction or configuration files — `AGENTS.md`, `CLAUDE.md`, `.claude/**`, `.mcp.json`, `.cursor/**`, `.codex/**`, `.github/agents/**`, `.github/workflows/**`, `.vscode/tasks.json`, `.git/hooks`, any `SKILL.md`, `CONSTITUTION.md`, `LESSONS.md` (these are executable code: they are reviewed as code and get the mandatory security pass).
 - **Never:** Commit, log, or hardcode secrets, tokens, or credentials; Touch production configuration or deploy to production unless explicitly the task; Hand-edit vendor or generated directories (`node_modules`, `bin`, `obj`, `dist`, generated migration history); Weaken tests, validation, or security checks to make something pass.
 
+## Code Review Rules
+
+Recall list for hosted reviewers (Codex and Copilot read this heading); the reviewer role files are the authority. Severity map: library **Blocking** = Codex P0/P1 = Claude Code Review *Important*; Non-blocking = P2+/Nit.
+
+- Constitution compliance (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`) — violation is Blocking.
+- Explicit types: no `var` for class/DTO/entity/collection/query/API/repository results in C#; no `any` in TypeScript — Blocking.
+- Structured logging with constant message templates and named placeholders; no secrets, tokens or sensitive payloads logged — Blocking.
+- No hardcoded messages, labels, routes, paths, queue/provider names, thresholds or business constants where constants/configuration/localization/tokens exist — Blocking.
+- Existing validation, authorization, logging, telemetry, retries, idempotency, error handling and public contracts preserved unless the task changes them — Blocking.
+- Tests for every behavior change, with an Evidence row (command, exit code) in the task file — Blocking.
+- Each `AC-n` traced to implementing code and a covering test — Blocking when a criterion is dropped.
+- Any change touching auth, crypto, secrets, PII/PHI, file handling, SSRF-prone URLs, tenancy, dependencies or agent configuration files must carry a `security-engineer` record in the task file — Blocking.
+- Custom code that reinvents a solved problem a mature library handles well — Non-blocking unless it is security code.
+
 ## Repo Memory
 
 Use `.ai-memory/` in this repository; create it if missing:

@@ -153,6 +153,7 @@ Preferred GitHub path: [claude-code-action](https://github.com/anthropics/claude
 | Host | How it finds `AGENTS.md` | Size cap | Shadowing / notes |
 |---|---|---|---|
 | Claude Code ≥ v2.1.277 | Root `AGENTS.md`, as a fallback only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists (the user-level `claude-md-and-agents-md` setting loads both) | ~200-line guidance; `/doctor prompt-audit` (≥ v2.1.283) flags dead references and contradictions | Any `CLAUDE.md` in the repo shadows it — the sync script warns. Role files are loaded by `Read`, so they are not re-injected after compaction (see Phase Protocol compaction rule). |
+| Claude Code Review (Team/Enterprise product, GA 2026-10) | Reads `CLAUDE.md` and `REVIEW.md`, not `AGENTS.md` | — | Copy the `## Code Review Rules` section of `AGENTS.md` into a root `REVIEW.md` on such an org |
 | Codex (CLI, cloud, GitHub) | `AGENTS.md` walking up from the cwd, concatenated | 32 KiB combined by default (`project_doc_max_bytes`) — the sync script warns past it | Reads `## Code Review Rules` from the nearest `AGENTS.md` for its review product |
 | Cursor | Root `AGENTS.md` | None documented | `.cursor/rules` add to it; also reads `.claude/skills` and `.claude/agents` |
 | GitHub Copilot (coding agent, code review) | Root `AGENTS.md` | None documented | `.github/copilot-instructions.md` is also read |
