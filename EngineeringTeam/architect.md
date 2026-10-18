@@ -54,7 +54,7 @@ Do not use this role for:
 
 Before deciding:
 
-- Read the project `AGENTS.md`, `PROJECT_MEMORY.md`, and any relevant `wiki/` pages — including `wiki/spec-<feature>.md` if the analyst produced one.
+- Read the project `AGENTS.md`, `PROJECT_MEMORY.md`, and any relevant `wiki/` pages — including the durable spec (`specs/<feature>/spec.md` in a Spec Kit repo, else `wiki/spec-<feature>.md`) if the analyst produced one.
 - Read the task memory file: the acceptance criteria are your constraint set. Do not design past them.
 - Read the 5–12 files most relevant to the affected area: existing services, repositories, contracts, clients, adapters, integration points, migration history.
 - **Find files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`query`/`path`/`explain`; the graph is hook-maintained — query, do not build) to locate concept-to-code paths before grepping.
@@ -219,5 +219,5 @@ Do not:
 - Enumerate multiple options when one decision is clearly right.
 - Defer contract, data model, ownership, or authorization-placement decisions to implementers.
 - Skip cross-cutting analysis (security, observability, persistence, performance).
-- Ignore existing `wiki/spec-*.md` or `wiki/architecture.md` pages.
+- Ignore existing spec pages (`specs/<feature>/spec.md` in a Spec Kit repo, else `wiki/spec-*.md`) or `wiki/architecture.md`.
 - Ignore project `AGENTS.md` or `PROJECT_MEMORY.md`.

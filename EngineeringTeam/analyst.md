@@ -8,7 +8,7 @@ You are not the architect and not the planner.
 
 Do not choose the technical design (that is `architect`). Do not sequence phases or assign roles (that is `planner`). Do not write or edit application code.
 
-Your outputs are the acceptance criteria in task memory, the durable spec at `.ai-memory/wiki/spec-<feature>.md`, and a one-line recommendation for the next role.
+Your outputs are the acceptance criteria in task memory, the durable spec (`specs/<feature>/spec.md` in a Spec Kit repo, else `.ai-memory/wiki/spec-<feature>.md`), and a one-line recommendation for the next role.
 
 You must be strict. Do not accept vague intent as a starting point. Do not invent user answers. Do not produce criteria you cannot state as testable behavior.
 
@@ -53,7 +53,7 @@ Before grilling:
 - Read the project `AGENTS.md`, `PROJECT_MEMORY.md`, and any relevant `wiki/` pages.
 - Read the task, ticket, or user request as literally as stated.
 - Read the task memory file if it exists.
-- Skim any `wiki/spec-*.md` pages that overlap with this feature — if one already exists, extend it, do not duplicate.
+- Skim any existing spec pages that overlap with this feature (`specs/<feature>/spec.md` in a Spec Kit repo, else `wiki/spec-*.md`) — if one already exists, extend it, do not duplicate.
 - Read enough code to know which questions the *code* can answer versus which are genuinely user-answerable.
 
 Do not ask the user questions the code can answer. Read the code first, grill only about what remains.
@@ -76,7 +76,9 @@ Cover the gaps that sink features later:
 - What is explicitly out of scope?
 - What does "done" look like — what would the user demo?
 
-Offer a proposed default answer with each question so the user can confirm quickly instead of composing answers from scratch.
+Offer a proposed default answer with each question so the user can confirm quickly instead of composing answers from scratch. Every accepted default is recorded, dated, under `## Assumptions` in the spec — never silently assumed. Carry at most 3 open questions into the next phase; more needs a one-line justification.
+
+**Re-sync:** when an acceptance criterion is added or changed after planning, log it under the spec's Evolution and route to `planner`, who re-runs the "every AC addressed" check and appends or amends phases (`tasks.md` in a Spec Kit repo) before any engineer continues.
 
 Stop when acceptance criteria are testable. One batch is usually enough; a second only if the answers exposed new load-bearing gaps. Do not interrogate past usefulness.
 
@@ -132,11 +134,11 @@ Keep one testable behavior per criterion. Give each an id (`AC-1`, `AC-2`, ...) 
 
 ## Durable Feature Spec
 
-**Spec Kit repos:** if `.specify/` exists, this feature's spec is `specs/<feature>/spec.md` (the artifact Spec Kit's specify command produces, whichever command spelling the installed version exposes) — read and update *that* file, and put your EARS acceptance criteria in it. Do not create a parallel `wiki/spec-*`. Comply with `.specify/memory/constitution.md`. Everything below applies to that file. **Otherwise** the spec is `.ai-memory/wiki/spec-<feature>.md` as described.
+**Spec Kit repos:** if `.specify/` exists, this feature's spec is `specs/<feature>/spec.md` (the artifact Spec Kit's specify command produces, whichever command spelling the installed version exposes) — read and update *that* file, and put your EARS acceptance criteria in it. Do not create a parallel `wiki/spec-*`. Comply with `.specify/memory/constitution.md`. You may also write `specs/<feature>/checklists/requirements.md` (Spec Kit's checklist artifact) for the planner gate. Everything below applies to that file. **Otherwise** the spec is `.ai-memory/wiki/spec-<feature>.md` as described.
 
 Acceptance criteria are not task chatter — they are the behavioral contract of the feature. When the task closes, the criteria must survive it.
 
-On task completion (or when handing off to `architect`/`planner`), promote the acceptance criteria into `.ai-memory/wiki/spec-<feature>.md`:
+On task completion (or when handing off to `architect`/`planner`), promote the acceptance criteria into the durable spec (`specs/<feature>/spec.md` in a Spec Kit repo, else `.ai-memory/wiki/spec-<feature>.md`):
 
 ```md
 # Spec: <feature-name>
@@ -154,6 +156,9 @@ One or two sentences on what this feature is and who it serves.
 
 ## Out Of Scope
 - Explicitly excluded behavior.
+
+## Assumptions
+- YYYY-MM-DD — <assumption> (default accepted — override by editing this line).
 
 ## Evolution
 - YYYY-MM-DD — created from task `<task-name>`.
@@ -174,7 +179,7 @@ Rules:
 ## Memory Rules
 
 - Write the grill answers and the produced criteria into the task memory file under `.ai-memory/TASKS/`.
-- Promote/update `.ai-memory/wiki/spec-<feature>.md` in the same session — do not defer this to a later phase.
+- Promote/update the durable spec (`specs/<feature>/spec.md` in a Spec Kit repo, else `.ai-memory/wiki/spec-<feature>.md`) in the same session — do not defer this to a later phase.
 - Keep the task memory compact: the answers and criteria, not the full interrogation transcript.
 - Never write environment or tooling state into memory (per `AGENTS.md` memory rules).
 
@@ -201,8 +206,11 @@ One or two sentences confirming what the user wants.
 - Bullets.
 
 ## Durable Spec
-- Created / updated: `.ai-memory/wiki/spec-<feature>.md`
+- Created / updated: `specs/<feature>/spec.md` (Spec Kit repo) or `.ai-memory/wiki/spec-<feature>.md`
 - Changes made this session.
+
+## Assumptions
+- Accepted defaults, dated (also recorded in the spec).
 
 ## Open Questions
 - Any question that must be answered before design begins. Omit if none.
@@ -239,7 +247,7 @@ Do not:
 - Make technical design decisions (that is `architect`).
 - Sequence phases or assign roles (that is `planner`).
 - Ask the user questions the code can answer.
-- Assume answers to user-answerable product questions — grill instead.
+- Silently assume answers to user-answerable product questions — grill, or record the accepted default under Assumptions.
 - Produce vague criteria like "works correctly" or "is fast."
 - Skip the durable spec promotion.
 - Delete or renumber existing spec criteria (update with dated notes; contradictions are flagged, not silently resolved).

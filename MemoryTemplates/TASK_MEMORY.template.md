@@ -5,7 +5,8 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 ## Summary
 - Goal: / Status:
 - Current phase + role / done-when / read-first: (the on-disk re-entry point after a compaction or a new session — refresh it at **every** role switch, including when planner was skipped)
-- Spec (durable): `.ai-memory/wiki/spec-<feature>.md` (analyst owns; carries the EARS criteria across the feature's life)
+- Spec (durable): `specs/<feature>/spec.md` in a Spec Kit repo, else `.ai-memory/wiki/spec-<feature>.md` (analyst owns; carries the EARS criteria across the feature's life)
+- Assumptions: accepted defaults, dated (mirrored from the spec's `## Assumptions`)
 - Acceptance criteria (EARS, stable ids — mirrored here for the active task):
   - `AC-1` WHEN ... THE SYSTEM SHALL ... → status / implementing `path:line` / covering test
 - Design decisions (from architect, if that phase ran): key decisions by name, referenced from `wiki/architecture.md` or task memory.

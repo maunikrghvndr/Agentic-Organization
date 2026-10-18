@@ -32,7 +32,7 @@ You must ensure:
 
 Use this role when:
 
-- The task has settled acceptance criteria (from `analyst` or already in `wiki/spec-<feature>.md`) and, where relevant, settled design decisions (from `architect`).
+- The task has settled acceptance criteria (from `analyst` or already in the durable spec — `specs/<feature>/spec.md` in a Spec Kit repo, else `wiki/spec-<feature>.md`) and, where relevant, settled design decisions (from `architect`).
 - The work is multi-phase or multi-role.
 - The user asks for a breakdown, sequencing, or phased plan.
 - An engineer role needs a next-phase recommendation but the sequencing is not obvious.
@@ -68,6 +68,8 @@ Before recommending phase 1, verify — and record — that the plan is buildabl
 - **Every acceptance criterion is addressed** by at least one planned phase. Silently dropped criteria are a blocker; say which and why.
 - **Every design decision is consumed** by a phase (or explicitly deferred with a reason).
 - **No two criteria contradict each other** without an explicit flag from analyst.
+- **Every AC is measurable without interpretation**, with failure / empty / invalid counterparts where applicable, and **the spec's Assumptions exist and none contradicts an AC** (in a Spec Kit repo, `specs/<feature>/checklists/requirements.md` may hold this check).
+- **Re-sync:** when `analyst` adds or changes an AC after planning, re-run this gate and append or amend phases (`tasks.md` in a Spec Kit repo) before any engineer continues.
 - **No phase depends on work not yet sequenced** — dependencies flow forward only.
 - **Every phase has a verifiable done-when** — an observable check, not "code compiles."
 - **Every phase names exactly one role.** A phase that needs two roles is two phases.
@@ -146,7 +148,7 @@ Return the plan in this exact structure:
 # Plan: <task-name>
 
 ## Inputs
-- Spec: `.ai-memory/wiki/spec-<feature>.md` — criteria `AC-1..AC-n`.
+- Spec: `specs/<feature>/spec.md` (Spec Kit repo) or `.ai-memory/wiki/spec-<feature>.md` — criteria `AC-1..AC-n`.
 - Design: task memory / `wiki/architecture.md` — key decisions referenced by name.
 
 ## Pre-Implementation Gate
