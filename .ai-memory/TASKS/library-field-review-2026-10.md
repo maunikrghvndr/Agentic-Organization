@@ -238,6 +238,24 @@ Each batch is a reviewable commit set; nothing in Batch 1–2 depends on a Claud
 
 ---
 
+## Progress log
+
+### 2026-10-18 — Batch 1 (Tier 0) done on branch `main-xpl0sx`, cloud session
+- Order confirmed by Maunik ("first fix our gaps and then research more into other"): Tier 0 → Tier 1 → Tier 2, then the Hermes/BMAD inheritance research. Decisions A/B/C untouched.
+- Environment: PowerShell is not installed in the cloud container, so `Lint-Library.ps1` and `Sync-AgentsMd.ps1 -DryRun` were **not executed**; a Python mirror of the lint (same check ids, scratchpad only, not committed) was run instead — see Evidence. Run the real scripts on Windows before syncing.
+- F1 `adcebf2` — Phase Protocol heading; planner/debugger point at the role table; contradictions reconciled; 8 relic lines, 3 "Jira", 2 tracker sections, 5 "build/refresh" lines, `--update`, Spec Kit "1:1" and command spelling, OWASP anchor, README key rules, Structure.
+- F2 `5b13785` — `EngineeringTeam/_shared/graph.md` (full graph procedure, verbatim) and `_shared/memory.md` (6 Repo Memory detail bullets, verbatim); Fallback above Self-Learning; separators dropped, lists inlined, Data/ML routing points at the table; two Self-Learning rule bullets moved verbatim into LESSONS.md. 33,379 B / 236 lines → 26,500 B / 167 lines.
+- F3 `eec1625` — deviation from the proposal: the three relics got dated DEPRECATED banners and stay tracked instead of moving to `_archive/`, because `_archive/` is gitignored and the move would be a git deletion (ask-first boundary). Maunik may still move them on his machine. README "Headless / CI use" added.
+- F4 `d413559` — the file had 74 lessons (the review said 81; the 7 extra were the rule bullets). Split: 10 cross-cutting stay in `LESSONS.md`; `LESSONS/backend.md` 17, `frontend.md` 5, `data-ml-ai.md` 36, `tooling-agent-workflow.md` 5; one promoted line removed; dates normalised; Retro line in AGENTS.md Completion.
+- F5 `95d9c14` — `Scripts/Lint-Library.ps1`. F6 `a3558e3` — sync warnings + host table.
+
+#### Evidence (Batch 1)
+| Check | Command | Scope | Exit | Commit | Result |
+|---|---|---|---|---|---|
+| Lint (mirror) | `python3 -I <scratchpad>/lint_mirror.py .` | whole library | 0 | a3558e3 | 0 errors; 17 warnings: 7× W2 duplicate blocks (F22 input), 10× W3 hardcoded `wiki/spec-` (F15 input) |
+| AGENTS.md size | `wc -c AGENTS.md; wc -l AGENTS.md` | AGENTS.md | 0 | a3558e3 | 26,907 B / 170 lines |
+| Not run | `Scripts/Lint-Library.ps1`, `Scripts/Sync-AgentsMd.ps1 -DryRun` | — | — | — | no PowerShell in the container |
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
