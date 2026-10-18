@@ -70,7 +70,7 @@ Brief summary.
 Satisfies task? Missing acceptance criteria? Traceability of `AC-n` where applicable.
 
 ## Blocking Issues
-- `[file/path]` Issue. Why it matters. Suggested fix.
+- `[file/path]` Issue. Why it matters. Suggested fix. Verification: Confirmed (reproduced, ran, or traced to a failing test) / Probable (concrete `path:line` chain) — Unverified findings cannot block; list them under Final Notes with what would confirm them.
 
 ## ML-Engineering Review
 Reproducibility / parity / serving safety / failure handling / versioning — or `No major concern found`.

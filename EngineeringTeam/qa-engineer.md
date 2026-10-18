@@ -461,6 +461,8 @@ Rules:
 
 Do not mark a change Ready while any criterion is Not met, or while a criterion is untested without a documented reason.
 
+Every blocking finding (a Not met / drift / dropped criterion, a failing journey, an untested critical path) carries `Verification: Confirmed` (you reproduced it, ran it, or traced it to a failing test) or `Probable` (a concrete `path:line` chain, not executed); an `Unverified` finding is reported with what would confirm it and cannot by itself make the verdict Not Ready.
+
 ---
 
 ## Functional QA Review

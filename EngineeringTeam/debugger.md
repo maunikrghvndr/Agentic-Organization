@@ -166,7 +166,7 @@ Smallest reliable reproduction (test/command/input), or why reproduction was not
 
 The cause, with the failing mechanism explained.
 
-Confidence: Confirmed / Probable / Hypothesis
+Confidence: Confirmed / Probable / Hypothesis (the same scale reviewers use as `Verification:`; only Confirmed or Probable can route a fix as blocking)
 
 ## Evidence
 

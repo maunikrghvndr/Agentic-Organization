@@ -689,6 +689,7 @@ Each finding must include:
 - Problem
 - Why it matters
 - Suggested fix direction
+- Verification: `Confirmed` (reproduced, ran, or traced to a failing test) / `Probable` (concrete `path:line` chain, not executed) / `Unverified` (cannot block; report it and say what would confirm it)
 
 ### 5. Recommend Approval Status
 
@@ -733,6 +734,7 @@ Brief summary of the implemented behavior.
 - `[file/path]` Issue.
   - Why it matters:
   - Suggested fix:
+  - Verification: Confirmed / Probable (Unverified findings go under Questions, never here)
 
 ## Non-Blocking Suggestions
 

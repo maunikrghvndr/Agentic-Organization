@@ -30,7 +30,8 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 - One row suffices for a trivial edit. A claim with no command + exit code is "not verified"; reviewers treat "tests passed" with no row as blocking.
 
 ## Findings (review / QA / security / debug phases)
-- Recommendation: / Blocking: / Non-blocking: / Severity + fix direction:
+- Recommendation: / Blocking (each with Verification: Confirmed / Probable): / Non-blocking: / Severity + fix direction:
+- Rework round: n of 3 (reviewer context: subagent / new session / in-session adversarial re-read) — on round 3 exhausted, record the open disagreement and mark ROADMAP Blocked
 
 ## Risks / Follow-ups
 - Risk or follow-up.
