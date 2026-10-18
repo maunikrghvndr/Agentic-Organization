@@ -20,6 +20,8 @@ This file lives in the **role library** (beside `EngineeringTeam/`), read from t
 - Update or merge existing lessons; never add a near-duplicate.
 - When a lesson becomes stable and clearly universal, **promote it into the relevant role file** (where it will be enforced) and remove it here — this file is the on-ramp, the roles are the destination.
 - Keep it short. If it grows large, group by area (backend / frontend / data-ml-ai / process) with a one-line index at the top.
+- The user periodically commits the library so the accumulated lessons are versioned and pushed. When a lesson becomes stable and universal, promote it into the relevant role file (where it is enforced) and remove it from `LESSONS.md`.
+- If a **role instruction itself** is wrong or misfires, record the takeaway in `LESSONS.md` **and** surface it to the user, so the library is improved rather than silently worked around.
 
 Format: `- <takeaway> — <why, one line>. [YYYY-MM-DD]`
 

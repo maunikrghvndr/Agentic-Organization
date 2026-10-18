@@ -8,11 +8,7 @@ Role library root (single source of truth — edit this one line if the library 
 C:\Users\mauni\source\repos\Agentic-Organization\EngineeringTeam\
 ```
 
-This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference a `CLAUDE.md` — this project uses `AGENTS.md` only.
-
-Load exactly **one** role file per phase from the folder above. Do not copy role files into this repository.
-
-The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
+This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference a `CLAUDE.md` — this project uses `AGENTS.md` only. Load exactly **one** role file per phase from the folder above. Do not copy role files into this repository. The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
 
 **Role library resolution (the agent runs this before loading any role — the user never edits the path by hand):**
 
@@ -22,8 +18,6 @@ The library also holds `LESSONS.md` at its root (the folder that contains `Engin
 4. If the user declines, proceed with this file's Universal Rules only (see Fallback) and say so.
 
 Ask permission before writing the path line or cloning. Once the path is correct, later sessions skip this.
-
----
 
 ## Available Roles
 
@@ -53,8 +47,6 @@ Ask permission before writing the path line or cloning. Once the path is correct
 | `qa-engineer` | `qa-engineer.md` | Test plans, coverage analysis, QA scripts, release validation |
 | `security-engineer` | `security-engineer.md` | Security audits, vulnerability/dependency/secret reviews |
 
----
-
 ## Routing
 
 Infer one primary role per phase. The user does not need to name it.
@@ -65,16 +57,7 @@ Infer one primary role per phase. The user does not need to name it.
 - Pipelines, Docker, IaC, deploy, build tooling → `devops-engineer`.
 - Test plan, coverage, release readiness → `qa-engineer`.
 - Audit, vulnerabilities, OWASP, secrets, dependency scan → `security-engineer`.
-- **Data / ML / AI work** (route to the most specific role; each has its reviewer):
-  - Data pipelines, ingestion, ETL/ELT, transformation, data quality, warehousing → `data-engineer`.
-  - Analysis, statistics, feature engineering, model selection, offline evaluation → `data-scientist`.
-  - Productionizing models: training pipelines, serving/inference, feature parity → `ml-engineer`.
-  - ML platform: experiment tracking, registry, model CI/CD, retraining, drift/monitoring → `mlops-engineer`.
-  - LLM app logic: integration, agents, tool calling, structured output, guardrails → `ai-engineer`.
-  - Prompt design, templates, prompt evaluation/optimization → `prompt-engineer`.
-  - Retrieval, embeddings, vector search, chunking, reranking → `rag-engineer`.
-  - NER, entity linking (UMLS), classification, clinical NLP, OCR post-processing → `nlp-engineer`.
-  - Reviewing the above → `data-reviewer` (data-engineer/data-scientist), `ml-reviewer` (ml-engineer/mlops), `ai-reviewer` (ai/prompt/rag/nlp).
+- **Data / ML / AI work** → the most specific role in the table above (data-engineer, data-scientist, ml-engineer, mlops-engineer, ai-engineer, prompt-engineer, rag-engineer, nlp-engineer — their "Use for" column is the routing rule); reviewing it → `data-reviewer` (data-engineer/data-scientist), `ml-reviewer` (ml-engineer/mlops), `ai-reviewer` (ai/prompt/rag/nlp).
 - New feature, vague product idea, missing acceptance criteria, "grill me", or "let's spec this out" → `analyst` first.
 - "Research / evaluate / compare X", "what's the best or most current way to do X", "is there a newer/better approach, tool, or paper", or before adopting a new dependency → `researcher`.
 - Intent settled, needs system design (new services, data model change, API shape, service boundaries, tech choice, or spans multiple domains) → `architect`. If the design hinges on an external choice not yet investigated, run `researcher` first.
@@ -83,8 +66,6 @@ Infer one primary role per phase. The user does not need to name it.
 - Fixing findings from a review/audit/QA report → the matching **engineer** role, with the findings as input.
 
 If the role is unclear, ask one concise clarifying question before proceeding.
-
----
 
 ## Phase Protocol
 
@@ -97,19 +78,12 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 - **Spec-driven flow (this is the default for features).** A feature-sized change is governed by the project constitution and proceeds spec-first: **constitution** (comply with it) → `analyst` = *specify + clarify* (the spec, EARS acceptance criteria) → `architect` = *plan* (technical design) → `planner` = *tasks + analyze* (phase breakdown + the pre-implementation gate) → engineers = *implement* → reviewers/`qa`. This is the same artifact sequence GitHub Spec Kit produces (`constitution → specify → clarify → plan → tasks → analyze → implement`, plus its optional `checklist` and `converge` quality gates, which the planner gate and `qa-engineer` traceability cover here). Trivial changes skip straight to the engineer with the Grill Checkpoint.
 - **Handoff contract (for work that DOES span sessions).** When a phase genuinely hands off to a later session — because the user chose to split it, or the review runs as a separate task — the task file's Handoff section lists: next role; the exact files (`path:line`) and `wiki/` pages to read first; what is done and verified; what remains; settled decisions not to relitigate. The next session trusts this list and does not re-explore. Within a single session, this context is already in hand — just continue.
 
----
-
 ## Universal Rules (all roles)
 
 - Read this file and the task memory first; skim `.ai-memory/ROADMAP.md` to re-orient on where the project stands. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
 - **Read and obey the project constitution.** It is the highest-authority, project-specific rule set — `.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`. Comply with it in everything you produce; if a task would violate it, flag the conflict and stop rather than violating it. Every reviewer verifies constitution compliance as a blocking check. (The constitution overrides project convention but not these safety rules or a direct user instruction — surface the conflict when they clash.)
 - **Read the library's `LESSONS.md`** (at the library root, beside `EngineeringTeam/`) at the start of a task and apply its takeaways — they are cross-project engineering lessons the system has learned. See Self-Learning below.
-- **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange:
-  1. Restate the task in one line as you understand it.
-  2. Name every load-bearing assumption explicitly.
-  3. Ask any question that would change what you build. If none, say so.
-  4. Do not proceed until intent is confirmed — either the user answers, or the user accepts your restatement.
-  For a fully specified task this is a single line and 15 seconds; for an ambiguous one it becomes real questions. It is never skipped. When the task is a feature-sized ambiguity (vague product idea, missing acceptance criteria), stop this lightweight version and route to `analyst` for full-depth grill and durable spec production instead.
+- **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange: (1) restate the task in one line as you understand it; (2) name every load-bearing assumption explicitly; (3) ask any question that would change what you build — if none, say so; (4) do not proceed until intent is confirmed — either the user answers, or the user accepts your restatement. For a fully specified task this is a single line and 15 seconds; for an ambiguous one it becomes real questions. It is never skipped. When the task is a feature-sized ambiguity (vague product idea, missing acceptance criteria), stop this lightweight version and route to `analyst` for full-depth grill and durable spec production instead.
 - Think before coding: state assumptions explicitly. If the task is ambiguous, present the interpretations instead of silently picking one. If you are confused, stop and name the confusion — do not proceed on a guess.
 - Define success criteria before starting: what verifiable check proves this works. Verify against them before finishing — do not stop at "it compiles" or "it looks right".
 - Surgical changes: clean up only your own mess. Remove imports, variables, and functions that YOUR change orphaned. Mention pre-existing dead code but do not delete it unless asked. Match existing style even where you would choose differently.
@@ -124,31 +98,11 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 - Add or update tests for behavior changes. Never claim tests passed if they were not run.
 - Update documentation/tracker files when behavior, configuration, architecture, security, or testing changes.
 
----
-
 ## Boundaries
 
-**Always:**
-
-- Use the exact commands recorded in `PROJECT_MEMORY.md`; run the project's tests/build for changed code when they exist and report results honestly.
-- Update task memory at the end of every phase.
-
-**Ask first:**
-
-- Adding a dependency.
-- Database schema changes or migrations.
-- Deleting files, tests, or existing behavior.
-- Changing public API contracts.
-- Destructive or irreversible operations (data deletion, force push, infra teardown).
-
-**Never:**
-
-- Commit, log, or hardcode secrets, tokens, or credentials.
-- Touch production configuration or deploy to production unless explicitly the task.
-- Hand-edit vendor or generated directories (`node_modules`, `bin`, `obj`, `dist`, generated migration history).
-- Weaken tests, validation, or security checks to make something pass.
-
----
+- **Always:** Use the exact commands recorded in `PROJECT_MEMORY.md`; run the project's tests/build for changed code when they exist and report results honestly; Update task memory at the end of every phase.
+- **Ask first:** Adding a dependency; Database schema changes or migrations; Deleting files, tests, or existing behavior; Changing public API contracts; Destructive or irreversible operations (data deletion, force push, infra teardown).
+- **Never:** Commit, log, or hardcode secrets, tokens, or credentials; Touch production configuration or deploy to production unless explicitly the task; Hand-edit vendor or generated directories (`node_modules`, `bin`, `obj`, `dist`, generated migration history); Weaken tests, validation, or security checks to make something pass.
 
 ## Repo Memory
 
@@ -174,43 +128,30 @@ Rules:
 - First use in a repo: discover the exact build/test/lint/run commands (with flags) and record them at the top of `PROJECT_MEMORY.md`. Later sessions use and maintain these instead of rediscovering them.
 - `PROJECT_MEMORY.md` holds only stable repo facts: stack, structure, commands, established patterns, hard rules, architecture decisions. Never task details.
 - **Project roadmap — the progress board.** `.ai-memory/ROADMAP.md` is the one-glance view of where the project stands: one line per feature or non-trivial task, grouped **Backlog / In Progress / Blocked / Done**, each linking to its task file and spec. It is how you (or a fresh session) re-orient after a context switch and track progress — read it at the start of a task to see the big picture. `planner` adds items when it sequences work; the role working an item keeps its status current (→ In Progress, → Blocked with the blocker); completion moves the item to **Done** with a date and archives the task file. One line per item — detail lives in the task file, never restated here. Trivial changes are not tracked. In a Spec Kit repo, this is the cross-feature view above each feature's `tasks.md`.
-- **Grow by reorganizing, never by deleting.** While small, `PROJECT_MEMORY.md` is a single flat file. When it outgrows ~100 lines, split content into `wiki/` topic pages (`architecture.md`, `backend-patterns.md`, `frontend-patterns.md`, `testing.md`, `gotchas.md`, ...) and turn `PROJECT_MEMORY.md` into an index: commands at the top, then one line per page. Sessions read the index first and open only the pages relevant to the task.
-- **Update, don't delete.** Remove a fact only because it is wrong or no longer true — and record that as an update with a short note (`updated 2026-07-20: was X, now Y — reason`). If two sources genuinely conflict and it cannot be resolved yet, flag the contradiction explicitly instead of silently picking one.
-- **Reference sources.** Papers, specs, and RFCs the implementation follows go in `sources/` (or a pointer file with URL/DOI when the original cannot be committed). Sources are read-only. On first use, ingest once (the `researcher` role owns this, but any role may do it when researcher is not in play): write a `wiki/ref-<name>.md` page distilling only what the implementation needs, with section/equation/page citations, the source version/date, a map from concepts to implementing files (`path:line`), and every intentional deviation ("source says X, we do Y because Z"). Before relying on a source, confirm it is still current — a newer paper/version/approach may supersede it (`researcher`'s job). Sessions read the reference page, not the source; open the source only when the page cannot answer, then update the page.
-- **Feature specs are durable.** `analyst` produces `wiki/spec-<feature>.md` for every feature-sized task — the EARS acceptance criteria plus in/out scope. Update it with dated notes as the feature evolves; never delete criteria (only supersede them with a note). Task files in `TASKS/` are process; spec pages in `wiki/` are the contract that survives the task and gets archived-out with it. Reviewers, QA, and any later change to the feature read the spec page first.
-- **Lint on completion.** When a task that touched memory heavily completes, sweep for duplicate facts to merge, superseded claims to update, contradictions to flag, and index lines that no longer match their pages. Reconcile — never trim for length.
 - Task files use short kebab-case names (`backend-upload-validation.md`). At the end of each phase, update the task file: files touched, decisions, tests run, risks, recommended next phase.
 - When a task fully completes: promote any durable repo-stable learning to `PROJECT_MEMORY.md`/`wiki/`, then move the task file to `TASKS/_archive/`.
 - One fact, one place: facts already in `PROJECT_MEMORY.md`/`wiki/` are not repeated in task files. When updating, merge and dedup overlapping facts instead of appending near-duplicates.
 - **Repo memory is about the repository, not the machine.** Never write environment or tooling state into `.ai-memory/`: missing binaries, failed or declined installs, PATH problems, admin-rights issues, network/sandbox limits, or one-off local setup trouble. Report those in the session and move on. Only record a tooling fact when it is a durable property of the project itself (for example a required runtime version or a build step the repo genuinely depends on).
 - Do not read `TASKS/_archive/` files unless explicitly investigating past work.
-- Templates live in the role library's `MemoryTemplates\` folder.
-
----
+- **Detail procedures live in the role library at `EngineeringTeam/_shared/memory.md`** — read it when `PROJECT_MEMORY.md` nears ~100 lines or needs splitting into `wiki/` (grow by reorganizing, never by deleting), when a recorded fact must be corrected or superseded (update with a dated note, never delete; flag unresolved contradictions), when a paper/spec/RFC is first used (`sources/` → `wiki/ref-<name>.md`, researcher owns it), when a feature spec is created or evolves (`wiki/spec-<feature>.md` is the durable contract: supersede criteria, never delete them), and at task completion (memory lint, archive). Templates: `MemoryTemplates/`.
 
 ## Code & Source Graph
 
-Graphify (MIT) turns a codebase and its documents/papers into a queryable graph, so the agent queries a map instead of grepping every file. This file drives it; the agent runs the commands.
+Graphify (MIT) turns a codebase and its documents into a queryable graph, so the agent queries a map instead of grepping every file. The full procedure (invocation resolution, install, `GRAPHIFY_OUT`, build and refresh, document ingestion, hook) is in the role library at `EngineeringTeam/_shared/graph.md` — read it before building a graph, when a command errors, or before ingesting documents.
 
-- **Auto-maintenance via git hook (preferred — do not rely on the agent to build).** The robust way to keep the graph present and fresh is Graphify's git hook (`graphify hook install`), which rebuilds it on every commit — code-only, no tokens, in the background so commits do not block, honouring `GRAPHIFY_OUT`. When the hook is in place, **the agent only ever *queries* the graph; it does not build it** — git maintains it. This is the fix for the graph silently never getting built because a quick task skipped the workflow. Check `graphify hook status`; if the hook is installed, skip Bootstrap/Build below and go straight to Query. (The hook is installed per-machine, so it may already cover this repo; if `GRAPHIFY_OUT` is set globally, the graph lands under `.ai-memory/`.)
-- **Bootstrap (only when no hook maintains the graph):** resolve an *invocation* by trying, in order — `graphify --version`, then `python -m graphify --version` (handles pip `--user` installs where the Scripts dir is not on PATH), then `py -m graphify --version` (Windows launcher). Use the first one that works for every subsequent Graphify call in this session. If none works, ask the user once to install it (a one-time global dependency, per the Boundaries rule). Do not assume any particular installer exists — check first and use whatever the machine has: `uv tool install graphifyy`, else `pipx install graphifyy`, else `pip install --user graphifyy` (all install the package named `graphifyy` with a double `y`; the executable is `graphify`). If the user prefers `uv`, it can be installed first (`winget install --id astral-sh.uv` on Windows, the official installer script elsewhere). Once installed and reachable, it is available to all later sessions. If the user declines, or no installer path works (offline, sandboxed, restricted machine), or the install succeeds but no invocation resolves, take the normal route below.
-- **Set `GRAPHIFY_OUT` before the first call — this, not `--out`, is what keeps the graph out of the repo root.** Export `GRAPHIFY_OUT=.ai-memory/graphify-out` into the environment of every Graphify command in the session (PowerShell: `$env:GRAPHIFY_OUT = ".ai-memory\graphify-out"`; bash: `export GRAPHIFY_OUT=.ai-memory/graphify-out`). Graphify reads this once at process start and every subcommand honours it — extract, cache, query, watch. **Do not use `--out`:** it redirects the graph but *not* the incremental stat-index cache, so `--out .ai-memory` still drops a stray `graphify-out/cache/` at the repo root on any `update` run. The env var covers both. The value is relative, so it resolves per-repo and the user can make it permanent once with `setx GRAPHIFY_OUT ".ai-memory\graphify-out"` (Windows) or an equivalent shell profile line.
-- **Build:** from the repo root, with `GRAPHIFY_OUT` set — `<invocation> extract . --code-only`. `--code-only` keeps extraction local and deterministic (tree-sitter AST, no API calls, no tokens). For an incremental refresh run `<invocation> update .` (a subcommand — there is no `--update` flag; safe once `GRAPHIFY_OUT` is set) and add `--no-cluster` for speed when clustering is not needed. A full `--code-only` rebuild is fast and free, so a clean rebuild is always a valid fallback if the graph looks stale or corrupt.
-- **Where it lands:** `.ai-memory/graphify-out/` (`graph.json`, `cache/`, ...). Add a bare `graphify-out/` line to the repo's `.gitignore` — bare, so a stray one at any level is ignored rather than committed. It is a regenerable, derived artifact — never hand-edit it, and rebuild it if lost. If a stray `graphify-out/` appears at the repo root, `GRAPHIFY_OUT` was not set for that call: delete it, set the env var, and rebuild. Durable knowledge that cannot be regenerated from code still lives in `.ai-memory/` (`PROJECT_MEMORY.md`, `wiki/`, `sources/`).
-- **Documents and papers cost more than code:** ingesting PDFs/images/non-code sources requires an LLM backend (`--backend ...`), which sends that content to an external provider and costs tokens. Ask the user before ingesting any document, and never send sensitive or regulated material (clinical, legal, financial, PII/PHI) to an external backend without explicit approval. Code parsing with `--code-only` stays fully local.
-- **Query before grepping — find the graph wherever it landed.** The git hook and manual builds put `graph.json` under `GRAPHIFY_OUT` when set (`.ai-memory/graphify-out/`), else Graphify's default `graphify-out/` at the repo root — commits from a shell/GUI/CI without the env var use the root path. So **first locate the actual graph**: check `.ai-memory/graphify-out/graph.json`, then `graphify-out/graph.json`; use whichever exists and pass it explicitly — `<invocation> query "..." --graph <that path>`, `<invocation> path A B --graph <that path>`, `<invocation> explain X --graph <that path>`. (With `GRAPHIFY_OUT` set in the session, the `--graph` flag is optional — it resolves automatically.) If neither exists, no graph is built yet — take the fallback below or build one.
-- **With `sources/`:** the graph gives fast concept→code lookup; the `wiki/ref-<name>.md` page still holds the intent and deviations the graph cannot derive. Complementary — the graph never replaces the ref page.
-- **Fallback (the normal route):** Graphify is an accelerator, never a dependency. Whenever it is absent, declined, or erroring, read and grep files directly. Say once that the graph is unavailable and continue with the task — do not open an investigation into the tooling unless the user asks why. The workflow must always work from `AGENTS.md` alone.
-
----
-
+- **Locate the graph first:** check `.ai-memory/graphify-out/graph.json`, then `graphify-out/graph.json` at the repo root; use whichever exists and pass it explicitly (`--graph <path>`). If `graphify hook status` reports the hook installed, git maintains the graph — only query it, never build. Use the host's own symbol navigation first when it offers one.
+- **Query before grepping:** `graphify query "..."`, `graphify path A B`, `graphify explain X` (`python -m graphify` / `py -m graphify` are fallback invocations). Grep or read broadly only when the graph is unavailable or a query returns nothing.
+- **No graph and no hook:** bootstrap once per `_shared/graph.md` — ask before installing; set `GRAPHIFY_OUT=.ai-memory/graphify-out` (never `--out`); `extract . --code-only` is local, deterministic and free; documents/PDFs need an LLM backend and the user's approval, and never regulated material.
+- **Fallback (the normal route):** Graphify is an accelerator, never a dependency. Whenever it is absent, declined, or erroring, read and grep files directly. Say once that the graph is unavailable and continue — do not investigate the tooling unless the user asks. The workflow must always work from `AGENTS.md` alone.
 ## Completion
 
 At the end of a phase, report: role used, task memory file updated, **`ROADMAP.md` status updated** (item moved to In Progress / Blocked / Done as applicable), files changed, tests added/run, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done"). When a task completes, move its roadmap item to Done with a date and archive the task file.
 
 Also state whether the Code & Source Graph was used: which queries were run and what they located, or that it was unavailable, or that it was available but not used and why. A graph that is built and then ignored is wasted work — this line makes that visible.
 
----
+## Fallback
+
+If the selected role file cannot be read, report that clearly, then proceed using this file's Universal Rules plus the role's one-line scope from the table above.
 
 ## Self-Learning (the closed loop)
 
@@ -221,16 +162,6 @@ The system gets better by capturing what it learns. Two stores, kept strictly se
 
 When a non-trivial task teaches you a durable, generalizable engineering lesson — a mistake never to repeat, or a principle that clearly applies beyond this one repo (e.g. "never ship mock data in production code paths") — append a one-line takeaway to the library `LESSONS.md`. Rules:
 
-- Keep it **general and reusable**, never repo-specific. If it only matters to this repo, it belongs in `.ai-memory/`, not `LESSONS.md`.
-- Do **not** restate a rule already in this file or a role file. Capture what experience taught that is not already written down (or reinforce one that keeps getting violated).
-- One line, checkable, dated. Update or merge; never add a near-duplicate.
-- Read `LESSONS.md` at the start of every task and apply it — that is the "learning" half of the loop.
-- The user periodically commits the library so the accumulated lessons are versioned and pushed. When a lesson becomes stable and universal, promote it into the relevant role file (where it is enforced) and remove it from `LESSONS.md`.
-- If a **role instruction itself** is wrong or misfires, record the takeaway in `LESSONS.md` **and** surface it to the user, so the library is improved rather than silently worked around.
+- Keep it **general and reusable**, never repo-specific. If it only matters to this repo, it belongs in `.ai-memory/`, not `LESSONS.md`. Do **not** restate a rule already in this file or a role file. Capture what experience taught that is not already written down (or reinforce one that keeps getting violated). One line, checkable, dated. Update or merge; never add a near-duplicate.
+- Read `LESSONS.md` at the start of every task and apply it — that is the "learning" half of the loop. The full rules of the file (format, promotion into role files when a lesson is stable, what to do when a role instruction itself misfires — record it **and** surface it to the user) live in `LESSONS.md` itself.
 - **Measure before you trim.** The library also holds `EVALS.md` at its root — a lightweight A/B protocol for checking whether a role or section actually improves output and what it costs. Before removing or trimming any role/section for weight, run (or ask the user to run) an eval to confirm it is not load-bearing, and record the verdict there. This is library-maintenance, not per-task work — do it when deliberately improving the library, not on every task.
-
----
-
-## Fallback
-
-If the selected role file cannot be read, report that clearly, then proceed using this file's Universal Rules plus the role's one-line scope from the table above.
