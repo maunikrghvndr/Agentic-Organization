@@ -144,6 +144,10 @@ Preferred GitHub path: [claude-code-action](https://github.com/anthropics/claude
 | Gemini CLI | Only when `context.fileName` includes `AGENTS.md` | — | `GEMINI.md` is its default |
 | Devin / Windsurf | Reads `AGENTS.md` | 12k characters per rule file | — |
 
+## Measuring cost
+
+EVALS.md rows need a cost figure with its source. `claude -p --output-format json` returns `total_cost_usd`; in-session `/cost` prints the session total; [ccusage](https://github.com/ryoppippi/ccusage) reads the local logs of Claude Code and Codex (and other agent CLIs) and reports per-day/per-session tokens and list-price cost. Cursor exposes no equivalent — write `cost: n/a`. All figures are list-price estimates.
+
 ## Maintaining The Library
 
 - **Before every library commit run `.\Scripts\Lint-Library.ps1`** (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines; warnings: AGENTS.md size, duplicate blocks across role files, hardcoded `wiki/spec-`). Optionally, from a synced repo on Claude Code, run `/doctor prompt-audit` once per release (Claude-only; degrades to nothing elsewhere).
