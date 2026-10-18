@@ -699,6 +699,21 @@ Agent instruction and configuration files are part of CI/CD integrity: a diff th
 
 ---
 
+## Agent Configuration And Supply Chain Review
+
+The agent that works on the codebase is itself an attack surface. Review it as part of every pass that touches these files, and whenever a repo gains an agent, skill, plugin, MCP server, hook or unattended run:
+
+- **Instruction files are executable code.** `AGENTS.md`, `CLAUDE.md`, `.claude/**` (settings, rules, agents, skills, hooks), `.mcp.json`, `.cursor/**`, `.codex/**`, `.github/agents/**`, `.github/workflows/**`, `.vscode/tasks.json`, git hooks, any `SKILL.md`, `CONSTITUTION.md`, `LESSONS.md`. Check for hidden text (zero-width U+200B–U+200F, bidi U+202A–U+202E, U+2060–U+2064, U+FEFF, and `<!-- -->` blocks — a portable check is a ripgrep over those files), remote fetches at load time, `!cmd`/shell-expansion or command injection in prompts and hook commands, permission widening (`bypassPermissions`, allow-lists, `dangerously-*` flags), and persistence via a hook or settings edit that a later session will execute. A dependency install step that rewrites an instruction file is a compromise, not a convenience.
+- **MCP servers.** Provenance and pinning; `.mcp.json` reviewed as code; least scope per server; no token passthrough (the server must not forward the client's token upstream); explicit consent for local stdio servers; resistance to state-handle hijacking and confused-deputy flows; OAuth redirect/URL scheme validation.
+- **Skills, plugins, subagents.** Provenance; `allowed-tools`/`disallowedTools` as narrow as the job; no undeclared network calls; scanners (skill scanners, SAST) are a layer, not a gate — they have been bypassed.
+- **Unattended runs (CI, headless, scheduled) obey the Rule of Two:** never combine untrusted input, secret access and external write in one autonomous run; split the run or keep a human gate. Native Windows has no agent sandbox — unattended work runs in WSL2 or a devcontainer.
+- **Every finding names the architectural control** that enforces it (a deny rule, a sandbox, a scoped subagent, a CI gate, a human approval): instruction-level defenses reduce but do not prevent hijack, so prose is never the only control.
+- **Package reality.** A proposed dependency must exist on its registry with real history and maintainers, pinned to an exact version — model-suggested package names are frequently fictional and are squatted.
+
+Block any of: hidden or injected instruction text; a permission widening not described in the task file; an unattended run that violates the Rule of Two; an MCP server or skill of unknown provenance.
+
+---
+
 ## Infrastructure And Cloud Security Review
 
 Check infrastructure files for:
@@ -794,7 +809,7 @@ When AI, LLMs, tools, retrieval, agents, or document processing exist, check:
 - Embeddings/vector stores preserve tenant/data isolation
 - Agents cannot call dangerous tools without authorization
 
-Use the current edition of the OWASP Top 10 for LLM Applications as the anchor for this area (2026 at the time of writing; the category names below are the 2025 list — refresh them against the current edition when it differs): Prompt Injection, Sensitive Information Disclosure, Supply Chain, Data and Model Poisoning, Improper Output Handling, Excessive Agency, System Prompt Leakage, Vector and Embedding Weaknesses, Misinformation, Unbounded Consumption.
+Use the current edition of the OWASP Top 10 for LLM Applications as the anchor for this area (2026 at the time of writing; the category names below are the 2025 list — refresh them against the current edition when it differs), plus the OWASP Top 10 for Agentic Applications when the system contains agents: Prompt Injection, Sensitive Information Disclosure, Supply Chain, Data and Model Poisoning, Improper Output Handling, Excessive Agency, System Prompt Leakage, Vector and Embedding Weaknesses, Misinformation, Unbounded Consumption.
 
 Additional checks:
 
@@ -1226,6 +1241,7 @@ Before returning the security review, verify that you checked:
 - OWASP Top 10
 - OWASP ASVS-style controls
 - OWASP SCVS/supply-chain risk
+- Agent configuration and supply chain (instruction files as code, MCP servers, skills/plugins, Rule of Two)
 - NIST SSDF-style secure development concerns
 - Authentication
 - Authorization

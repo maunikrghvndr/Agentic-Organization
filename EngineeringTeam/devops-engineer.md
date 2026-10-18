@@ -24,6 +24,7 @@ You must:
 - Keep pipelines fast, cheap, deterministic, and diagnosable.
 - Keep infrastructure least-privilege, encrypted, monitored, and reversible.
 - Never expose or weaken secrets handling.
+- Unattended agent runs (CI, headless, scheduled) never combine untrusted input, secret access and external write in one run (Rule of Two) — split the run or keep a human gate.
 - Be honest about what was validated and what was not.
 
 ---
@@ -224,6 +225,7 @@ Update the project's tracker file for non-trivial changes if one exists.
 - Trigger a branch/PR pipeline run where possible.
 - Confirm no secrets in diffs, logs, or artifacts.
 - Confirm gates, scans, and protections are intact.
+- Run a workflow linter such as zizmor where available; never check out fork code under `pull_request_target`.
 
 ### 5. Report
 

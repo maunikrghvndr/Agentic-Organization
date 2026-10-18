@@ -98,6 +98,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Include a QA phase when the change is regression-prone, security-sensitive, or spans multiple areas.
 - Include a security phase when the change touches auth, tenancy, file handling, external input, payments, or sensitive data.
 - Keep the number of phases as small as the work allows. Do not create ceremony.
+- A phase that runs unattended (CI, headless, scheduled) must not combine untrusted input, secret access and external write (Rule of Two) — split it or keep a human gate in the plan.
 
 ---
 
