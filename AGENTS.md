@@ -82,7 +82,7 @@ If the role is unclear, ask one concise clarifying question before proceeding.
 
 - Read this file and the task memory first; skim `.ai-memory/ROADMAP.md` to re-orient on where the project stands. Identify the 5–12 files most relevant to the task; read only those; expand only when needed. Use the Code & Source Graph (below) to locate them whenever it is available.
 - **Read and obey the project constitution.** It is the highest-authority, project-specific rule set — `.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`. Comply with it in everything you produce; if a task would violate it, flag the conflict and stop rather than violating it. Every reviewer verifies constitution compliance as a blocking check. (The constitution overrides project convention but not these safety rules or a direct user instruction — surface the conflict when they clash.)
-- **Read the library's `LESSONS.md`** (at the library root, beside `EngineeringTeam/`) at the start of a task and apply its takeaways — they are cross-project engineering lessons the system has learned. See Self-Learning below.
+- **Read the library's `LESSONS.md`** (at the library root, beside `EngineeringTeam/`) at the start of a task, then the `LESSONS/<area>.md` file(s) its index maps to your role, and apply their takeaways — they are cross-project engineering lessons the system has learned. See Self-Learning below.
 - **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange: (1) restate the task in one line as you understand it; (2) name every load-bearing assumption explicitly; (3) ask any question that would change what you build — if none, say so; (4) do not proceed until intent is confirmed — either the user answers, or the user accepts your restatement. For a fully specified task this is a single line and 15 seconds; for an ambiguous one it becomes real questions. It is never skipped. When the task is a feature-sized ambiguity (vague product idea, missing acceptance criteria), stop this lightweight version and route to `analyst` for full-depth grill and durable spec production instead.
 - Think before coding: state assumptions explicitly. If the task is ambiguous, present the interpretations instead of silently picking one. If you are confused, stop and name the confusion — do not proceed on a guess.
 - Define success criteria before starting: what verifiable check proves this works. Verify against them before finishing — do not stop at "it compiles" or "it looks right".
@@ -149,6 +149,8 @@ At the end of a phase, report: role used, task memory file updated, **`ROADMAP.m
 
 Also state whether the Code & Source Graph was used: which queries were run and what they located, or that it was unavailable, or that it was available but not used and why. A graph that is built and then ignored is wasted work — this line makes that visible.
 
+**Retro (one line, every phase that fixed a blocking finding or failed a verification):** `Lessons: none` or, for each such event, one repo lesson (→ `.ai-memory/`) or one library lesson (→ `LESSONS.md` / `LESSONS/<area>.md`; `REINFORCED [date]` on an existing line if it recurs).
+
 ## Fallback
 
 If the selected role file cannot be read, report that clearly, then proceed using this file's Universal Rules plus the role's one-line scope from the table above.
@@ -160,7 +162,7 @@ The system gets better by capturing what it learns. Two stores, kept strictly se
 - **Repo-specific knowledge → that repo's `.ai-memory/`** (build commands, this project's patterns, a particular gotcha). Stays local to the repo.
 - **General, transferable takeaways → the library's `LESSONS.md`** (at the library root, beside `EngineeringTeam/`). Shared across every repo.
 
-When a non-trivial task teaches you a durable, generalizable engineering lesson — a mistake never to repeat, or a principle that clearly applies beyond this one repo (e.g. "never ship mock data in production code paths") — append a one-line takeaway to the library `LESSONS.md`. Rules:
+When a non-trivial task teaches you a durable, generalizable engineering lesson — a mistake never to repeat, or a principle that clearly applies beyond this one repo (e.g. "never ship mock data in production code paths") — append a one-line takeaway to the library `LESSONS.md` (cross-cutting) or the matching `LESSONS/<area>.md`. Rules:
 
 - Keep it **general and reusable**, never repo-specific. If it only matters to this repo, it belongs in `.ai-memory/`, not `LESSONS.md`. Do **not** restate a rule already in this file or a role file. Capture what experience taught that is not already written down (or reinforce one that keeps getting violated). One line, checkable, dated. Update or merge; never add a near-duplicate.
 - Read `LESSONS.md` at the start of every task and apply it — that is the "learning" half of the loop. The full rules of the file (format, promotion into role files when a lesson is stable, what to do when a role instruction itself misfires — record it **and** surface it to the user) live in `LESSONS.md` itself.
