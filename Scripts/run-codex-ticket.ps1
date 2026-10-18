@@ -1,3 +1,11 @@
+# DEPRECATED (2026-10-18) - kept for reference only; do not run.
+# This runner feeds untrusted ticket text to an agent that has repo write access and the
+# caller's ambient credentials, with no sandbox/output-schema flags and no trust dialog,
+# and it defaults the library path to %USERPROFILE%\Downloads. It predates AGENTS.md
+# routing, LESSONS.md, ROADMAP.md, the constitution and the Grill Checkpoint.
+# The supported headless path is documented in README/ORCHESTRATION_README.md under
+# "Headless / CI use" (codex exec with an explicit sandbox, or openai/codex-action).
+
 param(
     [Parameter(Mandatory = $true)]
     [string]$TicketId,

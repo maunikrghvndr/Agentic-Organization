@@ -119,6 +119,30 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Measure before trimming:** the library's `EVALS.md` is a lightweight A/B protocol — run a real task with vs. without a role/section, compare quality and token cost, and let the verdict (KEEP / TRIM / CUT) drive what stays. Directional, not rigorous, but it turns "feels heavy" into evidence and is the honest antidote to a library that only ever grows.
 - **Graph accelerator:** the Graphify git hook (above) keeps the graph fresh on every commit, and `AGENTS.md` drives the agent to *query* it instead of grepping — it builds the graph only when no hook maintains it. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
 
+## Headless / CI use
+
+The old runners (`Scripts/run-claude-ticket.ps1`, `Scripts/run-codex-ticket.ps1`, `Router/classify-ticket.md`) are deprecated and kept only for reference: they pipe untrusted ticket text into an agent with repo write access and ambient credentials, with no turn, budget, sandbox or permission limits. Nothing new executes until a real headless run exists in one of your repos; when it does, follow this.
+
+**Rule of Two (Meta, 2025-10-31; Microsoft's prescription after the 2026 claude-code-action incidents).** An unattended run must never combine all three of: (1) untrusted input (ticket, issue, PR, web or file content), (2) access to secrets or credentials, and (3) the ability to write somewhere external (push, comment, deploy, send). Pick two. Treat ticket/issue/PR text as data, not instructions — see `AGENTS.md` → instruction source hierarchy. Native Windows has no agent sandbox; run unattended work in WSL2 or a devcontainer.
+
+Examples (flag: version-sensitive — check the host's current flags before use):
+
+```powershell
+# Claude Code, one role, hard limits, JSON result, no interactive prompts
+claude -p --bare `
+  --append-system-prompt-file AGENTS.md `
+  --append-system-prompt-file "<library>\EngineeringTeam\backend-engineer.md" `
+  --max-turns 40 --max-budget-usd 5 `
+  --permission-mode acceptEdits --permission-prompts none `
+  --output-format json `
+  "<ticket text or path>"
+
+# Codex, sandboxed to the workspace, structured output
+codex exec --sandbox workspace-write --output-schema .\schema.json "<ticket text>"
+```
+
+Preferred GitHub path: [claude-code-action](https://github.com/anthropics/claude-code-action) (`label_trigger` or `assignee_trigger` plus `claude_args` for the same flags; no PR by default; write-access and bot checks) and [openai/codex-action](https://github.com/openai/codex-action). Read tickets through the vendor's official MCP server (Linear has a read-only endpoint; Atlassian MCP v2) rather than pasting ticket text into the prompt.
+
 ## Maintaining The Library
 
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
