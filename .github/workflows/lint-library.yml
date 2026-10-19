@@ -1,0 +1,22 @@
+# Library lint on every push and pull request. Zero agent tokens: this only runs the two PowerShell lints.
+# This file is agent configuration (reviewed as code; security pass before merge). Keep permissions read-only.
+name: lint-library
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Lint the library
+        shell: pwsh
+        run: ./Scripts/Lint-Library.ps1
+      - name: Lint the library's own repo memory
+        shell: pwsh
+        run: ./Scripts/Lint-RepoMemory.ps1 -RepoRoot .

@@ -17,7 +17,8 @@
 #       selectors, fillers) in AGENTS.md, EngineeringTeam/**, LESSONS.md, LESSONS/**, MemoryTemplates/**,
 #       README/**, Evals/**, EVALS.md, Scripts/**, Hooks/**
 # Warnings (exit 0):
-#   W1  AGENTS.md over 32,768 bytes (Codex default cap) or over 200 lines (Anthropic guidance)
+#   E7  AGENTS.md over 32,768 bytes (Codex default cap) — relocate a section verbatim to _shared/, never trim
+#   W1  AGENTS.md over 200 lines (Anthropic guidance)
 #   W2  >= 8 identical consecutive lines shared by two role files (trim candidates; feeds EVALS.md)
 #   W3  hardcoded `wiki/spec-` outside AGENTS.md (the branched Spec Kit / wiki phrase should be used)
 #
@@ -138,7 +139,7 @@ foreach ($f in $instructionFiles) {
 
 # ---- W1: AGENTS.md size -------------------------------------------------------------------------
 $agentsBytes = (Get-Item $agentsPath).Length
-if ($agentsBytes -gt 32768) { $warnings.Add("W1 AGENTS.md is $agentsBytes bytes (> 32,768 Codex default cap)") }
+if ($agentsBytes -gt 32768) { $errors.Add("E7 AGENTS.md is $agentsBytes bytes (> 32,768 Codex default cap) - relocate a section verbatim to EngineeringTeam/_shared/, never trim") }
 if ($agentsLines.Count -gt 200) { $warnings.Add("W1 AGENTS.md is $($agentsLines.Count) lines (> 200 guidance)") }
 
 # ---- W2: >= 8 identical consecutive lines shared by two role files --------------------------------

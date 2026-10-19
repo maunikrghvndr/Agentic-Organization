@@ -32,14 +32,17 @@ An eval row without these fields is an anecdote, not a result:
 - **TRIM is conditional:** a TRIM verdict requires the trimmed variant to pass the same pre-registered checks as the full one on every trial; otherwise it is KEEP.
 - **Cost:** `total_cost_usd` from Claude Code's JSON output (`claude -p --output-format json`), or `ccusage` (reads local logs for Claude Code and Codex), or `/cost` in-session; always with a `cost source:` field. On Cursor write `cost: n/a`. Figures are list-price estimates, not invoices.
 - **Routing checks:** a run of `Evals/routing-cases.md` records `cases passed / total` with the failing case numbers.
+- **Trace metrics, never self-report (added 2026-10-19, Hermes):** per trial `num_turns`, `duration_ms`, `total_cost_usd` from `claude -p --output-format json` (Codex: `exec --json` events; Cursor: n/a), tool-error and retry counts from the transcript, and the pre-registered check run as a command with its exit code. A verdict quoting the agent's own "tests passed" is an anecdote.
+- **Mechanical success check first:** a marker, an on-disk artifact or a test/lint exit code wherever one can be defined; a judged pass/fail only when no mechanical check exists, and then labelled `judged`.
+- **Trap tasks:** build each task so it contains the exact failure the section under test exists to prevent (a helper to reuse, a message to externalise, a secret in a fixture, an AC that is easy to drop), so pass/fail is observable in the diff. Draw traps only from the library's recorded real failures (`Evals/trap-tasks.md`), never invented toys — they must still be real, representative tasks.
 
 Row format (replaces the shorter one below for new rows):
 
-`- [YYYY-MM-DD] <what was tested> — host/model/effort: … — repo@commit — tasks: n — trials: A pass^3 / B pass^3 — verdict: KEEP/TRIM/CUT/no evidence — cost A→B (source) — note.`
+`- [YYYY-MM-DD] <what was tested> — host/model/effort: … — repo@commit — tasks: n — trials: A pass^3 / B pass^3 — turns A→B — tool errors A→B — verdict: KEEP/TRIM/CUT/no evidence — cost A→B (source) — note.`
 
 ## The first three A/Bs, in this order
 
-1. **`backend-engineer.md` full file vs a scratch core + references variant.** The scratch variant lives outside the library (never committed as a role file); 2–3 real backend tasks in a real repo; success check defined before the run (ACs met, constitution and style rules obeyed, Evidence rows present). This run informs Decision B (whether the six large role files may be split) — until it has run, no role file is split.
+1. **`backend-engineer.md` full file vs a scratch core + references variant.** The scratch variant lives outside the library (never committed as a role file); 2–3 real backend tasks in a real repo, each built as a trap from `Evals/trap-tasks.md`; success check defined before the run (ACs met, constitution and style rules obeyed, Evidence rows present). This run informs Decision B (whether the six large role files may be split) — until it has run, no role file is split.
 2. **`LESSONS.md` whole (pre-2026-10-18 flat file, from git history) vs the index + area-file layout.** Validates F4: same task, does the area-filtered read lose anything a role needed?
 3. **`AGENTS.md` with vs without the Code & Source Graph section** (the four-line summary that remains). Validates F2(B)/(C): did moving the procedure to `_shared/graph.md` change whether the agent uses the graph?
 

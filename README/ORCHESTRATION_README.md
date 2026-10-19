@@ -35,7 +35,11 @@ Agentic-Organization/
     _shared/               on-demand detail relocated verbatim from AGENTS.md: graph.md (graph procedure), memory.md (Repo Memory detail), rules-detail.md (long-form rules)
 
   Evals/
-    routing-cases.md       one-line tickets with the expected role (incl. near-misses and the negative trivial case); results go in EVALS.md
+    routing-cases.md       one-line tickets with the expected role (incl. near-misses and the negative trivial case) + hierarchy cases; results go in EVALS.md
+    trap-tasks.md          recorded real failures to build A/B tasks around, each with a programmatic check
+
+  .github/workflows/
+    lint-library.yml       CI: runs both lints on push/PR (read-only permissions, SHA-pinned checkout)
 
   MemoryTemplates/
     CONSTITUTION.template.md
@@ -48,7 +52,8 @@ Agentic-Organization/
     handoff-check.mjs      optional Stop hook: blocks a Claude Code stop once if work was not recorded in task memory
 
   Scripts/
-    Lint-Library.ps1       static library lint: dead heading refs, role catalog, README vs disk, relics, LESSONS format, size
+    Lint-Library.ps1       static library lint: dead heading refs, role catalog, README vs disk, relics, LESSONS format, hidden text, size cap
+    Lint-RepoMemory.ps1    optional lint for a repo's .ai-memory/: wiki index contract, links, roadmap vs archive, Evidence rows, EARS, hidden text
     Sync-AgentsMd.ps1      copy/refresh AGENTS.md into every repo under a parent folder (warns on size cap and CLAUDE.md shadowing)
     run-claude-ticket.ps1  deprecated headless runner (kept for reference; see Headless / CI use)
     run-codex-ticket.ps1   deprecated headless runner (kept for reference; see Headless / CI use)
@@ -104,7 +109,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Self-learning (closed loop):** repo-specific knowledge goes in that repo's `.ai-memory/`; **general, transferable takeaways** ("never ship mock data in production") go in the library's shared `LESSONS.md` (cross-cutting) or `LESSONS/<area>.md` (its index maps areas to roles), which every repo reads and every agent proposes to (written only after the user approves). Stable universal lessons graduate into the role files. Inspired by Hermes' and Multica's skill-compounding, done in markdown with no runtime.
 - **One writer, read-only fan-out:** phases run sequentially in one session; the only parallelism the library sanctions is concurrent *review* of a frozen diff (reviewer + security + QA) when the host can run subagents or parallel sessions, plus planner `[P]` phases with disjoint `Owns:` paths. Claude Code agent teams are experimental and Claude-only; the sequential fallback is always correct.
 - **Three memory stores, no overlap:** the library (`AGENTS.md`, roles, `LESSONS.md`) is the shared contract; the repo's `.ai-memory/` holds repo facts; the host's per-machine memory (Claude Code auto memory, Codex memories) holds machine-local facts and personal corrections and is never a source of truth — a durable repo property it captures gets promoted to `PROJECT_MEMORY.md`.
-- **Progress board:** `.ai-memory/ROADMAP.md` is the per-repo glance view — every feature/task grouped Backlog / In Progress / Blocked / Done, linking to task files and specs. Read it to re-orient after a context switch; roles keep it current and completion moves items to Done. It's the index over `TASKS/`, the way `PROJECT_MEMORY` indexes `wiki/`.
+- **Progress board:** `.ai-memory/ROADMAP.md` is the per-repo glance view — every feature/task grouped Backlog / In Progress / In Review / Blocked / Done, linking to task files and specs. Read it to re-orient after a context switch; roles keep it current; delivery moves an item to In Review and only your recorded acceptance moves it to Done (the agent never marks its own work Done). It's the index over `TASKS/`, the way `PROJECT_MEMORY` indexes `wiki/`.
 - **Measure before trimming:** the library's `EVALS.md` is a lightweight A/B protocol — run a real task with vs. without a role/section, compare quality and token cost, and let the verdict (KEEP / TRIM / CUT) drive what stays. Directional, not rigorous, but it turns "feels heavy" into evidence and is the honest antidote to a library that only ever grows.
 - **Graph accelerator:** the Graphify git hook (above) keeps the graph fresh on every commit, and `AGENTS.md` drives the agent to *query* it instead of grepping — it builds the graph only when no hook maintains it. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
 
@@ -150,7 +155,7 @@ EVALS.md rows need a cost figure with its source. `claude -p --output-format jso
 
 ## Maintaining The Library
 
-- **Before every library commit run `.\Scripts\Lint-Library.ps1`** (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines; warnings: AGENTS.md size, duplicate blocks across role files, hardcoded `wiki/spec-`). Optionally, from a synced repo on Claude Code, run `/doctor prompt-audit` once per release (Claude-only; degrades to nothing elsewhere).
+- **Before every library commit run `.\Scripts\Lint-Library.ps1`** (CI runs it too via `.github/workflows/lint-library.yml`; `Scripts\Lint-RepoMemory.ps1 -RepoRoot <repo>` is the optional sibling for a project's `.ai-memory/`, pasted as an Evidence row at the completion sweep) (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines; warnings: AGENTS.md size, duplicate blocks across role files, hardcoded `wiki/spec-`). Optionally, from a synced repo on Claude Code, run `/doctor prompt-audit` once per release (Claude-only; degrades to nothing elsewhere).
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
 - The role library path appears exactly once, at the top of `AGENTS.md`. The agent self-heals it (Role library resolution block) with the user's permission; no manual edit needed.
 - Coding-style rules (explicit types / no `var` abuse, no `any`, `Constants.cs` / `FrontendConstants` patterns, structured logging with constant templates, no hardcoding) live in the engineer role files and are enforced by the reviewer roles — keep both sides in sync when changing a style rule.

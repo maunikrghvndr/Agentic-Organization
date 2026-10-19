@@ -56,3 +56,56 @@ When a non-trivial task teaches you a durable, generalizable engineering lesson 
 ## Grill Checkpoint (Universal Rule)
 
 - **Grill Checkpoint (mandatory, every role, every task).** Before doing any work, confirm intent with the user in one exchange: (1) restate the task in one line as you understand it; (2) name every load-bearing assumption explicitly; (3) ask any question that would change what you build — if none, say so; (4) do not proceed until intent is confirmed — either the user answers, or the user accepts your restatement. For a fully specified task this is a single line and 15 seconds; for an ambiguous one it becomes real questions. It is never skipped. **Non-interactive runs** (`-p`, `codex exec`, a routine or CI job — no user can answer): write the restatement and the assumptions into the task file Summary; proceed only if every assumption is a stated default, no load-bearing question remains and the run satisfies the Rule of Two (`_shared/rules-detail.md`); otherwise stop and emit the open questions as the run's output. When the task is a feature-sized ambiguity (vague product idea, missing acceptance criteria), stop this lightweight version and route to `analyst` for full-depth grill and durable spec production instead.
+
+## Review independence (Phase Protocol)
+
+- **Review independence (the one real reason to prefer a fresh session).** A reviewer, QA, or security phase must not rubber-stamp code the same session just wrote. **Strongly prefer** running the review as a fresh session/task so it is genuinely independent. If you do review in the same session, you MUST re-read the changed code from scratch and review it adversarially — as if a stranger wrote it — and never soften a finding because you wrote the code. Fix blocking findings and re-review (the rework loop) until none remain.
+
+## Compaction / re-entry (Phase Protocol)
+
+- **Compaction / re-entry.** When the host compacts context, preserve: the active role name (its file must be re-read — hosts re-inject `AGENTS.md` after compaction but not a role file loaded by Read), the task file path, the current phase and its done-when, the AC ids in play, settled decisions, pending blocking findings and the Evidence so far. After any compaction notice or role switch, re-read the task file Summary and the incoming role file before continuing.
+
+## Spec-driven flow — Spec Kit sequence (Phase Protocol)
+
+This is the same artifact sequence GitHub Spec Kit produces (`constitution → specify → clarify → plan → tasks → analyze → implement`, plus its optional `checklist` and `converge` quality gates, which the planner gate and `qa-engineer` traceability cover here).
+
+
+## Git discipline (Boundaries) — added 2026-10-19 (BMAD, cc-sdd, Multica)
+
+- Before the first code change the tree is clean, or the user named what is in flight. Record `Baseline: <full HEAD sha>` (or `NO_VCS`) in the task file Summary — written once, never overwritten on resume. Every review diffs from it: the diff handed to any reviewer is `git diff <Baseline>` plus untracked files, never the engineer's description. Never fold unrelated uncommitted changes into the diff.
+- Stage by path (`git add <paths>`), never `git add -A` or `git add .`. Pushing to any remote, opening a PR, merging any branch or committing to the default branch are the user's (ask-first). Work is delivered as a reviewed diff or a branch the user merges; the agent never merges. The project constitution records the delivery default (branch + PR / direct commit / uncommitted diff).
+
+## Undo (Phase Protocol) — added 2026-10-19 (Kiro, Multica)
+
+- Before a rewrite, migration, bulk edit or deletion, make the pre-phase tree recoverable: commit when allowed, else `git stash push -u -m "<task> pre-<step>"` or a branch; write the restore command next to the Approval line in the task file (`Undo: <command>`), one checkpoint per step.
+- Host checkpoints (Claude Code, Kiro, Cursor) track only the host's own file tools — anything a shell command, script, formatter or migration tool changed is outside them. Git is the only portable checkpoint.
+- To undo a phase, revert only its `Owns:` paths to the base sha, ask-first; never `reset --hard`, never touch paths outside Owns. An operation with no undo is stated as such before it runs.
+- `[P]` worktree phases: branch `task/<task-file>/<T-id>` cut from the parent's current commit, recorded as `Base: <sha>` in the handoff so `git diff <base>..<branch>` is exactly the phase's work; the phase commits everything before its worktree is removed; a no-change branch is deleted; the phase never merges — the parent merges with the user's go-ahead and records it; conflicts with the user's uncommitted edits prefer the user's and say so.
+
+## Headless default: an ask-first item is a denial — added 2026-10-19 (Hermes)
+
+Every ask-first Boundary reached mid-run in an unattended run (`-p`, `codex exec`, CI, scheduled) is a denial, never a default: the run performs no dependency add, schema change, deletion, contract change, destructive operation, push, merge or agent-configuration edit; it records `Blocked: needs approval — <exact command>` in the task file Decisions and in the run output, continues with work that does not depend on it, and stops when the rest does. An approval nobody answered is not a yes, and a timeout is not a no that licenses a workaround. The enforcing controls remain host deny rules and token scopes, never this sentence.
+
+## Consent clause (Grill Checkpoint) — added 2026-10-19 (OpenSpec)
+
+An answer to a design question is never consent to proceed; silence is not acceptance. Step 4 of the Grill Checkpoint closes only on an explicit yes to the restatement or, for an ask-first item, to the named action and files. Ask one question at a time, in dependency order. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
+
+## Rework loop addendum — added 2026-10-19 (cc-sdd)
+
+If the same Blocking finding survives two rounds, round 3 opens with a `debugger` diagnosis before the engineer changes code (the cap of 3 is unchanged).
+
+## Spec-driven flow and Sizing (Phase Protocol) — full text as of 2026-10-19
+
+- **Spec-driven flow (this is the default for features).** A feature-sized change is governed by the project constitution and proceeds spec-first: **constitution** (comply with it) → `analyst` = *specify + clarify* (the spec, EARS acceptance criteria) → `architect` = *plan* (technical design) → `planner` = *tasks + analyze* (phase breakdown + the pre-implementation gate) → engineers = *implement* → reviewers/`qa`. (The same artifact sequence Spec Kit produces; full text: `_shared/rules-detail.md`.) **Sizing:** the full path (`researcher` when an external choice is open → `analyst` → `architect` → `planner` gate) applies when the change adds a service, data model or public API, spans more than two roles, hits the mandatory-security list, or the user asks; otherwise `analyst` (one-page spec) → engineer → reviewer; a trivial change is Grill Checkpoint → engineer → Evidence. The security trigger list applies at every size.
+
+## Research before you build — compact form as of 2026-10-19 (the full original is at the top of this file)
+
+- **Research before you build — do not reinvent solved problems** (retries/backoff, parsing, validation, date/time, serialization, crypto, HTTP, auth, caching, rate limiting, PDF/CSV/image handling…): first what the project already depends on, then a mature, widely-used, maintained library; hand-rolling a solved problem is a defect. Adding a dependency is ask-first and is evaluated for maintenance, security, license and weight; confirm the package exists on its registry with real history and maintainers and pin the exact version (model-suggested names are often fictional). State the build-vs-reuse decision; every reviewer flags reinvented solved problems. Full rule: `EngineeringTeam/_shared/rules-detail.md`.
+
+## Rework loop — compact form as of 2026-10-19 (the full original is above)
+
+- **Rework loop:** findings route back to the engineer role. First review per the independence rule; **every re-review after a fix runs in a fresh context** (reviewer subagent → new session or `codex review --base` → at minimum a new chat that re-reads the diff from scratch and reviews adversarially; cross-model when available), fed the diff, AC ids, constitution and task-file Decisions — **never the implementer's transcript**. Blocking findings carry `Verification: Confirmed` or `Probable`; `Unverified` cannot block. Style rules stay Blocking. **Cap: 3 rounds**, then record the disagreement, mark ROADMAP Blocked, the user decides. Full rule: `_shared/rules-detail.md`.
+
+## Parallelism — compact form as of 2026-10-19 (the full original is above)
+
+- **Parallelism: one writer.** One session, sequential roles, one writer. The only sanctioned parallelism is read-only fan-out: reviewer, `security-engineer` and `qa-engineer` on the same frozen diff, concurrently when the host allows, else in turn. `[P]` planner phases only with disjoint `Owns:`. Findings are merged into the task file before fixing; any reviewer's Blocking is blocking. A worktree phase never writes `TASKS/`, `ROADMAP.md` or `PROJECT_MEMORY.md` — the parent records after merge. Full rule: `_shared/rules-detail.md`.
