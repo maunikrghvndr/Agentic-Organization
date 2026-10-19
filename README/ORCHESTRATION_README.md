@@ -159,3 +159,11 @@ EVALS.md rows need a cost figure with its source. `claude -p --output-format jso
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
 - The role library path appears exactly once, at the top of `AGENTS.md`. The agent self-heals it (Role library resolution block) with the user's permission; no manual edit needed.
 - Coding-style rules (explicit types / no `var` abuse, no `any`, `Constants.cs` / `FrontendConstants` patterns, structured logging with constant templates, no hardcoding) live in the engineer role files and are enforced by the reviewer roles — keep both sides in sync when changing a style rule.
+
+## Hooks (optional enforcement pack)
+
+`AGENTS.md` prose is the complete contract; `Hooks/` adds host-side enforcement for two of its rules on Claude Code and degrades to nothing elsewhere. One-time **user-level** install (paste `Hooks/settings.snippet.json` into `~/.claude/settings.json` with `<library-root>` filled in, beside the graphify hook above); nothing is written to any repo, and each repo opts in through its `AGENTS.md` mentioning `.ai-memory`.
+
+- `handoff-check.mjs` (`Stop`): blocks a stop when source files changed but the newest task file is older, lacks `## Handoff`, or lacks an Evidence row; prose-only turns exempt; honours `stop_hook_active`; works in linked worktrees.
+- `session-reentry.mjs` (`SessionStart`, `compact|resume`): prints the newest task file's `## Summary` and `## Handoff` into context — the on-disk re-entry point of the Compaction / re-entry rule.
+- Tests: `node --test "Hooks/*.test.mjs"` (Node ≥ 22). Details, the verified hook contract and what is deliberately not shipped (Codex/Cursor registrations, PreCompact, SubagentStop): `Hooks/README.md`.

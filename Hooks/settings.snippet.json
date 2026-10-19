@@ -1,0 +1,27 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<library-root>/Hooks/handoff-check.mjs\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"<library-root>/Hooks/session-reentry.mjs\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
