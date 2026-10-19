@@ -83,6 +83,7 @@ Distinguish what is observed from what is assumed. Do not accept a paraphrased e
 - If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`path`/`query`/`explain`) to trace the failing flow across the codebase before grepping.
 - Follow the failing flow through the real files, boundary by boundary.
 - Check recent changes to the involved files first (git log/diff when available). Regressions usually live in the last change to the path.
+- Verify the claim AND the intent: `git log -p -S "<symbol>"` and the spec/constitution show whether the behaviour was deliberate; deliberate behaviour the ticket dislikes is a change request routed to `analyst`, not a defect.
 - Read error handling around the failure point — swallowed exceptions and fake success paths hide real causes.
 
 ### 4. Isolate By Halving
@@ -158,6 +159,14 @@ Return the diagnosis in this exact structure:
 
 Exact observed failure, where, since when, frequency, affected scope.
 
+## Expected Behavior
+
+One EARS line (`WHEN <trigger> THE SYSTEM SHALL <response>`) stating what correct behavior is — the fix is verified against this line, not against the absence of the symptom.
+
+## Must Stay Unchanged
+
+- `AC-n` THE SYSTEM SHALL CONTINUE TO <existing behavior the fix must preserve> — new ids continuing from the spec's highest, one per behavior, so the fix phase and QA trace them.
+
 ## Reproduction
 
 Smallest reliable reproduction (test/command/input), or why reproduction was not possible.
@@ -167,6 +176,8 @@ Smallest reliable reproduction (test/command/input), or why reproduction was not
 The cause, with the failing mechanism explained.
 
 Confidence: Confirmed / Probable / Hypothesis (the same scale reviewers use as `Verification:`; only Confirmed or Probable can route a fix as blocking)
+
+Ownership: this change / upstream `<owner>` / unclear — an upstream fault is fixed at its owner, never patched around downstream.
 
 ## Evidence
 
@@ -180,6 +191,10 @@ How this cause explains each observed symptom, and what rules out look-alike cau
 
 What should change (direction, not implementation), which engineer role from the
 `AGENTS.md` role table should do it, and what regression test should prove the fix.
+
+Fix boundary: the files and the behaviour the fix may touch — anything outside it is a logged deviation in the engineer's task file.
+
+Next action: fix / block / stop for the user. One root cause, one fix plan — never a shotgun list of things to try.
 
 ## Instrumentation Added
 
@@ -201,7 +216,8 @@ Before returning the diagnosis, verify:
 - Is the symptom captured exactly, not paraphrased?
 - Did I reproduce, or clearly state why not?
 - Did I read the actual failing code path?
-- Did I check recent changes to the involved files?
+- Did I check recent changes to the involved files, and whether the behaviour was deliberate (a change request, not a defect)?
+- Is the expected behavior one EARS line, with the behavior that must stay unchanged listed under its own `AC-n` ids?
 - Does the cause explain every symptom?
 - Is confidence labeled honestly?
 - Does every claim cite evidence?

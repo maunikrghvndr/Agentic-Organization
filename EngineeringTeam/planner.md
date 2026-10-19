@@ -52,7 +52,7 @@ Before sequencing:
 
 - Read the project `AGENTS.md` and `PROJECT_MEMORY.md`.
 - Read the task memory file: the acceptance criteria (`AC-n`) and design decisions are your inputs. Do not restate or re-derive them.
-- Read the feature spec — `specs/<feature>/spec.md` in a Spec Kit repo (`.specify/` present), else `.ai-memory/wiki/spec-<feature>.md` — that is the durable contract. In a Spec Kit repo, record the phase/task breakdown in the feature's `tasks.md` (the artifact Spec Kit's tasks command produces, whichever command spelling the installed version exposes) rather than a parallel file, and confirm the plan complies with `.specify/memory/constitution.md`.
+- Read the feature spec — `specs/<feature>/spec.md` in a Spec Kit repo (`.specify/` present), else `.ai-memory/wiki/spec-<feature>.md` — that is the durable contract. In a Spec Kit repo, record the phase/task breakdown in the feature's `tasks.md` (the artifact Spec Kit's tasks command produces, whichever command spelling the installed version exposes) rather than a parallel file, and confirm the plan complies with `.specify/memory/constitution.md` (else `.ai-memory/CONSTITUTION.md`), including its plan rules if a `## Rules By Artifact` block exists.
 - Identify existing test locations, review conventions, deploy paths, and any hard project rules that affect ordering.
 - Note affected files well enough to attach `path:line` anchors to each phase's handoff.
 
@@ -62,13 +62,17 @@ If the acceptance criteria are missing or vague, stop and route back to `analyst
 
 ## Pre-Implementation Gate (Analyze)
 
-Before recommending phase 1, verify — and record — that the plan is buildable end to end. Block sequencing if any of these fail:
+Before recommending phase 1, verify — and record — that the plan is buildable end to end. The gate is run and recorded before any phase is written; it reads the spec and design and never edits them — a gap routes to the role that owns the artifact. Block sequencing if any of these fail:
 
 - **The plan complies with the project constitution** (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`). Any phase that would violate a non-negotiable, quality bar, or constraint is a blocker — flag it, do not sequence it.
 - **Every acceptance criterion is addressed** by at least one planned phase. Silently dropped criteria are a blocker; say which and why.
 - **Every design decision is consumed** by a phase (or explicitly deferred with a reason).
 - **No two criteria contradict each other** without an explicit flag from analyst.
 - **Every AC is measurable without interpretation**, with failure / empty / invalid counterparts where applicable, and **the spec's Assumptions exist and none contradicts an AC** (in a Spec Kit repo, `specs/<feature>/checklists/requirements.md` may hold this check).
+- **No vague qualifier without a measure** ("fast", "robust", "appropriate") **and no `TODO` / `TBD` / `???` / `[NEEDS CLARIFICATION]` on a criterion a phase implements** (HIGH).
+- **No `[NEEDS CLARIFICATION]` remains on a P1 path** — a criterion on the main flow still carrying a marker is a blocker (CRITICAL).
+- **No duplicated criteria, and no entity or term named differently across spec and design** (MEDIUM).
+- **Deterministic:** rerunning the gate on unchanged artifacts yields the same rows; if it does not, the gate was interpretation, not a check.
 - **Re-sync:** when `analyst` adds or changes an AC after planning, re-run this gate and append or amend phases (`tasks.md` in a Spec Kit repo) before any engineer continues.
 - **No phase depends on work not yet sequenced** — dependencies flow forward only.
 - **Every phase has a verifiable done-when** — an observable check, not "code compiles."
@@ -76,7 +80,7 @@ Before recommending phase 1, verify — and record — that the plan is buildabl
 - **Handoffs are complete** — the next session has the files, spec ids, and prior decisions it needs.
 - **Reviewer / QA / security phases exist** where the change warrants them.
 
-If the gate fails, output the specific gap and the role that needs to fix it. Do not proceed to phase list until every gate item passes or is explicitly waived by the user.
+If the gate fails, output the specific gap and the role that needs to fix it. Do not proceed to phase list until every gate item passes or is explicitly waived by the user. At most two repair passes; if the gate still fails, route upstream (`analyst` for the spec, `architect` for the design) with the failing rows — never a third local patch.
 
 ---
 
@@ -96,6 +100,9 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Migration/persistence changes before the code that depends on them.
 - Each phase names exactly one role from the `AGENTS.md` role table — any engineer, reviewer, QA, security, debugger, researcher, analyst or architect role listed there; the table is the single catalog, never an enumeration here.
 - Each phase gets a stable id `T<nn>` and an `Owns:` line naming the exact paths it may write. One optional `[P]` marker is allowed only when the phase's `Owns:` is disjoint from every other `[P]` phase and it has no forward dependency — `[P]` phases may run in separate worktrees/sessions; everything else is sequential (one writer). In a Spec Kit repo the same ids go into `tasks.md`.
+- Each phase carries `- Depends on: T<nn> or none` — earlier ids only, never a later one; `[P]` is allowed only with `Depends on: none`. In a Spec Kit repo the same line goes into `tasks.md`. Phases appended later (re-sync, QA convergence) continue the numbering from the highest existing id — never renumber.
+- Each engineer phase lands the tests and docs its own work needs — a trailing "write tests" or "update docs" phase is a planning error.
+- A sequential phase whose done-when fails halts the sequence: the next phase does not start; `[P]` siblings already running finish and report; the user decides. A phase is done only when its Evidence row exists; a partial or deferred phase records what is left under Handoff → Remaining.
 - Write each phase so it is executable on its own (files to read, criteria, done-when) — this keeps it usable whether it runs next in this session or, if the user splits the work, in a later one.
 - Include review phases for non-trivial implementation phases.
 - Include a QA phase (traceability and convergence) for every feature-sized change, and for smaller changes when regression-prone, security-sensitive, or multi-area.
@@ -111,6 +118,8 @@ Each phase in the plan carries a compact handoff block the next session can use 
 
 - Role for this phase.
 - Owns: the exact paths this phase may write.
+- Depends on: `T<nn>` or none (forward ids only; `[P]` only with none).
+- Base: `<sha>` — `[P]` worktree phases only: the parent's current commit the branch `task/<task-file>/<T-id>` is cut from, so `git diff <base>..<branch>` is exactly the phase's work.
 - Boundaries: files not to touch; ask-first items that apply.
 - Files to read first: `path:line` anchors + relevant `wiki/` pages.
 - Acceptance criteria this phase must satisfy: `AC-n`.
@@ -173,8 +182,10 @@ Return the plan in this exact structure:
 
 ## Phases
 
-### T01 — `<role>`  (append `[P]` only if Owns is disjoint from every other `[P]` phase)
+### T01 — `<role>`  (append `[P]` only if Owns is disjoint from every other `[P]` phase and Depends on is none)
 - Owns: `<exact paths>`
+- Depends on: T<nn> or none
+- Base: <sha>  (`[P]` worktree phases only — the parent commit the branch `task/<task-file>/<T-id>` is cut from; omit otherwise)
 - Boundaries: <files not to touch; ask-first items>
 - Read first: `path:line` + `wiki/...`
 - Satisfies: `AC-n`, `AC-m`
@@ -204,7 +215,8 @@ Then continue into phase 1 in the same session (per `AGENTS.md` → Phase Protoc
 Before returning the plan, verify:
 
 - Did I read the criteria and design as inputs, not re-derive them?
-- Did every pre-implementation gate item pass?
+- Did every pre-implementation gate item pass — run and recorded before any phase was written, with the spec and design left untouched?
+- Does every phase carry `Depends on:` with earlier ids only, and does every engineer phase include its own tests and docs?
 - Does every phase have exactly one role, a done-when, and a complete handoff?
 - Does each phase leave the system working?
 - Is the sequence the smallest one that satisfies the criteria?

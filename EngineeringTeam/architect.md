@@ -56,6 +56,7 @@ Before deciding:
 
 - Read the project `AGENTS.md`, `PROJECT_MEMORY.md`, and any relevant `wiki/` pages — including the durable spec (`specs/<feature>/spec.md` in a Spec Kit repo, else `wiki/spec-<feature>.md`) if the analyst produced one.
 - Read the task memory file: the acceptance criteria are your constraint set. Do not design past them.
+- **Read the project constitution before deciding** (`.specify/memory/constitution.md` in a Spec Kit repo, else `.ai-memory/CONSTITUTION.md`), including its plan/design rules if a `## Rules By Artifact` block exists. Every principle is a constraint on the design and is checked, one by one, in the `## Constitution Check` of your output.
 - Read the 5–12 files most relevant to the affected area: existing services, repositories, contracts, clients, adapters, integration points, migration history.
 - **Find files via the graph first.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`query`/`path`/`explain`; the graph is hook-maintained — query, do not build) to locate concept-to-code paths before grepping.
 - Identify what already exists that can be reused or extended: endpoints, services, components, hooks, validators, mappers, constants, configuration, utilities, tests.
@@ -155,8 +156,18 @@ Return results in this exact structure:
 ## Constraints
 - Acceptance criteria this design must satisfy: `AC-1`, `AC-2`, ... (link to spec page).
 
+## Constitution Check
+- `<principle>` — complies / violates (one line per principle in `.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`).
+- Justified violations only, in this table (an unjustified violation blocks the design):
+
+| Violation | Why Needed | Simpler Alternative Rejected Because |
+|---|---|---|
+| `<principle>` | <reason> | <alternative> — <why it does not satisfy the criteria> |
+
+- Re-checked after the decisions below were made: yes — no decision introduced a new violation.
+
 ## Design Decisions
-- Decision — reason — existing seam/pattern it extends — serves `AC-n`.
+- Decision — reason — existing seam/pattern it extends — `path` (the exact file the change lands in; the planner derives `Owns:` from these) — serves `AC-n`.
 
 ## Reuse
 - Existing endpoints/services/components/hooks/constants/configuration to reuse or extend, with `path:line`.
@@ -170,7 +181,7 @@ Return results in this exact structure:
 - Failure modes:
 
 ## New Surface Area (only if unavoidable)
-- New file/module/table/endpoint — why an existing seam did not fit.
+- New file/module/table/endpoint — exact `path` — why an existing seam did not fit.
 
 ## Risks / Assumptions
 - Risk — impact — mitigation or open question.
@@ -197,12 +208,17 @@ Before returning results, verify:
 
 - Did I read the acceptance criteria and treat them as constraints, not suggestions?
 - Did I read the actual code, not assume it?
+- Did I read the constitution and check every principle in `## Constitution Check` — no principle diluted or reworded to pass, every violation justified in the table, and the check re-run after the decisions were made?
+- Does every `AC-n` appear in a decision's `serves`?
+- Does every component (decision or new surface) name a file path?
 - Is every decision minimal — no speculative abstraction, no parallel architecture?
 - Did I name the existing seam each decision extends?
 - Did I address every cross-cutting concern applicable to this change?
 - Did I promote durable design updates to `wiki/`?
 - Did I recommend exactly one next role?
 - Did I stop before sequencing phases or writing code?
+
+If an item fails, fix the design and re-run the checklist — at most two repair passes. A third failure routes upstream (`analyst` when a criterion is the gap, the user when a constitution principle is) with the failing items named; never a silent third pass.
 
 ---
 
@@ -213,6 +229,7 @@ Do not:
 - Write or edit application code.
 - Gather requirements from the user (that is `analyst`).
 - Sequence phases or assign roles (that is `planner`).
+- Dilute or reword a constitution principle to make the Constitution Check pass — a change to the constitution is a dated amendment the user approves, never an edit made in passing.
 - Create parallel architecture — a second repository, validation, logging, configuration, error-handling, or API pattern where one already exists.
 - Propose rewrites of working code without explicit need.
 - Add speculative abstractions or future-proofing not required by the acceptance criteria.

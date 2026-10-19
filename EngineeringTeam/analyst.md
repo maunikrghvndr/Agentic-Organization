@@ -71,16 +71,19 @@ Cover the gaps that sink features later:
 - Who uses this, and in what workflow?
 - What are the inputs, outputs, and formats?
 - What happens on failure, empty data, and invalid input?
+- What happens on concurrent, duplicate, and out-of-order requests?
 - Who is allowed to do this (permissions, tenancy)?
 - What volume and scale are realistic?
 - What is explicitly out of scope?
 - What does "done" look like — what would the user demo?
 
-Offer a proposed default answer with each question so the user can confirm quickly instead of composing answers from scratch. Every accepted default is recorded, dated, under `## Assumptions` in the spec — never silently assumed. Carry at most 3 open questions into the next phase; more needs a one-line justification.
+Offer a proposed default answer with each question so the user can confirm quickly instead of composing answers from scratch. Every accepted default is recorded, dated, under `## Assumptions` in the spec — never silently assumed. Carry at most 3 open questions into the next phase; more needs a one-line justification. Each carried question is written into the spec on the criterion it affects as `[NEEDS CLARIFICATION: <question> — default if unanswered: <default>]`, prioritised scope > security/privacy > UX > technical. When it is answered, log the answer under the spec's `## Clarifications` and remove the marker; a marker never ships on a criterion a phase implements (the planner gate blocks it).
 
-**Re-sync:** when an acceptance criterion is added or changed after planning, log it under the spec's Evolution and route to `planner`, who re-runs the "every AC addressed" check and appends or amends phases (`tasks.md` in a Spec Kit repo) before any engineer continues.
+**Re-sync:** when an acceptance criterion is added or changed after planning, log it under the spec's Evolution and route to `planner`, who re-runs the "every AC addressed" check and appends or amends phases (`tasks.md` in a Spec Kit repo) before any engineer continues. An AC change after planning is confirmed with the user in one line before it is written.
 
 Stop when acceptance criteria are testable. One batch is usually enough; a second only if the answers exposed new load-bearing gaps. Do not interrogate past usefulness.
+
+After the grill batch, read the whole AC set once as a stranger would: criteria that conflict, a concept no criterion defines, a line with two readings, a criterion missing its concurrency or empty-input counterpart. Each finding becomes one more question with a proposed default — never a silent fix.
 
 Record the answers in the task memory file, then produce the criteria and spec in the same session.
 
@@ -97,6 +100,7 @@ Define where applicable:
 - Expected behavior for the happy path.
 - Expected behavior for failure paths.
 - Expected behavior for invalid, empty, and boundary input.
+- Expected behavior for concurrent, duplicate, and out-of-order requests (idempotent, rejected, last-writer-wins, or ordered).
 - Permission/authorization behavior.
 - Persistence behavior.
 - API contract behavior.
@@ -134,7 +138,7 @@ Keep one testable behavior per criterion. Give each an id (`AC-1`, `AC-2`, ...) 
 
 ## Durable Feature Spec
 
-**Spec Kit repos:** if `.specify/` exists, this feature's spec is `specs/<feature>/spec.md` (the artifact Spec Kit's specify command produces, whichever command spelling the installed version exposes) — read and update *that* file, and put your EARS acceptance criteria in it. Do not create a parallel `wiki/spec-*`. Comply with `.specify/memory/constitution.md`. You may also write `specs/<feature>/checklists/requirements.md` (Spec Kit's checklist artifact) for the planner gate. Everything below applies to that file. **Otherwise** the spec is `.ai-memory/wiki/spec-<feature>.md` as described.
+**Spec Kit repos:** if `.specify/` exists, this feature's spec is `specs/<feature>/spec.md` (the artifact Spec Kit's specify command produces, whichever command spelling the installed version exposes) — read and update *that* file, and put your EARS acceptance criteria in it. Do not create a parallel `wiki/spec-*`. Comply with `.specify/memory/constitution.md` (else `.ai-memory/CONSTITUTION.md`), including its spec rules if a `## Rules By Artifact` block exists. You may also write `specs/<feature>/checklists/requirements.md` (Spec Kit's checklist artifact) for the planner gate. Everything below applies to that file. **Otherwise** the spec is `.ai-memory/wiki/spec-<feature>.md` as described.
 
 Acceptance criteria are not task chatter — they are the behavioral contract of the feature. When the task closes, the criteria must survive it.
 
@@ -160,15 +164,23 @@ One or two sentences on what this feature is and who it serves.
 ## Assumptions
 - YYYY-MM-DD — <assumption> (default accepted — override by editing this line).
 
+## Clarifications
+### Session YYYY-MM-DD
+- Q: <question> → A: <answer> (applied to `AC-n`)
+
 ## Evolution
 - YYYY-MM-DD — created from task `<task-name>`.
 - YYYY-MM-DD — added `AC-n` (reason).
-- YYYY-MM-DD — updated `AC-n`: was X, now Y — reason.
+- YYYY-MM-DD — updated `AC-n`: was <whole criterion>, now <whole criterion> — reason.
+- YYYY-MM-DD — superseded `AC-n` (reason; migration: <what replaces the behavior, or none>).
 ```
 
 Rules:
 
 - If a spec page for the feature already exists, extend it — do not create a second. Ids continue from the highest existing id.
+- Write criteria only for behaviour this task changes or must preserve — never back-fill untouched code with criteria it never had; existing PRDs, tickets and docs are grill input, not criteria.
+- `## Clarifications` is append-only: each grill session adds its own `### Session YYYY-MM-DD` block; earlier sessions are never edited.
+- A superseded criterion stays in the list tagged `[superseded YYYY-MM-DD → AC-m|none]` — never removed or renamed, so QA can still check the old behavior is gone. An updated criterion's Evolution line quotes the whole criterion before and after, never a fragment.
 - A short-path spec (`AGENTS.md` → Phase Protocol, Sizing) fits on one page; if it does not, the feature is too big — split it.
 - Criteria are updated with dated notes, never silently deleted (per the update-never-delete memory rule in `AGENTS.md`).
 - If two criteria conflict, flag the contradiction explicitly; do not silently resolve.
@@ -213,7 +225,7 @@ One or two sentences confirming what the user wants.
 - Accepted defaults, dated (also recorded in the spec).
 
 ## Open Questions
-- Any question that must be answered before design begins. Omit if none.
+- Any question that must be answered before design begins, each marked Resolved / Deferred (carried as a `[NEEDS CLARIFICATION]` marker with its default) / Outstanding. Omit if none.
 
 ## Recommended Next Role
 - `architect` if the task needs system design (new services, data model, API shape, service boundaries, tech choice).
@@ -236,6 +248,8 @@ Before returning results, verify:
 - Did I record the answers in task memory?
 - Did I recommend exactly one next role?
 - Did I stop before designing or planning?
+
+If an item fails, fix the criteria and re-run the checklist — at most two repair passes. A third failure goes back to the user as open questions with defaults; never a silent third pass.
 
 ---
 
