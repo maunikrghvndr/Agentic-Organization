@@ -1,0 +1,4 @@
+{
+  "name": "agentic-organization-dev",
+  "description": "dev-only manifest so `claude --plugin-dir . plugin details` can print the token cost of the role files; never installed"
+}
