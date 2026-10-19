@@ -13,5 +13,5 @@ if ! command -v gitleaks >/dev/null 2>&1; then
   exit 1
 fi
 
-gitleaks protect --staged --redact
+gitleaks git --pre-commit --staged --redact
 exit $?

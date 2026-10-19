@@ -33,7 +33,7 @@ const ALLOW = 0;
 const BLOCK = 2;
 
 /** Directories whose changes never count as "work that needs recording". */
-const IGNORED_PREFIXES = [".ai-memory/", ".claude/", ".claude/worktrees/", "graphify-out/"];
+const IGNORED_PREFIXES = [".ai-memory/", ".claude/worktrees/", "graphify-out/"]; // .claude/** edits are work worth recording
 
 /** Prose/data files: a turn that changes only these needs no new task-file entry. */
 const PROSE_EXTENSIONS = [".md", ".txt", ".csv"];
@@ -176,7 +176,7 @@ function main() {
   const failed = failedConditions(newestTaskFile(repoRoot), newestChange);
   if (failed.length === 0) return ALLOW;
 
-  const sample = changed.slice(0, 8).map((f) => `  - ${f.rel}`).join("\n");
+  const sample = changed.slice(0, 8).map((f) => `  - ${f.rel.slice(0, 120)}`).join("\n");
   const more = changed.length > 8 ? `\n  ...and ${changed.length - 8} more` : "";
 
   const reason =

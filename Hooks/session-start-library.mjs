@@ -32,6 +32,9 @@ import fs from "node:fs";
 import path from "node:path";
 
 const LIBRARY_URL = "https://github.com/maunikrghvndr/Agentic-Organization";
+// Pinned ref: move it deliberately (a tag is preferable once the library is tagged). The resolved sha is
+// printed so the task file's Evidence can record which library revision the session obeyed.
+const LIBRARY_REF = "main";
 const LIBRARY_DIR_NAME = "Agentic-Organization";
 const ROLE_DIR_NAME = "EngineeringTeam";
 const PROBE_FILE = "planner.md"; // the file AGENTS.md step 1 tests for
@@ -64,10 +67,10 @@ function libraryPathLine(agentsMd) {
 }
 
 /** True when the path line points at a folder that holds the probe file. */
-function resolves(pathLine) {
+function resolves(pathLine, repoRoot) {
   if (!pathLine) return false;
   const normalized = process.platform === "win32" ? pathLine : pathLine.replace(/\\/g, "/");
-  return fs.existsSync(path.join(normalized, PROBE_FILE));
+  return fs.existsSync(path.join(path.resolve(repoRoot, normalized), PROBE_FILE));
 }
 
 function main() {
@@ -78,14 +81,14 @@ function main() {
   const repoRoot = findAgentsRoot(start);
   if (!repoRoot) return 0;
 
-  if (resolves(libraryPathLine(path.join(repoRoot, "AGENTS.md")))) return 0;
+  if (resolves(libraryPathLine(path.join(repoRoot, "AGENTS.md")), repoRoot)) return 0;
 
   const libraryRoot = path.resolve(repoRoot, "..", LIBRARY_DIR_NAME);
   const roleRoot = path.join(libraryRoot, ROLE_DIR_NAME);
 
   if (!fs.existsSync(path.join(roleRoot, PROBE_FILE))) {
     try {
-      execFileSync("git", ["clone", "--depth", "1", LIBRARY_URL, libraryRoot], {
+      execFileSync("git", ["clone", "--depth", "1", "--branch", LIBRARY_REF, LIBRARY_URL, libraryRoot], {
         stdio: ["ignore", "ignore", "ignore"],
       });
     } catch (err) {
@@ -98,8 +101,18 @@ function main() {
     }
   }
 
+  if (!fs.existsSync(path.join(roleRoot, PROBE_FILE))) {
+    process.stderr.write(`session-start-library: ${libraryRoot} exists but is not the role library; nothing resolved.\n`);
+    return 0;
+  }
+  let sha = "unknown";
+  try {
+    sha = execFileSync("git", ["-C", libraryRoot, "rev-parse", "HEAD"], { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  } catch {
+    // not a git checkout (e.g. a copied folder): report unknown, still usable
+  }
   process.stdout.write(
-    `Role library resolved for this remote session: ${roleRoot} ` +
+    `Role library resolved for this remote session: ${roleRoot} (revision ${sha}) ` +
       `(the AGENTS.md path line does not resolve here; load role files from this folder and ` +
       `LESSONS.md from ${libraryRoot}; do not edit the AGENTS.md path line).\n`
   );

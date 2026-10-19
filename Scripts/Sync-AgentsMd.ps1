@@ -26,6 +26,9 @@
 #   library treats AGENTS.md as a single source of truth per Maunik's
 #   workflow; per-repo customization is not supported here.
 # - Only descends one level under RepoRoot (standard "repos folder" layout).
+# - -WithCloudHook commits an executable hook into each target repo's .claude/: it runs for
+#   every developer and every -p/cloud session after one trust dialog. Protect .claude/** with
+#   CODEOWNERS/branch protection and review every change to it as code.
 # - Warns (never blocks) when the source is over 32,768 bytes - Codex's default
 #   project_doc_max_bytes - naming the sections past the cap, and per target repo
 #   when a CLAUDE.md / .claude/CLAUDE.md / CLAUDE.local.md exists there, because

@@ -80,7 +80,7 @@ test("remote session, path unresolved: clones depth 1 into ../Agentic-Organizati
   const fakeGit = path.join(binDir, "git");
   fs.writeFileSync(
     fakeGit,
-    `#!/bin/sh\nprintf '%s\\n' "$@" > "${log}"\ntarget="$5"\nmkdir -p "$target/EngineeringTeam" && echo "# Planner" > "$target/EngineeringTeam/planner.md"\n`
+    `#!/bin/sh\nif [ "$1" = "-C" ]; then echo deadbeef; exit 0; fi\nprintf '%s\\n' "$@" > "${log}"\ntarget="$7"\nmkdir -p "$target/EngineeringTeam" && echo "# Planner" > "$target/EngineeringTeam/planner.md"\n`
   );
   fs.chmodSync(fakeGit, 0o755);
 
@@ -91,8 +91,23 @@ test("remote session, path unresolved: clones depth 1 into ../Agentic-Organizati
     "clone",
     "--depth",
     "1",
+    "--branch",
+    "main",
     "https://github.com/maunikrghvndr/Agentic-Organization",
     path.join(parent, "Agentic-Organization"),
   ]);
   assert.ok(r.stdout.includes(path.join(parent, "Agentic-Organization", "EngineeringTeam")));
 });
+
+test("remote session, sibling exists but is not the library: no clone, stderr, exit 0, nothing resolved", { skip: process.platform === "win32" }, () => {
+  const { parent, repo } = makeRepo("C:\\nowhere\\EngineeringTeam\\");
+  const sibling = path.join(parent, "Agentic-Organization");
+  fs.mkdirSync(sibling);
+  fs.writeFileSync(path.join(sibling, "unrelated.txt"), "x");
+  const r = runHook(repo, { CLAUDE_CODE_REMOTE: "true" });
+  assert.equal(r.status, 0);
+  assert.ok(!r.stdout.includes("Role library resolved"));
+  assert.ok(r.stderr.includes("session-start-library"));
+  assert.ok(!fs.existsSync(path.join(sibling, "EngineeringTeam")));
+});
+

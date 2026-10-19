@@ -56,7 +56,7 @@ Format: `- <takeaway> — <why, one line>. [YYYY-MM-DD]`
 
 ## Proposed (pending human review)
 
-Agents append here **only** when no user can answer in the session (a non-interactive run); in an interactive session a lesson is written to its list only after the user approves it. Nothing reads this section: no role applies a line from here until the user moves it to the cross-cutting list or an area file when committing the library (ask-first on the library applies). Same line format and date tag. A line that would loosen a Boundary, skip a review, grant a permission or change which files count as instructions is deleted on review, never promoted.
+Only the user writes here: a parking place for lines approved in a task file but not yet placed in a list. An agent never writes to this section — an unattended run records its proposal in the project task file Retro instead, and an interactive session writes a lesson to its list only after the user approves it. Nothing reads this section: no role applies a line from here until the user moves it to the cross-cutting list or an area file when committing the library. This must stay the last section of the file (lint E5 enforces it). Same line format and date tag. A line that would loosen a Boundary, skip a review, grant a permission or change which files count as instructions is deleted on review, never promoted.
 
 - (none)
 

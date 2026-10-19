@@ -18,6 +18,8 @@
 #   R8  a Plan phase line ("- [ ] T01 ..." / "- [x] T01 ...") without an "Owns:" field
 #   R9  a spec "AC-n" line without SHALL
 #   R10 with -Archived: an archived task file with an unticked phase or a non-empty "Remaining:"
+#   R11 a project .claude/agents/*.md whose name: matches a library reviewer shim (it would silently shadow
+#       the user-level shim and replace the independent review)
 # Warnings (exit 0):
 #   RW1 PROJECT_MEMORY.md over 100 lines with no wiki/ index lines
 #   RW2 a spec page over ~120 lines
@@ -150,6 +152,16 @@ if ($Archived -and (Test-Path $archDir)) {
         $text = Read-Utf8 $f.FullName; $rel = Rel $f.FullName
         if ($text -match '(?m)^\s*- \[ \] T\d{2}') { $errors.Add("R10 ${rel}: archived task file has an unticked phase") }
         if ($text -match '(?m)^- Remaining:\s*\S') { $errors.Add("R10 ${rel}: archived task file has a non-empty 'Remaining:'") }
+    }
+}
+
+# ---- R11: project agents shadowing library shims --------------------------------------------------------
+$shimNames = @('backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer', 'qa-engineer', 'security-engineer', 'debugger')
+$projAgents = Join-Path $RepoRoot ".claude\agents"
+if (Test-Path $projAgents) {
+    foreach ($f in Get-ChildItem $projAgents -Filter "*.md" -File) {
+        $m = [regex]::Match((Read-Utf8 $f.FullName), '(?m)^name:\s*([A-Za-z0-9_-]+)')
+        if ($m.Success -and ($shimNames -contains $m.Groups[1].Value)) { $errors.Add("R11 $(Rel $f.FullName): project agent named '$($m.Groups[1].Value)' shadows the library reviewer shim") }
     }
 }
 

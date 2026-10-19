@@ -11,11 +11,13 @@
 #   E3  README Structure block names a path that is not on disk
 #   E4  relic strings: "Read the project `AGENTS.md` if it exists", "Jira", "tracker file if one exists",
 #       "--update" (Graphify has an `update` subcommand, not a flag)
-#   E5  a LESSONS line (LESSONS.md / LESSONS/*.md, under a "## Lessons" heading) not ending in a
+#   E5  a LESSONS line (LESSONS.md / LESSONS/*.md, under a "## Lessons" or "## Proposed" heading) not ending in a
+#       date tag; a heading after "## Proposed" (it must be the last section)
 #       "[YYYY-MM-DD...]" date tag
 #   E6  hidden text (zero-width, bidi overrides/isolates, tag characters, soft hyphen, variation
 #       selectors, fillers) in AGENTS.md, EngineeringTeam/**, LESSONS.md, LESSONS/**, MemoryTemplates/**,
-#       README/**, Evals/**, EVALS.md, Scripts/**, Hooks/**
+#       README/**, Evals/**, EVALS.md, Agents/**, Rules/**, Settings/**, Workflows/**, Scripts/**, Hooks/**,
+#       .github/**, .claude-plugin/** (every file installed into ~/.claude or a repo's .claude)
 # Warnings (exit 0):
 #   E7  AGENTS.md over 32,768 bytes (Codex default cap) — relocate a section verbatim to _shared/, never trim
 #   W1  AGENTS.md over 200 lines (Anthropic guidance)
@@ -114,12 +116,15 @@ foreach ($f in $mdFiles + @(Get-Item $agentsPath)) {
 # ---- E5: LESSONS lines carry a date tag ---------------------------------------------------------
 $lessonFiles = @(Get-Item (Join-Path $LibraryRoot "LESSONS.md")) + @(Get-ChildItem (Join-Path $LibraryRoot "LESSONS") -Filter "*.md" -File -ErrorAction SilentlyContinue)
 foreach ($f in $lessonFiles) {
-    $inLessons = $false; $n = 0
+    $inLessons = $false; $inProposed = $false; $n = 0
     foreach ($line in ((Read-Utf8 $f.FullName) -split "`n")) {
         $n++
-        if ($line -match '^## Lessons') { $inLessons = $true; continue }
-        if ($line -match '^## ') { $inLessons = $false; continue }
-        if ($inLessons -and $line.StartsWith('- ') -and $line -notmatch '\[\d{4}-\d{2}-\d{2}[^\]]*\]\s*$') {
+        if ($line -match '^## Proposed') { $inLessons = $true; $inProposed = $true; continue }
+        if ($line -match '^## ') {
+            if ($inProposed) { $errors.Add("E5 $(Rel $f.FullName):${n}: heading after '## Proposed' - it must be the last section") }
+            $inLessons = ($line -match '^## Lessons'); continue
+        }
+        if ($inLessons -and $line.StartsWith('- ') -and $line.Trim() -ne '- (none)' -and $line -notmatch '\[\d{4}-\d{2}-\d{2}[^\]]*\]\s*$') {
             $errors.Add("E5 $(Rel $f.FullName):${n}: lesson line has no trailing [YYYY-MM-DD] tag")
         }
     }
@@ -127,7 +132,7 @@ foreach ($f in $lessonFiles) {
 
 # ---- E6: hidden text in instruction files ----------------------------------------------------------
 $hiddenPattern = [regex]'[\u00AD\u034F\u061C\u115F\u1160\u180E\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF9-\uFFFB]|\uDB40[\uDC00-\uDC7F]|\uDB40[\uDD00-\uDDEF]'
-$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates|README|Evals)([\\/]|\.md$)|^EVALS\.md$' }) + @(Get-ChildItem (Join-Path $LibraryRoot "Scripts"), (Join-Path $LibraryRoot "Hooks") -File -Recurse -ErrorAction SilentlyContinue)
+$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates|README|Evals|Agents|Rules|Settings|Workflows)([\\/]|\.md$)|^EVALS\.md$' }) + @(Get-ChildItem (Join-Path $LibraryRoot "Scripts"), (Join-Path $LibraryRoot "Hooks"), (Join-Path $LibraryRoot "Settings"), (Join-Path $LibraryRoot "Workflows"), (Join-Path $LibraryRoot ".github"), (Join-Path $LibraryRoot ".claude-plugin") -File -Recurse -ErrorAction SilentlyContinue)
 foreach ($f in $instructionFiles) {
     $n = 0
     foreach ($line in ((Read-Utf8 $f.FullName) -split "`n")) {

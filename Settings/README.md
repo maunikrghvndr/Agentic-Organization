@@ -31,7 +31,7 @@ The F9/F10 security review (task file `library-field-review-2026-10.md`, Progres
 
 ## Secret gate: gitleaks pre-commit hook
 
-A tool-agnostic gate that runs on every commit from any agent or human, independent of the host: `gitleaks protect --staged --redact` as a git pre-commit hook, shipped as `Hooks/pre-commit.gitleaks.sh` (POSIX `sh`). It **fails closed**: if `gitleaks` is not on `PATH`, the hook prints one line and exits 1, so a machine without the scanner cannot commit until it is installed (the prose rule "never commit secrets" is then enforced, not assumed). Pass-through of the scanner's own exit code means a real finding blocks the commit and the redacted report shows where.
+A tool-agnostic gate that runs on every commit from any agent or human, independent of the host: `gitleaks git --pre-commit --staged --redact` (gitleaks ≥ 8.19; the older `protect --staged` form is a deprecated alias) as a git pre-commit hook, shipped as `Hooks/pre-commit.gitleaks.sh` (POSIX `sh`). It **fails closed**: if `gitleaks` is not on `PATH`, the hook prints one line and exits 1, so a machine without the scanner cannot commit until it is installed (the prose rule "never commit secrets" is then enforced, not assumed). Pass-through of the scanner's own exit code means a real finding blocks the commit and the redacted report shows where.
 
 Install gitleaks (verify the current release at https://github.com/gitleaks/gitleaks before pinning):
 

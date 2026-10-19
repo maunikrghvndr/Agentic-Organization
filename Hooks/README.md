@@ -1,11 +1,13 @@
 # Hooks (optional enforcement pack)
 
-`AGENTS.md` prose is the complete, portable contract. These hooks only enforce two of its rules on hosts that run hooks; without them the library behaves exactly as before. Node-only, no dependencies, one-time user-level install, no per-repo settings writes. Every hook is a silent no-op in a repo whose root `AGENTS.md` does not mention `.ai-memory`.
+`AGENTS.md` prose is the complete, portable contract. These hooks only enforce two of its rules on hosts that run hooks; without them the library behaves exactly as before. Node-only, no dependencies, one-time user-level install for the Stop and SessionStart hooks below; the cloud hook is the exception — `Sync-AgentsMd.ps1 -WithCloudHook` writes it into each repo's `.claude/` because cloud sessions read only the repo, and a committed `.claude/settings.json` hook then runs for every developer and every `-p`/cloud session after one trust dialog (protect `.claude/**` with CODEOWNERS/branch protection; review every change to it as code). Every hook is a silent no-op in a repo whose root `AGENTS.md` does not mention `.ai-memory`.
 
 | File | Event | What it does |
 |---|---|---|
 | `handoff-check.mjs` | `Stop` | Blocks the stop (exit 2, reason on stderr) when the working tree has changed source files but the newest `.ai-memory/TASKS/*.md` is older than that work, has no `## Handoff` section, or has no Evidence row (`- \`<command>\` \| scope \| exit code \| sha`). Prose-only turns (`.md .txt .csv`, LICENSE, CHANGELOG, `.json` under `.ai-memory/`) are exempt. Exits 0 when `stop_hook_active` is true, so it nudges once; the platform's 8-consecutive-continuation cap is the backstop. Works in linked worktrees (`.git` as a file). |
 | `session-reentry.mjs` | `SessionStart` (`compact`, `resume`) | Prints the newest open task file's path, `## Summary` and `## Handoff` to stdout, which the host adds to context — the on-disk re-entry point AGENTS.md → Compaction / re-entry asks for. Never blocks. |
+| `session-start-library.mjs` | `SessionStart` (cloud/CI only, `CLAUDE_CODE_REMOTE`) | Shallow-clones the library (pinned ref, resolved sha printed) into `../Agentic-Organization` when the `AGENTS.md` path line does not resolve; installed per repo by `Sync-AgentsMd.ps1 -WithCloudHook`. |
+| `pre-commit.gitleaks.sh` | git `pre-commit` | Secret gate: `gitleaks git --pre-commit --staged --redact`; fails closed when gitleaks (≥ 8.19) is absent. A global `core.hooksPath` install disables each repo's own `.git/hooks` (husky etc.) — install per repo instead when a repo has its own hooks. |
 | `settings.snippet.json` | — | The `hooks` block to paste into the **user-level** `~/.claude/settings.json`. |
 | `handoff-check.test.mjs` | — | `node --test "Hooks/*.test.mjs"` from the library root (Node ≥ 22; a bare directory is not accepted) — temp git repos, incl. a linked worktree. |
 
@@ -15,7 +17,7 @@
 2. Replace `<library-root>` with this library's absolute path (the same path as the fenced line at the top of `AGENTS.md`). Keep the quotes around the path; on Windows the shell form runs under Git Bash, so forward slashes or escaped backslashes both work.
 3. Verify in-session with `/hooks`, or run `echo '{"cwd":"<a repo>"}' | node "<library-root>/Hooks/handoff-check.mjs"; echo $?`.
 
-The install is machine-wide; repos opt in through their `AGENTS.md` (the `.ai-memory` mention), nothing is written to any repo. Remove the two entries to uninstall. Rollback is the same edit.
+The install is machine-wide; repos opt in through their `AGENTS.md` (the `.ai-memory` mention), nothing is written to any repo by this install (the cloud hook is a per-repo overlay — see `Sync-AgentsMd.ps1 -WithCloudHook`). Remove the two entries to uninstall. Rollback is the same edit.
 
 ## Hook contract (checked 2026-10-19)
 

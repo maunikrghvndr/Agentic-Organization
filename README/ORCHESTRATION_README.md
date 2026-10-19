@@ -177,7 +177,7 @@ EVALS.md rows need a cost figure with its source. `claude -p --output-format jso
 
 ## Hooks (optional enforcement pack)
 
-`AGENTS.md` prose is the complete contract; `Hooks/` adds host-side enforcement for two of its rules on Claude Code and degrades to nothing elsewhere. One-time **user-level** install (paste `Hooks/settings.snippet.json` into `~/.claude/settings.json` with `<library-root>` filled in, beside the graphify hook above); nothing is written to any repo, and each repo opts in through its `AGENTS.md` mentioning `.ai-memory`.
+`AGENTS.md` prose is the complete contract; `Hooks/` adds host-side enforcement for two of its rules on Claude Code and degrades to nothing elsewhere. One-time **user-level** install (paste `Hooks/settings.snippet.json` into `~/.claude/settings.json` with `<library-root>` filled in, beside the graphify hook above); nothing is written to any repo by that install, and each repo opts in through its `AGENTS.md` mentioning `.ai-memory`. The one per-repo overlay is the cloud SessionStart hook (`Sync-AgentsMd.ps1 -WithCloudHook`): a committed `.claude/settings.json` hook runs for every developer and every cloud session after one trust dialog, so protect `.claude/**` with CODEOWNERS/branch protection and review every change to it as code.
 
 - `handoff-check.mjs` (`Stop`): blocks a stop when source files changed but the newest task file is older, lacks `## Handoff`, or lacks an Evidence row; prose-only turns exempt; honours `stop_hook_active`; works in linked worktrees.
 - `session-reentry.mjs` (`SessionStart`, `compact|resume`): prints the newest task file's `## Summary` and `## Handoff` into context — the on-disk re-entry point of the Compaction / re-entry rule.

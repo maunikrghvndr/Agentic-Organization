@@ -20,7 +20,8 @@
 [CmdletBinding()]
 param(
     [string]$LibraryRoot = (Join-Path $PSScriptRoot ".."),
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,6 +66,11 @@ if (-not (Test-Path $agentsSource)) {
         if (Test-Path $target) {
             if ((Get-Sha256 ([IO.File]::ReadAllBytes($target))) -eq (Get-Sha256 $sourceBytes)) {
                 $unchanged.Add($shim.Name)
+                continue
+            }
+            $firstLine = (Get-Content $target -TotalCount 2 | Select-Object -Last 1)
+            if (-not $Force -and ($firstLine -notlike '# Optional Claude Code overlay*')) {
+                Write-Host "  ! $($shim.Name): an existing user agent of the same name is not a library shim - skipped (use -Force to overwrite)" -ForegroundColor Yellow
                 continue
             }
             if (-not $DryRun) { [IO.File]::WriteAllBytes($target, $sourceBytes) }
