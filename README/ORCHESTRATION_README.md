@@ -48,13 +48,28 @@ Agentic-Organization/
     TASK_MEMORY.template.md
     REFERENCE.template.md
 
-  Hooks/
-    handoff-check.mjs      optional Stop hook: blocks a Claude Code stop once if work was not recorded in task memory
+  Agents/claude/           optional overlay (Decision A): read-only reviewer subagent shims for ~/.claude/agents/ (8 roles; body = read and obey the role file)
+  Hooks/                   optional enforcement pack (AGENTS.md is the complete contract without it) — see Hooks/README.md
+    handoff-check.mjs      Stop hook: blocks a stop once when source changed but the task file lacks a newer Evidence row or Handoff
+    session-reentry.mjs    SessionStart (compact|resume): prints the newest task file's Summary and Handoff
+    session-start-library.mjs  SessionStart (cloud/CI only): clones the library to a sibling folder when the AGENTS.md path does not resolve
+    pre-commit.gitleaks.sh git pre-commit secret gate (fails closed when gitleaks is absent)
+    settings.snippet.json  user-level ~/.claude/settings.json hooks block for the two hooks above
+    handoff-check.test.mjs, session-start-library.test.mjs   node --test "Hooks/*.test.mjs"
+  Rules/                   optional overlay: path-scoped .claude/rules files quoting the AGENTS.md style rules verbatim (csharp, typescript, logging, constants)
+  Settings/
+    claude-baseline.settings.json  user-level permission baseline (deny/ask; Bash and PowerShell forms; the library write-deny) — see Settings/README.md
+  Workflows/
+    review-loop.js         optional Claude Code dynamic workflow: parallel fresh-context reviewers → engineer fix → re-review, ≤3 rounds
+    review-loop.test.mjs   deterministic harness for the workflow's glue (node Workflows/review-loop.test.mjs Workflows/review-loop.js)
+  .claude-plugin/
+    plugin.json            dev-only manifest for `claude --plugin-dir . plugin details` (never installed)
 
   Scripts/
     Lint-Library.ps1       static library lint: dead heading refs, role catalog, README vs disk, relics, LESSONS format, hidden text, size cap
     Lint-RepoMemory.ps1    optional lint for a repo's .ai-memory/: wiki index contract, links, roadmap vs archive, Evidence rows, EARS, hidden text
     Sync-AgentsMd.ps1      copy/refresh AGENTS.md into every repo under a parent folder (warns on size cap and CLAUDE.md shadowing)
+    Install-Overlays.ps1   copies Agents/claude/*.md to ~/.claude/agents/ and prints the settings snippets to merge by hand (-DryRun)
     run-claude-ticket.ps1  deprecated headless runner (kept for reference; see Headless / CI use)
     run-codex-ticket.ps1   deprecated headless runner (kept for reference; see Headless / CI use)
 
@@ -82,7 +97,7 @@ Behavior:
 - Skips the library repo itself and any non-git folder.
 - Descends one level under the parent folder (standard "repos folder" layout).
 
-Options: `-RepoRoot <path>` to point at a different parent, `-Source <path or URL>` to sync from anywhere else. Run after any change to `AGENTS.md` in this library and every repo picks up the update.
+Options: `-RepoRoot <path>` to point at a different parent, `-Source <path or URL>` to sync from anywhere else. `-WithRules` also copies `Rules/*.md` into each repo's `.claude/rules/`; `-WithCloudHook` writes a `.claude/settings.json` registering the cloud SessionStart hook when none exists (it never merges into an existing one). Run after any change to `AGENTS.md` in this library and every repo picks up the update.
 
 ## Workflow
 
