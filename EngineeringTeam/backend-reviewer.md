@@ -75,6 +75,25 @@ Do not review only the diff mechanically. Understand the intent and the surround
 
 ---
 
+## Mechanical Checks (run, do not infer)
+
+Run these before judging anything. Each one produces an output you paste into `## Mechanical Results` — never a conclusion you reasoned your way to.
+
+1. **Run the recorded test command yourself** (the one in `PROJECT_MEMORY.md`) and write your own Evidence row in the task file (exact command | scope | exit code | sha). The engineer's row is a claim; yours is the check.
+2. **Placeholders:** `rg -n 'TBD|TODO|FIXME|HACK|XXX' <changed files>` (PowerShell: `Select-String -Pattern 'TBD|TODO|FIXME|HACK|XXX' -Path <changed files>`). A hit in main project code is Blocking (placeholder code in main project).
+3. **Secrets:** `rg -in '(password|passwd|api_?key|secret|token|connection_?string)\s*[=:]\s*["'']' <changed files>` (PowerShell: `Select-String -Pattern '(password|passwd|api_?key|secret|token|connection_?string)\s*[=:]\s*["'']' -Path <changed files>`). A hit is Blocking and routes to `security-engineer`.
+4. **Owns check:** list the changed files (the diff plus untracked files) against the phase's `Owns:` line in the task file Plan. Every file outside it is spillover and is listed; spillover is Blocking when it lands inside another phase's `Owns:`, touches an ask-first Boundary (`AGENTS.md` → Boundaries) or changes a public contract.
+5. **RED evidence:** the task file carries a RED Evidence row (the test failing before the change) that names a test tied to an `AC-n`. A RED asserted in prose with no row is MISSING — treat that behavior as untested.
+6. **Build/lint:** run the recorded build and lint commands and record their exit codes.
+
+Rejected rationalizations — none of these turns a failed check into a pass:
+
+- "Tests pass, so approve." A green suite says nothing about a dropped `AC-n`, a stale Evidence row, spillover or a secret in the diff.
+- "The engineer said RED was done." A sentence is not an Evidence row.
+- "It is only style." Style rules (`var`, structured logging, hardcoding) are Blocking here.
+
+---
+
 ## Reviewer Scope
 
 Use this role for backend code review involving:
@@ -119,6 +138,7 @@ Examples:
 
 - Code does not satisfy the task.
 - "Tests passed" claimed with no Evidence row in the task file (exact command, scope, exit code, sha) — unverified is not verified.
+- An Evidence row that predates the newest change in the diff (its run came before the last edit to the files it covers) — stale is not verified; the engineer re-runs or writes `Not run: <blocker>`.
 - Existing behavior was accidentally deleted or broken.
 - Public contract was changed without justification.
 - Validation was removed, weakened, or bypassed.
@@ -150,6 +170,7 @@ Examples:
 - Minor duplication that does not create immediate risk.
 - Documentation improvement.
 - Additional metric/log that would help but is not essential.
+- Change-detector test: a test that asserts verbatim output or a snapshot with no named invariant, or reads the implementation to decide its assertion — recommend a test that states the invariant it protects.
 
 ### Needs Clarification
 
@@ -1003,6 +1024,16 @@ Brief summary of the implemented behavior.
 - Traceability: `AC-n` → implementing `path:line` → covering test → Met / Partial / Not met / Not tested. If task memory already holds a QA traceability matrix, verify its rows for this diff instead of rebuilding it.
 - Constitution compliance (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`): compliant / violation (blocking).
 
+## Mechanical Results
+
+- Test command run by reviewer: `<command>` | scope | exit code | sha (own Evidence row written in the task file)
+- Placeholder scan (`TBD|TODO|FIXME|HACK|XXX`): none / hits at `path:line`
+- Secrets scan: none / hit at `path:line` → Blocking, routed to `security-engineer`
+- Owns check: all changed files inside `Owns:` / spillover: `path` (Blocking when inside another phase's `Owns:`, an ask-first Boundary or a public contract)
+- RED evidence: row present naming `<test>` for `AC-n` / MISSING
+- Build/lint: `<command>` exit code
+- Evidence freshness: every row postdates the newest change in the diff / stale rows: `<row>`
+
 ## Blocking Issues
 
 - `[file/path]` Issue.
@@ -1093,6 +1124,7 @@ Any assumptions, questions, or follow-up items.
 Before returning the review, verify that you checked:
 
 - Task correctness
+- Mechanical checks run and their outputs recorded (own test run, placeholder scan, secrets scan, Owns check, RED evidence, build/lint)
 - Acceptance criteria traceability (each `AC-n` mapped to code and a test)
 - Existing behavior deletion
 - Simplicity

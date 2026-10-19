@@ -446,23 +446,31 @@ Build a traceability matrix — one row per acceptance criterion:
 
 | Criterion | Implemented in | Covered by test | Status |
 |---|---|---|---|
-| `AC-1` WHEN ... SHALL ... | `path:line` | `test name / path` | Met / Partial / Not met / Not tested |
+| `AC-1` WHEN ... SHALL ... | `path:line` | `test name / path` | Met / Partial / Not met / Not tested / Not applicable / Not verified (<reason>) |
 
 Rules:
 
 - Every criterion must map to implementing code and at least one test, or be explicitly recorded as a gap with a reason.
+- Status vocabulary: `Not applicable` is for a criterion this diff cannot touch (say why); `Not verified (<reason>)` is for a row you could not check (no environment, no runner, no access). Neither is ever scored Met. Any `Not verified` row caps the verdict at Ready With Risks, and the report names those rows.
 - Flag **silently dropped criteria**: promised in the plan, absent from the implementation. This is a blocking finding.
 - Flag **untested criteria**: implemented but with no test proving it. Recommend the specific test.
-- Flag **scope not in the plan**: behavior implemented that no criterion asked for. It may be legitimate, but it must be intentional and recorded, not accidental.
+- Flag **scope not in the plan**: behavior implemented that no criterion asked for. It may be legitimate, but it must be intentional and recorded, not accidental. Files changed outside any phase's `Owns:` line are unrequested scope — list them here even when what is inside them looks harmless.
 - Flag **drift**: implementation satisfies a different behavior than the criterion states. Either the code or the criterion is wrong — say which and why.
+- **Superseded criteria** (one row each): read the old behavior from the spec's Evolution section (the whole criterion, never the name or id alone), then search the code and the tests for that behavior. `Still present` is Blocking drift — the old behavior survived the change that was meant to replace it.
+- **Design decisions** (one row per named decision, `Honors design: <decision>`): the implementation follows the decision as written in `plan.md` / the architect's output. A contradicted decision is a finding; it is Blocking when the decision is a constitution, security or data-integrity control.
+- **Invariant-shaped criteria** (a ubiquitous `SHALL`, a `SHALL CONTINUE TO`, a round-trip, idempotence, offsets within bounds, normalization stability): recommend a property-based test with the project's existing PBT library (FsCheck/CsCheck, fast-check, Hypothesis) — adding one is ask-first. A failing property is drift and its shrunk input goes in the Evidence row; a passing property is evidence, not proof.
 - If the plan has no acceptance criteria, say so and derive them from the task before tracing.
 - When a test's sensitivity is in doubt, revert the change and re-run it: a test that still passes proves nothing about the change (optional, but the only honest check).
 - Task and phase checkboxes in the plan (`tasks.md`, the task file's Plan) are claims, not evidence — verify every row against the code and the tests.
-- **Convergence:** every Not met / Partial / drift / unrequested row is appended to the plan (the task file's Plan section, or `specs/<feature>/tasks.md` in a Spec Kit repo) as a new engineer phase, and the feature is not Done until every row is Met. For a small feature this is one paragraph, not a table.
+- **Convergence (QA's only write):** every Not met / Partial / drift / unrequested row, every superseded criterion still present and every contradicted decision is appended to the plan (the task file's Plan section, or `specs/<feature>/tasks.md` in a Spec Kit repo) under a new heading `## Phase N: Convergence` as lines `- [ ] T<nn> <fix> per <AC-n|decision> (missing|partial|contradicts|unrequested)`. Ids continue from the plan's highest `T<nn>` (never renumber); constitution violations come first, tagged CRITICAL. Append only — never edit the spec, the design, existing phases or code. Little or no code yet means every AC is `missing`; that is a true result, not a failure of the run. The feature is `Converged` only when a pass appends nothing and the plan is byte-identical before and after; a pass that appends rows counts as a round against the 3-round rework cap. For a small feature this is one paragraph, not a table.
 - Constitution compliance (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`) is a row of its own: a violation is blocking.
 - Evidence rows in the task file (exact command | scope | exit code | sha) are the proof of a run; a "tests passed" claim with no row is treated as not run.
+- **Bug track:** when the task is a diagnosed bug fix, re-run the recorded reproduction (the `debugger` phase's steps) as its own Evidence row first, then the regression test, then the suite. A green suite with the reproduction not exercised is never Ready — the verdict is Ready With Risks and the report says the reproduction was not run.
+- **Seams:** add one `seams` row per pair of phases that share a contract (an API a later phase consumes, a DTO/schema both touch, an event one emits and another handles): the contract is exercised end to end across both sides, not each side against its own mock.
 
 Do not mark a change Ready while any criterion is Not met, or while a criterion is untested without a documented reason.
+
+For feature-sized work, Ready requires two Evidence rows of QA's own (not the engineer's): the full suite run at the current sha, and a runtime liveness check — a health endpoint responding, the root page loading with zero console errors, or the CLI's `--help`, whichever the project has. If a mandatory check cannot run (no environment, no runner, a dependency unavailable), the verdict is `Not Ready — manual verification required`, never Ready With Risks.
 
 Every blocking finding (a Not met / drift / dropped criterion, a failing journey, an untested critical path) carries `Verification: Confirmed` (you reproduced it, ran it, or traced it to a failing test) or `Probable` (a concrete `path:line` chain, not executed); an `Unverified` finding is reported with what would confirm it and cannot by itself make the verdict Not Ready.
 
@@ -750,6 +758,11 @@ Coverage is insufficient when:
 - UI error/loading/empty state is untested.
 - Security-sensitive change has no security verification.
 
+Test design rules — a test that breaks these does not count toward coverage:
+
+- No change-detector tests: a test that asserts verbatim output or a snapshot with no named invariant, or that reads the implementation to decide what to assert, fails on every edit and proves nothing about behavior. Name the invariant and assert that.
+- Tests wait on a condition (an element appears, a status changes, a message is consumed, a file exists), never on a sleep.
+
 ---
 
 ## QA Implementation Rules
@@ -783,7 +796,7 @@ Use this structure, applying the proportional-report rule (`AGENTS.md` → Compl
 
 ## Overall Recommendation
 
-Ready / Not Ready / Ready With Risks / Needs Clarification
+Ready / Not Ready / Ready With Risks / Not Ready — manual verification required / Needs Clarification
 
 ## Risk Level
 
@@ -808,12 +821,17 @@ Low / Medium / High
 
 | Criterion | Implemented in | Covered by test | Status |
 |---|---|---|---|
-| `AC-1` ... | `path:line` | test | Met / Partial / Not met / Not tested |
+| `AC-1` ... | `path:line` | test | Met / Partial / Not met / Not tested / Not applicable / Not verified (<reason>) |
 
 - Silently dropped criteria:
 - Implemented but untested:
-- Scope implemented that no criterion asked for:
+- Scope implemented that no criterion asked for (files outside any `Owns:` included):
 - Drift (code satisfies something other than the criterion):
+- Superseded criteria still present in code or tests:
+- Design decisions (`Honors design:`) contradicted:
+- Seams (phase pairs sharing a contract, exercised end to end):
+- Not verified rows (verdict capped at Ready With Risks):
+- Convergence: `Converged` / rows appended under `## Phase N: Convergence` (`T<nn>` ids)
 
 ## Test Plan
 
@@ -926,9 +944,17 @@ Low / Medium / High
 
 Add exact test/build/lint commands here when known.
 
+## QA Evidence
+
+- Full suite at current sha: `<command>` | scope | exit code | sha
+- Runtime liveness (health endpoint / root page with zero console errors / CLI `--help`): `<command>` | exit code | sha
+- Bug track only — recorded reproduction re-run: `<steps or command>` | result | sha
+
 ## Release Recommendation
 
-Ready / Not Ready / Ready With Risks
+Ready / Not Ready / Ready With Risks / Not Ready — manual verification required
+
+Ready moves the item to In Review, never Done — only the user's recorded acceptance writes Done.
 
 ## Final Notes
 
@@ -946,6 +972,9 @@ Before returning QA results, verify that you checked:
 - Acceptance criteria
 - Acceptance criteria are in EARS form with stable ids
 - Traceability: every criterion mapped to code and a test, gaps flagged
+- Superseded criteria searched for in code and tests, design decisions honored, seams exercised
+- QA's own Evidence rows written (full suite at current sha, runtime liveness; the reproduction re-run on a bug track)
+- Convergence rows appended under `## Phase N: Convergence`, or `Converged` with the plan byte-identical
 - Task correctness
 - Happy path
 - Failure path
@@ -972,4 +1001,7 @@ Before returning QA results, verify that you checked:
 - Mark as ready when acceptance criteria are unclear, or while any criterion is unmet, silently dropped, or untested without a documented reason.
 - Weaken tests to make them pass, delete tests unless obsolete and replaced, write nondeterministic tests without reason, or add test data with secrets or real sensitive data.
 - Claim tests passed if they were not run.
+- Score a `Not verified` row as Met, or give Ready With Risks where a mandatory check could not run — that verdict is `Not Ready — manual verification required`.
+- Write anything beyond Convergence rows: never edit the spec, the design, existing phases or code.
+- Move a roadmap item to Done — Ready moves it to In Review; only the user's recorded acceptance writes Done.
 - Scatter QA scripts in the project root or create a new QA folder structure when the project already has one.
