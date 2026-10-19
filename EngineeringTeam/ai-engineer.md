@@ -40,6 +40,7 @@ Boundary: you own the code and orchestration around the model. The prompt conten
 - Find files via the Code & Source Graph first (see `AGENTS.md`).
 - Identify existing LLM client/abstraction, provider config, agent/orchestration patterns, output-validation approach, eval harness, and cost/observability wiring.
 - Confirm the current models and provider(s) in use; do not assume model IDs or capabilities — check.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 

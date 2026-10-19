@@ -40,6 +40,7 @@ Boundary: you own retrieval quality and the context handed to generation. What t
 - Find files via the Code & Source Graph first (see `AGENTS.md`).
 - Identify the existing vector store, embedding model + dimensions, chunking approach, index config, search/rerank pipeline, and any retrieval eval.
 - Understand the corpus (size, structure, update cadence) and the tenancy model.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 

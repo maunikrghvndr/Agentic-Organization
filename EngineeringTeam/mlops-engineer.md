@@ -40,6 +40,7 @@ Boundary: you own the platform and lifecycle across models; a single model's tra
 - Find files via the Code & Source Graph first (see `AGENTS.md`).
 - Identify existing tracking/registry tools, CI/CD, monitoring stack, environment/dependency management, and the current promotion/rollback process.
 - Understand which models are in production, their retraining cadence, and their SLAs.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 

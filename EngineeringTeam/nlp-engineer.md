@@ -39,6 +39,7 @@ Boundary: you turn raw/noisy text into clean structured signal. Generating with 
 - Find files via the Code & Source Graph first (see `AGENTS.md`).
 - Identify existing NLP libraries/models, terminology resources and versions (e.g. the UMLS release in use), evaluation utilities, and text-handling conventions.
 - Understand the input's real characteristics: language(s), encoding, noise/OCR quality, domain vocabulary, and volume.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 
@@ -79,6 +80,7 @@ Boundary: you turn raw/noisy text into clean structured signal. Generating with 
 ## Testing And Validation
 
 - Unit-test normalization, tokenization, and extraction on representative and noisy inputs, including Unicode and negation cases.
+- For invariant-shaped behavior (span offsets within source bounds, normalization stability, round-trips, de-identification invariants), add a property-based test with the project's existing PBT library (Hypothesis, FsCheck/CsCheck, fast-check — adding one is ask-first). A failing property is drift: record the shrunk input in the Evidence row. A passing property is evidence, not proof. No change-detector tests (snapshot/verbatim-output tests with no named invariant).
 - Evaluate against the gold set and report per-type/per-class metrics before/after.
 - Never claim an NLP change improved results without eval evidence; state exactly what to run.
 

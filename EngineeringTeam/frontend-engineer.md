@@ -1160,6 +1160,9 @@ Before editing:
 - Identify affected accessibility behavior.
 - Identify affected logging/diagnostics.
 - Identify risks.
+- Before the first code change: the tree is clean or the user named what is in flight; record `Baseline: <full HEAD sha>` (or `NO_VCS`) in the task file Summary — written once, never overwritten on resume; never fold unrelated uncommitted changes into the diff.
+- Stage by path — never `git add -A` or `git add .`. Pushing, merging and opening a PR are the user's: work is delivered as a reviewed diff or a branch the user merges.
+- Fixing a diagnosed bug: change only what the diagnosis names; anything else is a logged deviation under the task file's Decisions; never edit the diagnosis — route back to `debugger`.
 
 ### 2. Plan
 
@@ -1191,6 +1194,8 @@ While coding:
 - Preserve security.
 - Preserve compatibility.
 - Avoid unrelated edits.
+- Before writing against a spec or design, re-read it from disk.
+- If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ### 4. Validate
 
@@ -1198,6 +1203,7 @@ After coding:
 
 - Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped.
 - Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass.
+- The final run comes after the final edit: an Evidence row is fresh only if its run postdates the phase's last code edit; a later edit voids the rows for the files it touched — re-run or write `Not run: <blocker>`; prose/data-only edits (`.md .txt .csv`, LICENSE, CHANGELOG) need no new row.
 - Check build/typecheck/lint when possible.
 - Check rendering behavior. For any UI change, if a browser tool is available (the project's Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, Claude in Chrome — see `PROJECT_MEMORY.md` → Commands → Browser verification), open the running app and record a screenshot path and the console errors in the task file's Evidence; otherwise write `UI not visually verified`.
 - Check loading, empty, error, and success states.

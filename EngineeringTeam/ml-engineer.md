@@ -40,6 +40,7 @@ Boundary: you build and serve the model reliably; the platform/lifecycle that go
 - Find files via the Code & Source Graph first (see `AGENTS.md`).
 - Understand the model contract: inputs, features, output, expected performance, latency budget, retraining cadence.
 - Identify existing serving patterns, model storage/registry, feature sources, and inference infrastructure.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 

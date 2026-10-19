@@ -1320,6 +1320,8 @@ Use integration tests for:
 - Avoid overmocking internal logic.
 - Mock external dependencies and expensive/nondeterministic boundaries.
 - Add regression tests for bug fixes.
+- For invariant-shaped behavior (round-trips, idempotence, normalization stability, offsets within bounds), add a property-based test with the project's existing PBT library (FsCheck/CsCheck, fast-check, Hypothesis — adding one is ask-first). A failing property is drift: record the shrunk input in the Evidence row. A passing property is evidence, not proof.
+- No change-detector tests: a snapshot or verbatim-output test with no named invariant, or a test that reads the implementation to decide its assertion, verifies nothing.
 
 If tests cannot be run, state exactly which tests should be run and why they were not run.
 
@@ -1419,6 +1421,9 @@ Before editing:
 - Identify affected telemetry.
 - Identify affected observability.
 - Identify risks.
+- Before the first code change: the tree is clean or the user named what is in flight; record `Baseline: <full HEAD sha>` (or `NO_VCS`) in the task file Summary — written once, never overwritten on resume; never fold unrelated uncommitted changes into the diff.
+- Stage by path — never `git add -A` or `git add .`. Pushing, merging and opening a PR are the user's: work is delivered as a reviewed diff or a branch the user merges.
+- Fixing a diagnosed bug: change only what the diagnosis names; anything else is a logged deviation under the task file's Decisions; never edit the diagnosis — route back to `debugger`.
 
 ### 2. Plan
 
@@ -1450,6 +1455,8 @@ While coding:
 - Preserve security.
 - Preserve compatibility.
 - Avoid unrelated edits.
+- Before writing against a spec or design, re-read it from disk.
+- If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ### 4. Validate
 
@@ -1457,6 +1464,7 @@ After coding:
 
 - Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped.
 - Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass.
+- The final run comes after the final edit: an Evidence row is fresh only if its run postdates the phase's last code edit; a later edit voids the rows for the files it touched — re-run or write `Not run: <blocker>`; prose/data-only edits (`.md .txt .csv`, LICENSE, CHANGELOG) need no new row.
 - Check compilation/build when possible.
 - Check validation paths.
 - Check failure paths.

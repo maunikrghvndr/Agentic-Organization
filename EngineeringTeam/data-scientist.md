@@ -40,6 +40,7 @@ Boundary: you deliver a validated model + metrics + evidence. Productionizing it
 - Understand the decision the analysis informs and the target metric that matters to the business.
 - Inspect the data's shape, quality, and provenance before modeling; know where it came from (ask `data-engineer` context if needed).
 - Identify existing modeling conventions, notebooks, feature definitions, and evaluation utilities.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 

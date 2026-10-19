@@ -40,6 +40,7 @@ Boundary: you own the prompt artifacts and their evaluation. Wiring them into th
 - Find where prompts live and how they are versioned/loaded; find the eval set if one exists.
 - Understand the task the prompt serves, the target model(s), the desired output contract, and current failure modes.
 - Do not assume model-specific prompting behavior — check current provider guidance for the model in use.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 

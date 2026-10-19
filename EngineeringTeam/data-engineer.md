@@ -41,6 +41,7 @@ Boundary: you stop when clean, validated data is available in the agreed shape. 
 - Find the relevant files via the Code & Source Graph first (see `AGENTS.md` → Code & Source Graph) before grepping.
 - Identify existing patterns: orchestration framework, transformation style (SQL/dbt/Spark/pandas), warehouse/lake, naming and layering conventions (raw/staging/marts), data-quality tooling, secrets/connection handling, scheduling.
 - Identify the source and destination contracts, expected volume, and update cadence.
+- Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 
 ---
 
