@@ -132,7 +132,7 @@ foreach ($f in $lessonFiles) {
 
 # ---- E6: hidden text in instruction files ----------------------------------------------------------
 $hiddenPattern = [regex]'[\u00AD\u034F\u061C\u115F\u1160\u180E\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF9-\uFFFB]|\uDB40[\uDC00-\uDC7F]|\uDB40[\uDD00-\uDDEF]'
-$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates|README|Evals|Agents|Rules|Settings|Workflows)([\\/]|\.md$)|^EVALS\.md$' }) + @(Get-ChildItem (Join-Path $LibraryRoot "Scripts"), (Join-Path $LibraryRoot "Hooks"), (Join-Path $LibraryRoot "Settings"), (Join-Path $LibraryRoot "Workflows"), (Join-Path $LibraryRoot ".github"), (Join-Path $LibraryRoot ".claude-plugin") -File -Recurse -ErrorAction SilentlyContinue)
+$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates|README|Evals|Agents|Rules)([\\/]|\.md$)|^EVALS\.md$' }) + @(Get-ChildItem (Join-Path $LibraryRoot "Scripts"), (Join-Path $LibraryRoot "Hooks"), (Join-Path $LibraryRoot "Settings"), (Join-Path $LibraryRoot "Workflows"), (Join-Path $LibraryRoot ".github"), (Join-Path $LibraryRoot ".claude-plugin") -File -Recurse -ErrorAction SilentlyContinue)
 foreach ($f in $instructionFiles) {
     $n = 0
     foreach ($line in ((Read-Utf8 $f.FullName) -split "`n")) {

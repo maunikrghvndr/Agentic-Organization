@@ -89,7 +89,7 @@ if ($road) {
 }
 
 # ---- R4: one constitution --------------------------------------------------------------------------
-if ((Test-Path (Join-Path $mem "CONSTITUTION.md")) -and (Test-Path (Join-Path $RepoRoot ".specify\memory\constitution.md"))) {
+if ((Test-Path (Join-Path $mem "CONSTITUTION.md")) -and (Test-Path (Join-Path $RepoRoot (Join-Path ".specify" (Join-Path "memory" "constitution.md"))))) {
     $errors.Add("R4 both .ai-memory/CONSTITUTION.md and .specify/memory/constitution.md exist - keep one")
 }
 
@@ -157,7 +157,7 @@ if ($Archived -and (Test-Path $archDir)) {
 
 # ---- R11: project agents shadowing library shims --------------------------------------------------------
 $shimNames = @('backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer', 'qa-engineer', 'security-engineer', 'debugger')
-$projAgents = Join-Path $RepoRoot ".claude\agents"
+$projAgents = Join-Path $RepoRoot (Join-Path ".claude" "agents")
 if (Test-Path $projAgents) {
     foreach ($f in Get-ChildItem $projAgents -Filter "*.md" -File) {
         $m = [regex]::Match((Read-Utf8 $f.FullName), '(?m)^name:\s*([A-Za-z0-9_-]+)')
