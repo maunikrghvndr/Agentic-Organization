@@ -50,6 +50,8 @@ Agentic-Organization/
   LESSONS.md               shared, cross-project self-learned engineering takeaways: rules, index, cross-cutting lessons (read by all repos)
   LESSONS/                 area files the index maps to roles: backend.md, frontend.md, data-ml-ai.md, tooling-agent-workflow.md
   EVALS.md                 A/B protocol + log for measuring whether roles/sections earn their tokens
+  SHARED_LIBRARIES.md      cross-project register: shared libraries and candidates seen in more than one project (owner-approved; read at the trigger only)
+  STRUCTURE.md             the organization's standard project layouts per stack (owner-approved; gaps are marked)
 
   EngineeringTeam/         24 role files — single-file roles at the root, the rest in department folders — the catalog (role, folder, use-for) is the AGENTS.md role table:
     architect.md           the technical owner: system design, area design checks, role map, escalations, design conformance before release
@@ -150,6 +152,8 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Progress board:** `.ai-memory/ROADMAP.md` is the per-repo glance view — every feature/task grouped Backlog / In Progress / In Review / Blocked / Done, linking to task files and specs. Read it to re-orient after a context switch; roles keep it current; delivery moves an item to In Review and only your recorded acceptance moves it to Done (the agent never marks its own work Done). It's the index over `TASKS/`, the way `PROJECT_MEMORY` indexes `wiki/`.
 - **Measure before trimming:** the library's `EVALS.md` is a lightweight A/B protocol — run a real task with vs. without a role/section, compare quality and token cost, and let the verdict (KEEP / TRIM / CUT) drive what stays. Directional, not rigorous, but it turns "feels heavy" into evidence and is the honest antidote to a library that only ever grows.
 - **Graph accelerator:** the Graphify git hook (above) keeps the graph fresh on every commit, and `AGENTS.md` drives the agent to *query* it instead of grepping — it builds the graph only when no hook maintains it. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
+- **Proportional complexity:** before code, one task-file line `Simplest design: …`; every new abstraction, option, pattern, dependency or module needs a `Ledger:` reason tied to an AC or decision, and a trivial change adds none. A missing reason is a Blocking review finding (`_shared/rules-detail.md` → Proportional complexity).
+- **Shared code and structure:** code that is not product-specific is checked against `SHARED_LIBRARIES.md` before it is written (never copied between repositories; extraction is its own ask-first task), and a file goes where `STRUCTURE.md`, then the repository's recorded structure, then its siblings say (`_shared/rules-detail.md` → Shared code across projects, Project structure).
 
 ## Headless / CI use
 

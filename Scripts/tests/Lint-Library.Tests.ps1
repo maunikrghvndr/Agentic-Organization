@@ -94,6 +94,14 @@ foreach ($plant in $libraryPlants) {
     if ($plant.Id -ne 'E7') { Assert-True "$($plant.Id) fixture exits 1" ($r.ExitCode -eq 1) "exit code $($r.ExitCode)" }
 }
 
+# E6 also covers the library-root registers (SHARED_LIBRARIES.md, STRUCTURE.md).
+foreach ($rootRegister in @('SHARED_LIBRARIES.md', 'STRUCTURE.md')) {
+    $root = New-LibraryFixture ("lib-E6-" + $rootRegister)
+    Write-Fixture $root $rootRegister ("# Register`n`nhidden" + $ZeroWidthSpace + "text`n")
+    $r = Invoke-Lint $LintLibrary @('-LibraryRoot', $root)
+    Assert-True "E6 fires on hidden text in $rootRegister" ((Test-RuleFired $r.Output 'E6') -and ($r.ExitCode -eq 1)) $r.Output
+}
+
 # W4 (warning): 1,800 lines warns, 1,799 does not; exit code stays 0.
 $root = New-LibraryFixture "lib-W4-at"
 Write-Fixture $root "EngineeringTeam/Product/planner.md" (("line`n") * 1800)

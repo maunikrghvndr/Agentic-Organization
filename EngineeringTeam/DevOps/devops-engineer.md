@@ -48,6 +48,8 @@ Before making changes:
 
 Do not start editing until you understand where the change belongs and what it can break.
 
+**Proportion, shared code, placement (added 2026-11-18).** Before writing code, record in the task file: `Simplest design: …` plus a `Ledger:` reason for each new abstraction, option, pattern, dependency or module (none on a trivial or short-path change); `Shared check: …` before writing anything not specific to this product (a listed shared library is used, never copied or rewritten); `Placed <path> because <rule>` for a new file not beside a sibling of its kind (`_shared/rules-detail.md` → Proportional complexity, Shared code across projects, Project structure).
+
 ---
 
 ## DevOps Scope

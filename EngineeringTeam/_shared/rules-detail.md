@@ -163,3 +163,45 @@ The user's only manual step is copying `AGENTS.md` into a repository root. Every
 
 On full-path or multi-area work the `architect` oversees the whole, in three places: the role map before the build (areas, owning roles, order, hand-off contracts), the escalation point during it (a phase that cannot be built as designed, outputs that do not fit, a finding whose cause is the design), and a design conformance pass after the reviewers and QA and before delivery (`As designed` / `Deviated, approved` / `Drifted` — Drifted is Blocking). It orchestrates through the task file and `planner`; one role per phase and one writer still hold; the user still owns scope, accepted risk and Done. Small single-area work skips it. Full text: `architect.md` → Technical Ownership.
 
+
+## Proportional complexity (added 2026-11-18)
+
+Owner, 2026-11-18: "the code gets complicated for simple stuff". The simplicity rules already in `AGENTS.md` and the role files stand; this is their checkable form.
+
+- **Simplest-design line.** Before writing code the engineer writes one line in the task file (a trivial change with no task file: in the Grill Checkpoint restatement): `Simplest design: <what> — new files: n, new abstractions: n` — the smallest thing that meets the acceptance criteria.
+- **Complexity ledger.** Each item below needs one line, `Ledger: <item> — <reason>`, the reason tied to an `AC-n` or a recorded decision, written before the item is built; with no line it is not built:
+  - a new interface, abstract class or base type with one implementation;
+  - a new layer, wrapper, factory, builder, manager, helper class or generic type parameter with one caller;
+  - a new configuration option, feature flag or extension point nobody asked for;
+  - a new pattern the repository does not already use;
+  - a new dependency;
+  - a new project, package or module.
+- **Size guard.** A trivial or short-path change (`AGENTS.md` → Phase Protocol, Sizing) adds no new abstraction at all. If one seems needed, the change is not trivial: stop and say so.
+- **Compare at the end.** The diff is compared with the Simplest-design line: if it grew (files, abstractions), say why in one line or cut it back.
+- **Three before abstracting.** Duplication inside one repository is extracted at the third real use, not the first; a second use is noted, not abstracted.
+- **Review.** **Blocking:** a ledger item in the diff with no reason line; a trivial or short-path change that adds an abstraction. The reviewer names the simpler shape in one sentence (what to delete or inline).
+
+## Shared code across projects (added 2026-11-18)
+
+Owner, 2026-11-18: "code is rewritten in multiple projects instead of creating a shared library". The register is the library's `SHARED_LIBRARIES.md` (beside `LESSONS.md`, read by path, never copied into a repository).
+
+- **Trigger.** About to write something that is not specific to this product: a utility or helper (dates, strings, retries, pagination, result/error types, validation, mapping), an API/HTTP client wrapper, auth/logging/telemetry/config plumbing, a UI primitive or hook, a pipeline/infra module, a test helper.
+- **Then look, in order:** (1) this repository; (2) `SHARED_LIBRARIES.md` and the shared packages `PROJECT_MEMORY.md` → Shared libraries used says this repository consumes; (3) a mature third-party library (Research before you build, above).
+- **A shared library has it:** use it. Writing a local copy is a defect (**Blocking** in review).
+- **It exists in another of the owner's repositories the agent can see, or `SHARED_LIBRARIES.md` lists it as a Candidate:** do not paste a copy. Build the local piece behind a narrow seam and add or update the Candidate line: proposed in the task file Retro as `Shared-library candidate: <what> — seen in <repo:path>, <repo:path>`; the owner approves it into the file (an unattended run only proposes).
+- **Extraction is its own task.** `architect` decides the home, API and versioning; it is ask-first (a new package, and a dependency for every consumer) and goes on the ROADMAP Backlog — never done as a side effect of a feature.
+- **Copying a file or function from one repository into another is never the fix.**
+- **One task-file line states the outcome:** `Shared check: used <library> / none exists — local behind <seam> / candidate proposed`.
+- **Review.** **Blocking:** a local re-implementation of something a listed shared library provides; a file copied in from another repository. **Non-blocking, with a required Candidate line:** generic code with no shared home yet.
+
+## Project structure (added 2026-11-18)
+
+Owner, 2026-11-18: "the folder structures and all are not following the organization rules". The organization standard is the library's `STRUCTURE.md` (beside `LESSONS.md`, read by path, owner-approved).
+
+- **Where a file goes — order of authority:** (1) the organization standard in `STRUCTURE.md` for the stack; (2) the repository's recorded structure in `PROJECT_MEMORY.md` → Structure; (3) the nearest existing sibling of the same kind.
+- **First use in a repository with no recorded structure:** record the actual tree (top-level folders and what each holds, per layer) in `PROJECT_MEMORY.md` → Structure before writing code.
+- **A new file goes where its kind already lives;** naming follows the siblings.
+- **A new top-level folder, project, package or layer is ask-first** and needs a ledger line (Proportional complexity, above).
+- **A repository that deviates from the organization standard is not restructured as a side effect:** record the deviation (dated) in `PROJECT_MEMORY.md` → Structure and propose the migration as a Backlog item.
+- **One task-file line for any new file not next to a sibling of its kind:** `Placed <path> because <rule>`.
+- **Review.** **Blocking:** a file placed against the organization standard or the recorded structure with no dated deviation; a new top-level folder, project or layer with no approval. **Non-blocking:** the repository has no recorded structure (the fix is to record it).

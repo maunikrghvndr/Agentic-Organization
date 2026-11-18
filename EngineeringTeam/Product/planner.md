@@ -79,6 +79,7 @@ Before recommending phase 1, verify — and record — that the plan is buildabl
 - **Every phase has a verifiable done-when** — an observable check, not "code compiles."
 - **Every done-when is falsifiable.** It names the exact check (a command recorded in `PROJECT_MEMORY.md`, or the full command) and the output that means failure. For a check that is not a test, the engineer records it failing before the work as an Evidence row (the RED rule, extended).
 - **Every phase names exactly one role.** A phase that needs two roles is two phases.
+- **A phase that creates a new project, package, top-level folder or shared-library extraction names it explicitly with its approval** (`_shared/rules-detail.md` → Project structure, Shared code across projects).
 - **Handoffs are complete** — the next session has the files, spec ids, and prior decisions it needs.
 - **Reviewer / QA / security phases exist** where the change warrants them.
 

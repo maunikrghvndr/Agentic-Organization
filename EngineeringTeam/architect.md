@@ -148,6 +148,7 @@ On work that takes the full path (`AGENTS.md` → Phase Protocol, Sizing) or spa
 - the areas the work touches and the role that owns each (engineer and its reviewer);
 - the order the roles must run in, and why (what each needs from the one before);
 - the contract at every hand-off between areas: who produces what, in what typed shape, and who consumes it;
+- which pieces are product-specific and which are cross-project: a shared library used, a Candidate, or to be extracted as a separate task (`_shared/rules-detail.md` → Shared code across projects);
 - the research phases that must come first, and the security-sensitive parts that need `security-engineer`.
 
 `planner` turns the role map into phases and runs the gate. A role or contract on the map is not dropped or reordered in the plan without a recorded reason.

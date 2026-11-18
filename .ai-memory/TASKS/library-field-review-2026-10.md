@@ -468,6 +468,22 @@ Evidence (sha `e4a8d68`):
 - Added to the eight review-type role files, the constitution and task templates and the README. `AGENTS.md` 32,730 B.
 - Security record for the reviewer-model rule (`security-engineer`, fresh context, on `a05aba3..a183d47`; reviewer ran on the implementer's model family — no other available, recorded limitation): **Request changes** — B1 default-deny for unapproved providers was lost and "available"/"already allows" were undefined; B2 the bar on regulated code had become conditional on a generic approval; B3 the Rule of Two classification for unattended sends was dropped. All three fixed with the reviewer's wording: approved providers are exactly the session's own plus the constitution's `Reviewer providers:` list (none by default; an installed tool or key is not approval); a family behind an unapproved provider is not "available" and the same-family review is then valid; regulated code goes only to an entry the user marked for it; unattended sends count as (C). N1–N3, N5 applied (families recorded from the host's reported model identifier; a small model never qualifies; a repeated review does not consume a round). N4 open: "sending code to a new provider" is not yet on the `AGENTS.md` ask-first list (no bytes left; covered by `rules-detail.md`). Not re-reviewed.
 
+### 2026-11-18 — proportional complexity, shared code across projects, project structure
+
+- Maunik, 2026-11-18: "I see the code gets complicated for simple stuff and code is rewritten in multiple projects instead of creating a shared library the folder structures and all are not following the organization rules".
+- Each of the three failures is now a rule with a trigger, a task-file artifact and a reviewer verdict (`rules-detail.md` → Proportional complexity, Shared code across projects, Project structure). Artifacts: `Simplest design:` and `Ledger:` lines; `Shared check:` and `Shared-library candidate:` lines; `Placed <path> because <rule>` line. Existing wording untouched; additions only. `AGENTS.md`, `LESSONS.md`, `LESSONS/**` not edited.
+- New library-root files: `SHARED_LIBRARIES.md` (register and candidates, empty, owner-approved entries only) and `STRUCTURE.md` (seeded only with what the role files already state, each row quoted with `path:line`; no folder tree exists for any stack, every such area is a `not yet defined by the owner` row).
+- Role files: paragraphs in `backend-engineer` and `frontend-engineer` (after "where the change belongs" and after Abstraction Discipline); one pointer line in the nine other engineer roles; three checks in `backend-reviewer` and `frontend-reviewer` → Simplicity And Overengineering Review; one line in the four other reviewers; one bullet in `architect` (role map) and one gate line in `planner`. Template: `PROJECT_MEMORY.template.md` Structure shape and `## Shared libraries used`. README Structure block and Key Rules; trap tasks 10-12 (from the owner's report, not a recorded incident).
+- `Scripts/Lint-Library.ps1`: the hidden-text scan (E6) now also reads `SHARED_LIBRARIES.md` and `STRUCTURE.md` (it matched root files by name); two positive controls added. E5 stays LESSONS-only.
+- Open for the owner: `STRUCTURE.md` needs a reference repository per stack before placement can be checked against more than the recorded structure and siblings; `SHARED_LIBRARIES.md` is empty until the first approved entry.
+- Not independently security-reviewed yet (agent-instruction files and a lint script changed): a `security-engineer` pass in a fresh context is owed.
+- Lessons: none proposed.
+- Evidence (tree: working tree on `ed005dc` before the commit of this entry):
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library lint | 0 | 0 errors, 7 W2 warnings (same pairs and counts as before the change)
+- `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo-memory lint | 0 | Clean
+- `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint positive controls | 0 | 47 passed, 0 failed (45 before; the 2 new E6 controls)
+- Not run: an EVALS A/B on traps 10-12 (needs fixture repositories and two arms; library maintenance, not part of this change).
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
