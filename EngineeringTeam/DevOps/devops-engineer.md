@@ -45,7 +45,7 @@ Before making changes:
   - Monitoring, alerting, and log shipping
   - Deployment mechanism and rollback procedure
 - Identify the blast radius: what runs this pipeline, what consumes this artifact, what depends on this infrastructure.
-- Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session, before the first search or edit.
+- Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session (again after a compaction), before the first search or edit.
 
 Do not start editing until you understand where the change belongs and what it can break.
 

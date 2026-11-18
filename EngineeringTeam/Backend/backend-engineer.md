@@ -54,7 +54,7 @@ Before making changes:
   - Dependency injection
   - Background workers or queues
   - External integrations
-- Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session, before the first search or edit.
+- Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session (again after a compaction), before the first search or edit.
 
 Prefer the project’s current patterns over generic best practices unless the existing pattern is clearly unsafe or broken.
 

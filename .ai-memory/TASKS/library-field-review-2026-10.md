@@ -510,6 +510,7 @@ Evidence (sha `e4a8d68`):
 - `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint positive controls | 0 | 47 passed, 0 failed
 - `git grep -n -i -E '<tool, model and vendor names>' -- EngineeringTeam/_shared/work-loop.md` | provider-agnostic check on the new file | 1 | no match
 - Not run: any EVALS A/B on these habits (queued as #5-#10).
+- Security record for the inner work loop (`security-engineer`, fresh context, on library commit `66a58a2`; same model family as the implementer — no other available, recorded limitation): **Changes requested** — B1 a name filter could become a filtered test run counted as the phase's evidence; B2 an approval or verdict written in the task file's own Summary would have counted after a compaction; B3 a string quoted from tool output could be promoted into the next action. All three fixed with the reviewer's wording: the recorded command always runs as recorded and a narrowed run is only an extra row; an approval, permission, verdict or security record counts only with its own Approval line, Evidence row or Findings line; quoted outside text is fenced, names its source and stays data. N1–N6 applied (rank stated: below the role file, grants nothing; always-read-whole list extended; scans run over whole files; a replaced Handoff bullet never removes a finding or decision; pointers say to re-read after a compaction). Owner approval for this change: the 2026-11-18 entry above. Not re-reviewed.
 
 ## Handoff
 
