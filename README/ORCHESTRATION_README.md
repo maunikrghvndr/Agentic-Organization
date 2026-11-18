@@ -34,7 +34,7 @@ graphify hook install
 setx GRAPHIFY_OUT ".ai-memory\graphify-out"
 ```
 
-With the hook in place, git keeps the graph fresh and agents only *query* it — they never need to build it. `graphify-out/` is gitignored (bare, any level), so the derived graph is never committed. Check status with `graphify hook status`; remove with `graphify hook uninstall`; skip for one commit with `GRAPHIFY_SKIP_HOOK=1`.
+With the hook in place, git keeps the graph fresh and agents only *query* it — they never need to build it. `graphify-out/` is gitignored (bare, any level), so the derived graph is never committed. Check status with `graphify hook status`; remove with `graphify hook uninstall`; skip for one commit with `GRAPHIFY_SKIP_HOOK=1` (the user's choice; an agent never sets a hook-skipping switch — `_shared/rules-detail.md` → Git discipline).
 
 ## Setup
 
@@ -94,7 +94,7 @@ Agentic-Organization/
   Skills/
     README.md              optional: curated third-party skills, how one gets on the list
     skills.manifest.json   the list: each skill pinned to a full commit sha with a review record
-    install-skills.mjs     fetches every listed skill that is missing into the library's own Skills/installed/ (git-ignored; pinned git fetch; --dry-run, --list, --upgrade, --with-optional)
+    install-skills.mjs     fetches every listed skill that is missing into the library's own Skills/installed/ (git-ignored; pinned git fetch; --dry-run, --list, --upgrade, --with-optional, --skill <name>)
     install-skills.test.mjs  its tests (node --test "Skills/*.test.mjs")
     reviews/               one security review record per listed skill
 
@@ -128,7 +128,7 @@ Options: `-RepoRoot <path>` to point at a different parent, `-Source <path or UR
 
 1. Copy `AGENTS.md` into the target repo.
 2. Ask for a task. The agent infers one role, loads only that role file, and works under its rules plus the universal rules in `AGENTS.md`.
-3. Per-repo memory lives in `.ai-memory/` (created automatically): `PROJECT_MEMORY.md` for stable facts, `TASKS/` for per-task files, `TASKS/_archive/` for completed ones, `wiki/` topic pages once memory outgrows one file, and `sources/` for read-only papers/specs distilled into `ref-` pages.
+3. Per-repo memory lives in `.ai-memory/` (created automatically): `PROJECT_MEMORY.md` for stable facts, `ROADMAP.md` for the progress board, `CONSTITUTION.md` for the project's binding principles (only when the repository has no Spec Kit constitution), `TASKS/` for per-task files, `TASKS/_archive/` for completed ones, `wiki/` topic pages once memory outgrows one file, and `sources/` for read-only papers/specs distilled into `ref-` pages.
 
 ## Spec-Driven Development (GitHub Spec Kit aligned)
 
@@ -141,9 +141,9 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 ## Key Rules
 
 - **One role file per phase.** Load the role for the current phase and switch in-session by loading the next role file when the phase changes (`AGENTS.md` → Phase Protocol). Never hold two at once.
-- **Phases flow in one session** — the agent adopts each role in turn (analyst → architect → planner → engineer) and carries through to a working implementation. Only review/QA/security is *preferred* as a fresh session so a reviewer doesn't rubber-stamp its own code; if reviewed in-session, it must re-read and review adversarially.
-- **Rework loop:** reviewer/security/QA findings go back to the original engineer role; loop ends when no blocking issues remain.
-- **Cross-stack:** analyst (grill + spec) → architect (design, when needed) → planner (sequence + gate) → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, in one session. Skip roles that add nothing.
+- **Phases flow in one session** — the agent adopts each role in turn (analyst → architect → planner → engineer) and carries through to a working implementation. Only review/QA/security is *preferred* as a fresh session so a reviewer doesn't rubber-stamp its own code; if reviewed in-session, it must re-read and review adversarially. Where an approved provider offers another model family that the agent can start itself, the reviewer runs on it, in its own context.
+- **Rework loop:** reviewer/security/QA findings go back to the original engineer role; loop ends when no blocking issues remain, or after 3 rounds (the open disagreement is recorded, the item is marked Blocked and the user decides). Every re-review after a fix runs in a fresh context.
+- **Cross-stack:** analyst (grill + spec) → architect (design, when needed) → planner (sequence + gate) → backend-engineer → frontend-engineer → reviewer(s) → qa-engineer, in one session. Skip roles that add nothing. Closing order after QA: security-engineer review where the mandatory-security list applies → architect design conformance on full-path work → delivery (In Review) → for a release, the release audit → the user's acceptance (Done) (`_shared/rules-detail.md` → Closing order).
 - **Universal Grill Checkpoint:** every role, before any work, restates intent in one line and asks any question that would change what gets built. Never skipped — trivial tasks are one line and 15 seconds; feature-sized ambiguity routes to `analyst` for full grill and durable spec production.
 - **Memory is compact and compounding:** bullets only, omit empty sections, promote durable learnings to PROJECT_MEMORY, archive finished task files. Knowledge is updated or reorganized (index + `wiki/` topic pages, distilled `ref-` pages for papers/specs) — never deleted for size.
 - **Self-learning (closed loop):** repo-specific knowledge goes in that repo's `.ai-memory/`; **general, transferable takeaways** ("never ship mock data in production") go in the library's shared `LESSONS.md` (cross-cutting) or `LESSONS/<area>.md` (its index maps areas to roles), which every repo reads and every agent proposes to (written only after the user approves). Stable universal lessons graduate into the role files. Inspired by Hermes' and Multica's skill-compounding, done in markdown with no runtime.
@@ -153,7 +153,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Measure before trimming:** the library's `EVALS.md` is a lightweight A/B protocol — run a real task with vs. without a role/section, compare quality and token cost, and let the verdict (KEEP / TRIM / CUT) drive what stays. Directional, not rigorous, but it turns "feels heavy" into evidence and is the honest antidote to a library that only ever grows.
 - **Graph accelerator:** the Graphify git hook (above) keeps the graph fresh on every commit, and `AGENTS.md` drives the agent to *query* it instead of grepping — it builds the graph only when no hook maintains it. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
 - **Proportional complexity:** before code, one task-file line `Simplest design: …`; every new abstraction, option, pattern, dependency or module needs a `Ledger:` reason tied to an AC or decision, and a trivial change adds none. A missing reason is a Blocking review finding (`_shared/rules-detail.md` → Proportional complexity).
-- **Shared code and structure:** code that is not product-specific is checked against `SHARED_LIBRARIES.md` before it is written (never copied between repositories; extraction is its own ask-first task), and a file goes where `STRUCTURE.md`, then the repository's recorded structure, then its siblings say (`_shared/rules-detail.md` → Shared code across projects, Project structure).
+- **Shared code and structure:** code that is not product-specific is checked against `SHARED_LIBRARIES.md` before it is written (never copied between repositories; extraction is its own ask-first task), and a file goes where the repository's organization pattern says (its written standard, else its recorded structure), else the owner's `STRUCTURE.md`, else its siblings (corrected 2026-11-18) (`_shared/rules-detail.md` → Shared code across projects, Project structure).
 - **Inner work loop:** the habits for lookups, edits, the compaction checkpoint and side contexts live in `_shared/work-loop.md` (the checkpoint in `_shared/rules-detail.md` → Compaction / re-entry addendum), read on demand through one pointer line in the engineer roles and `debugger`; nothing is added to the always-loaded `AGENTS.md`.
 
 ## Headless / CI use
@@ -170,7 +170,7 @@ EVALS.md rows need a cost figure with its source: the tool's machine-readable ru
 
 ## Maintaining The Library
 
-- **Before every library commit run `.\Scripts\Lint-Library.ps1`** (CI runs it too via `.github/workflows/lint-library.yml`; `Scripts\Lint-RepoMemory.ps1 -RepoRoot <repo>` is the optional sibling for a project's `.ai-memory/`, pasted as an Evidence row at the completion sweep) (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines; warnings: AGENTS.md size, duplicate blocks across role files, hardcoded `wiki/spec-`, a role file of 1,800 lines or more). After changing either lint, run `.\Scripts\tests\Lint-Library.Tests.ps1` (plain PowerShell, temp fixtures only): a lint that has only been seen to pass has not been seen to work.
+- **Before every library commit run `.\Scripts\Lint-Library.ps1`** (CI runs it too via `.github/workflows/lint-library.yml`; `Scripts\Lint-RepoMemory.ps1 -RepoRoot <repo>` is the optional sibling for a project's `.ai-memory/`, pasted as an Evidence row at the completion sweep) (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines, hidden text, `AGENTS.md` over 32,768 bytes; warnings: `AGENTS.md` over 200 lines, duplicate blocks across role files, hardcoded `wiki/spec-`, a role file of 1,800 lines or more). After changing either lint, run `.\Scripts\tests\Lint-Library.Tests.ps1` (plain PowerShell, temp fixtures only): a lint that has only been seen to pass has not been seen to work.
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
 - The role library path appears exactly once, at the top of `AGENTS.md`. The agent self-heals it (Role library resolution block) with the user's permission; no manual edit needed.
 - Coding-style rules (explicit types / no `var` abuse, no `any`, `Constants.cs` / `FrontendConstants` patterns, structured logging with constant templates, no hardcoding) live in the engineer role files and are enforced by the reviewer roles — keep both sides in sync when changing a style rule.
@@ -181,7 +181,7 @@ When a release is finished, and before it merges into the default branch, `secur
 
 - **Two engines, one record.** Engine A is Cloudflare's `security-audit` skill, used when it is present and unmodified under the library's `Skills/installed/` and its validators can run. Engine B is the library's own procedure in `EngineeringTeam/Quality/security-engineer.md` → Release Audit (whole application), used everywhere else (the skill absent, native Windows). Both write the same record into the task file.
 - **The procedure:** map the application; build a coverage table (only the table counts as proof an area was reviewed); hunt area by area with the role's checklists; hand every suspected issue to a fresh reviewer told to disprove it; a fresh critic looks for missed areas; the report is written last. An unfinished audit is never a pass.
-- **The checker:** `node Scripts/validate-release-audit.mjs <task file> --repo <root> --release --head <40-character head sha>` exits 0 only for a complete, unambiguous passing record (standard or deep profile, full scope, two clean critics, no open confirmed finding). It proves the record is consistent, not that the audit was honest; the fresh reviewer and critic steps cover that.
+- **The checker:** `node <library root>/Scripts/validate-release-audit.mjs <task file> --repo <root> --release --head <40-character head sha>` exits 0 only for a complete, unambiguous passing record (standard or deep profile, full scope, two clean critics, no open confirmed finding). It proves the record is consistent, not that the audit was honest; the fresh reviewer and critic steps cover that.
 - **Native Windows:** Cloudflare's own validators do not run there, so Engine B is used unless you work in WSL2 or a devcontainer.
 - Trigger, confirmation before starting (it is expensive) and the Done rule: `EngineeringTeam/_shared/rules-detail.md` → Release audit.
 

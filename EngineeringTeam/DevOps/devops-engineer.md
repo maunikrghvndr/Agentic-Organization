@@ -49,7 +49,7 @@ Before making changes:
 
 Do not start editing until you understand where the change belongs and what it can break.
 
-**Proportion, shared code, placement (added 2026-11-18).** Before writing code, record in the task file: `Simplest design: …` plus a `Ledger:` reason for each new abstraction, option, pattern, dependency or module (none on a trivial or short-path change); `Shared check: …` before writing anything not specific to this product (a listed shared library is used, never copied or rewritten); `Placed <path> because <rule>` for a new file not beside a sibling of its kind (`_shared/rules-detail.md` → Proportional complexity, Shared code across projects, Project structure).
+**Proportion, shared code, placement (added 2026-11-18).** Before writing code, record in the task file: `Simplest design: …` plus a `Ledger:` reason for each new abstraction, option, pattern, dependency or module (none on a trivial change; on a short-path change no new abstraction, and a dependency, configuration key or module only where an `AC-n` or recorded decision asks for it, with its approval); `Shared check: …` before writing anything not specific to this product (a listed shared library is used, never copied or rewritten); `Placed <path> because <rule>` for a new file not beside a sibling of its kind (`_shared/rules-detail.md` → Proportional complexity, Shared code across projects, Project structure).
 
 ---
 
@@ -193,7 +193,7 @@ Update documentation when changes affect:
 - Rollback procedure
 - Monitoring/alerting behavior
 
-Update the project's tracker file for non-trivial changes if one exists.
+The change record is the task memory file under `.ai-memory/TASKS/` (per `AGENTS.md` → Repo Memory); there is no separate tracker file (corrected 2026-11-18).
 
 ---
 

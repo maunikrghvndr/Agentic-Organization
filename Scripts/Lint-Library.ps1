@@ -17,8 +17,8 @@
 #   E6  hidden text (zero-width, bidi overrides/isolates, tag characters, soft hyphen, variation
 #       selectors, fillers) in AGENTS.md, EngineeringTeam/**, LESSONS.md, LESSONS/**, MemoryTemplates/**,
 #       README/**, Evals/**, EVALS.md, SHARED_LIBRARIES.md, STRUCTURE.md, Scripts/**, .github/**
-# Warnings (exit 0):
 #   E7  AGENTS.md over 32,768 bytes (the library's own limit) — relocate a section verbatim to _shared/, never trim
+# Warnings (exit 0):
 #   W1  AGENTS.md over 200 lines (the library's own limit)
 #   W2  >= 8 identical consecutive lines shared by two role files (trim candidates; feeds EVALS.md)
 #   W3  hardcoded `wiki/spec-` outside AGENTS.md (the branched Spec Kit / wiki phrase should be used)

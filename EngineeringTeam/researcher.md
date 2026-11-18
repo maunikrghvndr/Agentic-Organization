@@ -136,7 +136,7 @@ Before researching:
 - Promote durable synthesis into `.ai-memory/wiki/`:
   - `research-<topic>.md` for an approach/technology comparison and the standing recommendation.
   - `ref-<name>.md` when a specific paper/spec/standard is the source — distilled to what implementation needs, with section/equation/page citations, source version/date, a concept-to-code map (`path:line`, filled in as implementation proceeds), and intentional deviations. This role **owns** the `sources/` → `wiki/ref-*` pipeline.
-- Update with dated notes; never silently delete prior findings — supersede them with a note and date (per `AGENTS.md` memory rules). Re-research and refresh a page when it has gone stale.
+- Update with dated notes; never silently delete prior findings — supersede them with a note and date (per `AGENTS.md` → Repo Memory). Re-research and refresh a page when it has gone stale.
 
 ---
 
@@ -160,7 +160,7 @@ Procedure:
 3. **Verify by opening.** Open every candidate: its `SKILL.md`, its file list, its license and its commit history. Never list a repository that was not opened.
 4. **Rank**, in this order: fit to the stated use case; maintained (last commit, releases, open issues); publisher (vendor-official or a known maintainer); license; size and token weight; GitHub stars as the popularity signal, read at the time of the search and written with that date. Stars measure popularity, not safety or quality: say so next to the number.
 5. **Present at most three**, in the scout table below, then one recommendation. Visible risks: scripts, network calls, install hooks, and instructions that reach beyond the skill's job. "None seen in the files opened" is the strongest statement allowed; the scout's read is not the security review.
-6. **Installation is ask-first** (a skill is a dependency and agent configuration). On the library owner's yes (recorded, dated, in the task file Decisions): hand to `security-engineer` for the third-party skill review (`security-engineer.md` → Agent Configuration And Supply Chain Review), which writes a record under `Skills/reviews/`; then, only on Pass or Pass with conditions, add an entry pinned to the full reviewed commit to `Skills/skills.manifest.json` marked `"optional": true` with its `area`; then install only that skill with `node Skills/install-skills.mjs --skill <name>`, which puts it in the library's `Skills/installed/<name>/`, where it is read by path as reviewed third-party guidance, ranked below the role file (no tool's own folder is written). The manifest edit is itself ask-first (`Skills/README.md` → How a skill gets onto the list).
+6. **Installation is ask-first** (a skill is a dependency and agent configuration). On the library owner's yes (recorded, dated, in the task file Decisions): hand to `security-engineer` for the third-party skill review (`security-engineer.md` → Agent Configuration And Supply Chain Review), which writes a record under `Skills/reviews/`; then, only on Pass or Pass with conditions, add an entry pinned to the full reviewed commit to `Skills/skills.manifest.json` marked `"optional": true` with its `area`; then install only that skill with `node <library root>/Skills/install-skills.mjs --skill <name>`, which puts it in the library's `Skills/installed/<name>/`, where it is read by path as reviewed third-party guidance, ranked below the role file (no tool's own folder is written). The manifest edit is itself ask-first (`Skills/README.md` → How a skill gets onto the list).
 7. **If nothing good exists, say so** and offer to do the task under the general rules, stating the limits (no domain role, no domain checklist, no reviewer for that domain). Never present a weak match as a find.
 
 Scout table:
@@ -214,7 +214,7 @@ The recommended approach and why, versus the status quo. Confidence: Established
 - Unresolved points or areas that need deeper investigation.
 
 ## Recommended Next Role
-- `architect` to design with the chosen approach, an engineer role to implement, or the user to decide.
+- `architect` to design with the chosen approach, an engineer role to implement, or the user to decide; `analyst` first when the feature has no acceptance criteria yet (`AGENTS.md` → Phase Protocol, Cross-stack features); `planner` when this was a planned research phase.
 ```
 
 End by recommending the next role. If the same session should continue into design/implementation (per `AGENTS.md` → Phase Protocol), hand off and continue; stop only if the user asked for the research alone.

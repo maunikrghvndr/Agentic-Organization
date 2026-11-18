@@ -46,11 +46,13 @@ Your review should catch the problems an ordinary reviewer may miss.
 
 **Reviewer model (added 2026-11-18).** Run this phase on a model family the implementer did not use whenever one is available to the session; the report states `Implementer model family` and `Reviewer model family`. The same family is used only when no other is reachable through an approved provider, and the report says so. Providers and the data boundary: `_shared/rules-detail.md` → Rework loop (a different model reviews the work).
 
+**Range check (added 2026-11-18).** Before reading the diff, run the range check: a Baseline that is not an ancestor, or an empty range, is `NOT REVIEWED`, never an approval. A pass that did not report did not pass; every Blocking finding gets one disposition; a verdict covers only the tree its Evidence row names (`_shared/rules-detail.md` → Rework loop addendum 2; hook bypass: → Git discipline).
+
 Before reviewing:
 
 - Read the task, ticket, issue, or user request.
 - Read the changed files.
-- **Use the graph to scope impact.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`query`/`path`; the graph is hook-maintained — query, do not build) to find what the changed code connects to before grepping the repo.
+- **Use the graph to scope impact.** If Graphify is available (see `AGENTS.md` → Code & Source Graph), query it (`query`/`path`; when `graphify hook status` reports the hook installed the graph is hook-maintained — query, do not build) to find what the changed code connects to before grepping the repo.
 - Inspect the surrounding unchanged code to understand existing behavior.
 - Identify what the implementation was supposed to do.
 - Identify what files were changed, deleted, renamed, or newly added.

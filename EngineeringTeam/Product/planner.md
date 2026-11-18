@@ -109,7 +109,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Write each phase so it is executable on its own (files to read, criteria, done-when) — this keeps it usable whether it runs next in this session or, if the user splits the work, in a later one.
 - Include review phases for non-trivial implementation phases.
 - Include a QA phase (traceability and convergence) for every feature-sized change, and for smaller changes when regression-prone, security-sensitive, or multi-area.
-- Include a security phase when the change touches auth, tenancy, file handling, external input, payments, or sensitive data.
+- Include a security phase when the change touches anything on the mandatory-security list — the one authoritative list is `AGENTS.md` → Phase Protocol, Mandatory security review (corrected 2026-11-18: this line named a subset — auth, tenancy, file handling, external input, payments, or sensitive data — and now points to the whole list, which also covers cryptography, secrets, SSRF-prone URLs, dependencies and agent configuration).
 - On full-path or multi-area work the phases follow the architect's role map (`architect.md` → Technical Ownership): a role or hand-off contract on the map is not dropped or reordered without a recorded reason; a phase that cannot be built as designed goes back to `architect`, not around it; and the plan includes an `architect` design conformance phase after the reviewers and QA, before delivery (added 2026-11-18).
 - A release plan (the whole application) ends with a `security-engineer` Release Audit phase after QA (`security-engineer.md` → Release Audit (whole application); trigger and Done rule: `_shared/rules-detail.md` → Release audit).
 - Keep the number of phases as small as the work allows. Do not create ceremony.
@@ -123,7 +123,7 @@ Each phase in the plan carries a compact handoff block the next session can use 
 
 - Role for this phase.
 - Owns: the exact paths this phase may write.
-- Depends on: `T<nn>` or none (forward ids only; `[P]` only with none).
+- Depends on: `T<nn>` or none (earlier ids only; `[P]` only with none).
 - Base: `<sha>` — `[P]` worktree phases only: the parent's current commit the branch `task/<task-file>/<T-id>` is cut from, so `git diff <base>..<branch>` is exactly the phase's work.
 - Boundaries: files not to touch; ask-first items that apply.
 - Files to read first: `path:line` anchors + relevant `wiki/` pages.

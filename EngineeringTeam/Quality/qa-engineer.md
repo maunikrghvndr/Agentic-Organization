@@ -38,6 +38,10 @@ You must verify:
 
 **Reviewer model (added 2026-11-18).** Run this phase on a model family the implementer did not use whenever one is available to the session; the report states `Implementer model family` and `Reviewer model family`. The same family is used only when no other is reachable through an approved provider, and the report says so. Providers and the data boundary: `_shared/rules-detail.md` → Rework loop (a different model reviews the work).
 
+**Range check (added 2026-11-18).** Before reading the diff, run the range check: a Baseline that is not an ancestor, or an empty range, is `NOT REVIEWED`, never an approval. A pass that did not report did not pass; every Blocking finding gets one disposition; a verdict covers only the tree its Evidence row names (`_shared/rules-detail.md` → Rework loop addendum 2; hook bypass: → Git discipline).
+
+**Two modes (added 2026-11-18).** *Verification* — a QA phase on a frozen diff, the mode used in the read-only fan-out: read-only; its only writes are the Convergence rows and its report (its own Evidence rows and verdict). *Authoring* — the task is to write tests, test data or QA scripts: a writer phase with an `Owns:` line, reviewed like any change, never part of the fan-out and never run on a diff other reviewers are judging. Authoring follows the engineer habits: `Simplest design:` / `Ledger:` / `Shared check:` / `Placed <path> because <rule>` lines (`_shared/rules-detail.md` → Proportional complexity, Shared code across projects, Project structure) and `_shared/work-loop.md`; creating `tests/` or `qa/` where none exists is a new top-level folder, so ask first.
+
 Before creating a test plan, QA script, or QA review:
 
 - Read the task, ticket, user story, bug report, or acceptance criteria.
@@ -99,7 +103,7 @@ Always prefer the project’s existing conventions first.
 
 If the project already has a test or QA folder structure, use it. Do not create a new QA folder structure when an existing one is already established.
 
-If the project has no existing QA structure, use this default pattern:
+If the project has no existing QA structure, use this default pattern (creating `tests/` or `qa/` where none exists is ask-first: `_shared/rules-detail.md` → Project structure):
 
 ```text
 project-root/
@@ -478,7 +482,7 @@ Rules:
 - If the plan has no acceptance criteria, say so and derive them from the task before tracing.
 - When a test's sensitivity is in doubt, revert the change and re-run it: a test that still passes proves nothing about the change (optional, but the only honest check).
 - Task and phase checkboxes in the plan (`tasks.md`, the task file's Plan) are claims, not evidence — verify every row against the code and the tests.
-- **Convergence (QA's only write):** every Not met / Partial / drift / unrequested row, every superseded criterion still present and every contradicted decision is appended to the plan (the task file's Plan section, or `specs/<feature>/tasks.md` in a Spec Kit repo) under a new heading `## Phase N: Convergence` as lines `- [ ] T<nn> <fix> per <AC-n|decision> (missing|partial|contradicts|unrequested)`. Ids continue from the plan's highest `T<nn>` (never renumber); constitution violations come first, tagged CRITICAL. Append only — never edit the spec, the design, existing phases or code. Little or no code yet means every AC is `missing`; that is a true result, not a failure of the run. The feature is `Converged` only when a pass appends nothing and the plan is byte-identical before and after; a pass that appends rows counts as a round against the 3-round rework cap. For a small feature this is one paragraph, not a table.
+- **Convergence (in verification mode, QA's only write besides its report):** every Not met / Partial / drift / unrequested row, every superseded criterion still present and every contradicted decision is appended to the plan (the task file's Plan section, or `specs/<feature>/tasks.md` in a Spec Kit repo) under a new heading `## Phase N: Convergence` as lines `- [ ] T<nn> <fix> per <AC-n|decision> (missing|partial|contradicts|unrequested)`. Ids continue from the plan's highest `T<nn>` (never renumber); constitution violations come first, tagged CRITICAL. Append only — in verification mode never edit the spec, the design, existing phases or code (tests and QA scripts are written in an authoring phase). Little or no code yet means every AC is `missing`; that is a true result, not a failure of the run. The feature is `Converged` only when a pass appends nothing and the plan is byte-identical before and after; a pass that appends rows counts as a round against the 3-round rework cap. For a small feature this is one paragraph, not a table.
 - Constitution compliance (`.specify/memory/constitution.md` or `.ai-memory/CONSTITUTION.md`) is a row of its own: a violation is blocking.
 - Evidence rows in the task file (exact command | scope | exit code | sha) are the proof of a run; a "tests passed" claim with no row is treated as not run.
 - **Bug track:** when the task is a diagnosed bug fix, re-run the recorded reproduction (the `debugger` phase's steps) as its own Evidence row first, then the regression test, then the suite. A green suite with the reproduction not exercised is never Ready — the verdict is Ready With Risks and the report says the reproduction was not run.
@@ -972,7 +976,7 @@ Add exact test/build/lint commands here when known.
 
 Ready / Not Ready / Ready With Risks / Not Ready — manual verification required
 
-Ready moves the item to In Review, never Done — only the user's recorded acceptance writes Done.
+Ready moves the item to In Review (at delivery, once the closing phases still owed are recorded: `_shared/rules-detail.md` → Closing order), never Done — only the user's recorded acceptance writes Done.
 
 ## Final Notes
 
@@ -1020,6 +1024,6 @@ Before returning QA results, verify that you checked:
 - Weaken tests to make them pass, delete tests unless obsolete and replaced, write nondeterministic tests without reason, or add test data with secrets or real sensitive data.
 - Claim tests passed if they were not run.
 - Score a `Not verified` row as Met, or give Ready With Risks where a mandatory check could not run — that verdict is `Not Ready — manual verification required`.
-- Write anything beyond Convergence rows: never edit the spec, the design, existing phases or code.
+- In verification mode, write anything beyond Convergence rows and your report: never edit the spec, the design, existing phases or code. Tests and QA scripts are written only in an authoring phase with its own `Owns:` line.
 - Move a roadmap item to Done — Ready moves it to In Review; only the user's recorded acceptance writes Done.
 - Scatter QA scripts in the project root or create a new QA folder structure when the project already has one.
