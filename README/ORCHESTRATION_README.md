@@ -75,6 +75,16 @@ Agentic-Organization/
     tests/
       Lint-Library.Tests.ps1   positive controls for both lints: each error rule (E1-E7, R1-R11) fires on a planted violation; clean fixtures stay clean
       Sync-AgentsMd.Tests.ps1  the CLAUDE.md shadow check, incl. the <home>\.claude\CLAUDE.md exclusion (-DryRun in a temp tree)
+      release-audit/         fixtures for the release-audit validator tests
+    validate-release-audit.mjs       checks a task file's Release Audit record (ledger vs findings vs verdict); Node, any OS
+    validate-release-audit.test.mjs  its tests (node --test Scripts/validate-release-audit.test.mjs)
+
+  Skills/
+    README.md              optional overlay: curated third-party skills, how one gets on the list
+    skills.manifest.json   the list: each skill pinned to a full commit sha with a review record
+    install-skills.mjs     installs every listed skill that is missing (pinned git fetch; --dry-run, --list, --upgrade)
+    install-skills.test.mjs  its tests (node --test "Skills/*.test.mjs")
+    reviews/               one security review record per listed skill
 
   Router/
     classify-ticket.md     deprecated ticket-classification prompt (AGENTS.md routes instead)

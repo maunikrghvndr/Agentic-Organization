@@ -10,7 +10,7 @@
  *   node Skills/install-skills.mjs              install every missing skill
  *   node Skills/install-skills.mjs --dry-run    print what would happen, change nothing
  *   node Skills/install-skills.mjs --list       print the list and each skill's state
- *   node Skills/install-skills.mjs --update     also replace a skill installed at another commit
+ *   node Skills/install-skills.mjs --upgrade     also replace a skill installed at another commit
  *   node Skills/install-skills.mjs --target <dir>     default: ~/.claude/skills
  *   node Skills/install-skills.mjs --manifest <file>  default: skills.manifest.json beside this script
  *
@@ -65,7 +65,7 @@ const STATE = {
 
 const MSG = {
   usage:
-    "Usage: node Skills/install-skills.mjs [--target <dir>] [--manifest <file>] [--dry-run] [--list] [--update]\n" +
+    "Usage: node Skills/install-skills.mjs [--target <dir>] [--manifest <file>] [--dry-run] [--list] [--upgrade]\n" +
     "Installs every skill on the list that is missing. There is no per-skill selection.",
   unknownArg: "Unknown argument: ",
   missingValue: "Missing value for ",
@@ -78,7 +78,7 @@ const MSG = {
   installed: "installed",
   updated: "updated",
   present: "present at the pinned commit - skipped",
-  outdated: "installed at another commit - re-run with --update to replace it",
+  outdated: "installed at another commit - re-run with --upgrade to replace it",
   clash: "name clash: a folder with this name exists and was not installed by this script - left untouched",
   failed: "FAILED",
 };
@@ -94,7 +94,7 @@ function parseArgs(argv) {
     const arg = argv[i];
     if (arg === "--dry-run") options.dryRun = true;
     else if (arg === "--list") options.list = true;
-    else if (arg === "--update") options.update = true;
+    else if (arg === "--upgrade") options.update = true;
     else if (arg === "--help" || arg === "-h") {
       process.stdout.write(MSG.usage + "\n");
       process.exit(EXIT_OK);

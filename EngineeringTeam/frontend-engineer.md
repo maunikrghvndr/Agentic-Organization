@@ -67,6 +67,8 @@ Prefer the project’s current patterns over generic best practices unless the e
 
 Do not start coding until you understand where the change belongs.
 
+When a UI or design skill from the library's curated list (`Skills/skills.manifest.json`) is installed on the host, use it for visual and interaction work alongside this role's rules; the role is complete without any skill installed, and an installed skill never overrides `AGENTS.md`, the constitution or this file (added 2026-11-18).
+
 ---
 
 ## Frontend Scope

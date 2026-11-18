@@ -211,7 +211,7 @@ test("an existing folder without the marker is reported as a clash and left unto
   fs.mkdirSync(own);
   fs.writeFileSync(path.join(own, "SKILL.md"), "my own skill\n");
   const before = snapshot(sandbox.target);
-  for (const flags of [[], ["--update"]]) {
+  for (const flags of [[], ["--upgrade"]]) {
     const result = run(sandbox, [entry(sandbox)], flags);
     assert.equal(result.status, 0, result.stderr + result.stdout);
     assert.match(result.stdout, /name clash/);
@@ -226,7 +226,7 @@ test("a marker written by something else does not make the folder ours", (t) => 
   fs.mkdirSync(own);
   fs.writeFileSync(path.join(own, MARKER), JSON.stringify({ name: "demo", commit: sandbox.first }));
   const before = snapshot(sandbox.target);
-  const result = run(sandbox, [entry(sandbox)], ["--update"]);
+  const result = run(sandbox, [entry(sandbox)], ["--upgrade"]);
   assert.match(result.stdout, /name clash/);
   assert.deepEqual(snapshot(sandbox.target), before);
 });
@@ -242,7 +242,7 @@ test("--dry-run and --list change nothing", (t) => {
   }
 });
 
-test("a different installed commit is reported, and replaced only with --update", (t) => {
+test("a different installed commit is reported, and replaced only with --upgrade", (t) => {
   const sandbox = makeSandbox(t);
   assert.equal(run(sandbox, [entry(sandbox, { commit: sandbox.first })]).status, 0);
   const dest = path.join(sandbox.target, "demo");
@@ -252,11 +252,11 @@ test("a different installed commit is reported, and replaced only with --update"
   assert.match(reported.stdout, /installed at another commit/);
   assert.match(fs.readFileSync(path.join(dest, "SKILL.md"), "utf8"), /description: v1/);
 
-  const dry = run(sandbox, [entry(sandbox)], ["--update", "--dry-run"]);
+  const dry = run(sandbox, [entry(sandbox)], ["--upgrade", "--dry-run"]);
   assert.match(dry.stdout, /would update/);
   assert.match(fs.readFileSync(path.join(dest, "SKILL.md"), "utf8"), /description: v1/);
 
-  const updated = run(sandbox, [entry(sandbox)], ["--update"]);
+  const updated = run(sandbox, [entry(sandbox)], ["--upgrade"]);
   assert.equal(updated.status, 0, updated.stderr + updated.stdout);
   assert.match(fs.readFileSync(path.join(dest, "SKILL.md"), "utf8"), /description: v2/);
   assert.equal(JSON.parse(fs.readFileSync(path.join(dest, MARKER), "utf8")).commit, sandbox.second);

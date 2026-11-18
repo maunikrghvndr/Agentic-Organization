@@ -1,4 +1,4 @@
-# Library lint on every push and pull request. Zero agent tokens: this only runs the two PowerShell lints.
+# Library lint on every push and pull request. Zero agent tokens: this only runs the two PowerShell lints and the library's own tests.
 # This file is agent configuration (reviewed as code; security pass before merge). Keep permissions read-only.
 name: lint-library
 
@@ -23,3 +23,14 @@ jobs:
       - name: Lint the library's own repo memory
         shell: pwsh
         run: ./Scripts/Lint-RepoMemory.ps1 -RepoRoot .
+      - name: Lint positive controls
+        shell: pwsh
+        run: |
+          ./Scripts/tests/Lint-Library.Tests.ps1
+          ./Scripts/tests/Sync-AgentsMd.Tests.ps1
+      - name: Node tests (hooks, release-audit validator, skills installer)
+        run: |
+          node --test "Hooks/*.test.mjs"
+          node --test Scripts/validate-release-audit.test.mjs
+          node --test "Skills/*.test.mjs"
+          node Workflows/review-loop.test.mjs Workflows/review-loop.js

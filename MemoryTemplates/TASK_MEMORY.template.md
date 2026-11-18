@@ -44,7 +44,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 - Rework round: n of 3 (reviewer context: subagent / new session / in-session adversarial re-read) — on round 3 exhausted, record the open disagreement and mark ROADMAP Blocked; reviewer status per required reviewer: completed / not run: <why>; disposition per Blocking finding: fixed (Evidence row) / disagreed (pointer)
 
 ## Release Audit
-(used only for a release task; omit otherwise — `_shared/rules-detail.md` → Release audit (whole application); owner `security-engineer`)
+(used only for a release task; omit otherwise — `_shared/rules-detail.md` → Release audit (whole application); owner `security-engineer`; a `Confirmed` finding stays open until `Resolved: <fix sha>` is appended to its `verified by` cell; a `Needs validation` impact cell starts `Missing fact:`; check with `node Scripts/validate-release-audit.mjs`)
 - Release audit: <Pass | Needs Changes | Incomplete: reason> | sha <sha> | engine <A: cloudflare@commit | B: library> (<why this engine>) | profile <quick|standard|deep> | run <n> | YYYY-MM-DD
 
 ### Coverage Ledger

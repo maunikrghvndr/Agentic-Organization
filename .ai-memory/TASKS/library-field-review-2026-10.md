@@ -6,6 +6,9 @@
 
 ---
 
+## Summary
+- (added 2026-11-18) Field review (2026-10-17), then implementation of Tier 0–2 and the Decision A overlays (2026-10-18/19), then the new-repos landscape sweep and its approved batches A–H, release audit and skills overlay (2026-11-18). Current state and evidence: Progress log; open items: Handoff.
+
 ## 0. Method, and how much to trust it
 
 - 12 web-research lenses ran in parallel (Claude Code platform, Agent Skills standard, AGENTS.md and cross-tool files, spec-driven development, multi-agent orchestration, context engineering and memory, evals and observability, agent security, self-improving loops, verification loops, headless automation, model and token economics). 182 dated findings, each labelled verified / claimed / inferred. A 13th agent inventoried every file in the library.
@@ -314,9 +317,29 @@ Each batch is a reviewable commit set; nothing in Batch 1–2 depends on a Claud
 | AGENTS.md size | `wc -c AGENTS.md` | — | 0 | 32,668 B / 194 lines |
 | Not run | `Scripts/Lint-Library.ps1`, `Scripts/Lint-RepoMemory.ps1`, `Sync-AgentsMd.ps1 -DryRun`, `Install-Overlays.ps1 -DryRun`, `gitleaks` | — | — | no PowerShell / gitleaks in the container; CI will run both lints on push |
 
+### 2026-11-18 — new-repos landscape sweep, batches A–H, release audit, skills overlay
+
+- Research: `.ai-memory/TASKS/new-repos-landscape/` (58 agents; 16 items read, gap-checked, refuted; report `06-report.md`). Owner requirements and approvals in that folder's `README.md`, `07-release-audit-design.md`, `08-implementation-brief.md`.
+- Approval (Maunik, 2026-11-18): "Go ahead" — batches A–H, the release audit (trigger before the merge), the skills list and installer. Constraints in his words: "extending those features not replacing it"; "the installer script will install all the skill missing in my agents and are in that list"; the fallback "should be strong ... almost as good as" Cloudflare.
+- Applied: A1–A3 (`6ec946e`), G1–G6 (`da45c1e`), B1–B8 (`94ca664`), release audit Engine B + validator (`cb36953`), C/F + trigger + templates (`809ef54`), C/D/E role files (`420e983`), H + trap 9 + queued A/B (`45f7455`), Skills overlay with the Cloudflare skill review, Pass with conditions (`e4e82f7`), integration commit (this one).
+- Deviations: checker and installer are Node, not PowerShell (run on every OS, tested here); installer flag is `--upgrade`; C6 lands as off-by-default; the Done rule requires a `Pass` audit; G7 not verified (needs a live session); the report's A3 claim about malformed stdin was wrong for `handoff-check.mjs` (README written from observed behaviour); the C4 reference section and H host-flag examples not written (unverified upstream).
+- Not done, owner's call: remove `LESSONS.md` "table with ... NO caller" line now that D5 promoted it (`LESSONS.md` promotion rule); Q8 question-cadence contradiction; hallmark skill (repository unknown); building the seeded application for trap 9.
+
+Evidence (sha = integration commit):
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library, E1–E7 W1–W4 | 0 | 0 errors, 7 W2 warnings (known)
+- `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | positive controls for both lints | 0 | 47 pass
+- `pwsh -NoProfile -File Scripts/tests/Sync-AgentsMd.Tests.ps1` | shadow check | 0 | 8 pass
+- `node --test "Hooks/*.test.mjs"` | hooks | 0 | 15 pass
+- `node --test Scripts/validate-release-audit.test.mjs` | release-audit validator | 0 | 27 pass
+- `node --test "Skills/*.test.mjs"` | skills installer | 0 | 17 pass
+- `node Workflows/review-loop.test.mjs Workflows/review-loop.js` | workflow harness | 0 | ALL PASS
+- Not run: anything on Windows or Windows PowerShell 5.1 (PowerShell 7.4.6 on Linux only); a full audit with the Cloudflare skill; any EVALS A/B.
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
+
+- Next role: `security-engineer` (fresh context) for the 2026-11-18 batch, then the user for acceptance (ROADMAP item stays In Review).
 
 - **Next role:** `researcher` for a focused inheritance pass (what concrete mechanisms to borrow from Hermes Agent, BMAD-Method, OpenSpec, Spec Kit extensions, Kiro, cc-sdd, Multica, Letta Code), then the engineer role for each batch (markdown/PowerShell edits; `security-engineer` review for F9, F10 and any Tier 3 security item).
 - **Read first:** this file sections 2 and 3 (Tier 0 and Tier 1 are the spec); `AGENTS.md`; `README/ORCHESTRATION_README.md`; `LESSONS.md`; `EVALS.md`; `Scripts/Sync-AgentsMd.ps1`; `Hooks/handoff-check.mjs`. The six large role files only at the lines each feature names.

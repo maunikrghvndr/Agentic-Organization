@@ -17,11 +17,11 @@ From the library root:
 node Skills/install-skills.mjs --dry-run    # print what would be installed, change nothing
 node Skills/install-skills.mjs              # install every missing skill
 node Skills/install-skills.mjs --list       # the list, with each skill's state in the target
-node Skills/install-skills.mjs --update     # also replace a skill that is installed at another commit
+node Skills/install-skills.mjs --upgrade     # also replace a skill that is installed at another commit
 ```
 
 - There is no per-skill selection: the installer installs **every** skill on the list that is not already present, so re-running it on any machine brings it up to the full list. Review happens when a skill is added to the list, not at install time.
-- A skill already present at the pinned commit is skipped. One installed by this script at a different commit is reported, and replaced only with `--update`.
+- A skill already present at the pinned commit is skipped. One installed by this script at a different commit is reported, and replaced only with `--upgrade`.
 - **Target folder.** Default: `~/.claude/skills` (Claude Code's personal skills folder, `~/.claude/skills/<skill-name>/SKILL.md`; Claude Code skills documentation, read 2026-11-18). For any other host or location, pass `--target <dir>`: the skills folders of other hosts were not confirmed from their documentation, so none is built in. The personal folder is not read by Claude Code cloud sessions; there, pass `--target .claude/skills` inside the repository if the project wants the skill (a committed skill is an agent configuration file: ask-first, reviewed as code).
 - Exit code: `0` nothing failed; `1` at least one skill failed (the others are still processed); `2` bad arguments or an invalid manifest (nothing is installed). A name clash or a skill left at another commit is reported in the summary table and is not a failure.
 - Uninstall: delete `<target>/<name>`. Nothing else is written anywhere.
@@ -40,7 +40,7 @@ Adding a skill is adding a dependency: **ask-first, and it needs the owner's app
 - Run anything from a fetched repository: no `npm install`, no scripts, no hooks, no upstream installer or `npx` CLI. It only copies files.
 - Fetch anything but the pinned commit, over anything but https, or install when `git rev-parse HEAD` differs from the pin.
 - Copy anything outside the skill's `path`, follow a symlink that leaves the skill folder, or accept `..` or an absolute path in `name` or `path`.
-- Touch a folder it did not install: a folder without its marker file (`.agentic-skill.json`) is the user's own skill; it is reported as a name clash and skipped, with or without `--update`.
+- Touch a folder it did not install: a folder without its marker file (`.agentic-skill.json`) is the user's own skill; it is reported as a name clash and skipped, with or without `--upgrade`.
 - Prompt for credentials, use a shell, change host settings, hooks or permissions, or write outside the target folder and a temp directory it removes.
 
 Limits, stated plainly: the marker records which commit was installed, not a hash of the files, so local edits to an installed skill are not detected; and the installer checks the pin, not the content: the review record is the safety check.
