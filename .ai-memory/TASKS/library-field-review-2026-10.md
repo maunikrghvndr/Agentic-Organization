@@ -335,6 +335,27 @@ Evidence (sha = integration commit):
 - `node Workflows/review-loop.test.mjs Workflows/review-loop.js` | workflow harness | 0 | ALL PASS
 - Not run: anything on Windows or Windows PowerShell 5.1 (PowerShell 7.4.6 on Linux only); a full audit with the Cloudflare skill; any EVALS A/B.
 
+### 2026-11-18 — security review of the batch (three rounds, cap reached)
+
+- Reviewer: `security-engineer` in a fresh context each round (never the implementer's transcript); fixes by a separate engineer context, failing test first.
+- Round 1 on `749f6fd..97d52af`: Needs Changes — B1–B4 (validator false Pass: skipped rows, ignored later headline, Pass with no coverage; installer inheriting `GIT_DIR`), N1–N10. Fixed in `ba2ed68`, `af55430`, `52d7b78`.
+- Round 2 on `97d52af..52d7b78`: Needs Changes — NB-1 (later section under another heading spelling; record inside a comment or a longer fence), NB-2 (one critic accepted for a release), N-1–N-7. Fixed in `61ef77d`.
+- Round 3 on `52d7b78..61ef77d`: Needs Changes — B-1 (a non-table line inside the section was never read), N-1–N-7; installer clean. Fixed in `b362b9d`: the section is now an allow-list (blank, exact headline, the two `###` headings, table rows, the end-of-file line; anything else is an error).
+- **Open, user decides (rework cap of 3 reached):** the round-3 fix has not had an independent re-review. Verified only by its tests and by re-running the reviewer's 82 case files (all required cases now exit 1; good records exit 0).
+- Known limits, accepted as out of the validator's scope (it proves the record is consistent and unambiguous, not truthful): a later section that avoids the words "release audit" (e.g. "Audit result (run 2)"); a contradicting table under `## Architecture Note (release audit)`; free-text cells that contradict the verdict; no staleness rule on the date. The fresh-context verifier and critic establish truth.
+- Side effect to know: outside the section, a line that reads like a headline (e.g. a Decisions bullet starting `- Release audit trigger:`) is rejected with a clear message.
+
+Evidence (sha `b362b9d`):
+- `node --test Scripts/validate-release-audit.test.mjs` | validator | 0 | 65 pass
+- `node --test "Skills/*.test.mjs"` | installer | 0 | 34 pass
+- `node --test "Hooks/*.test.mjs"` | hooks | 0 | 15 pass
+- `node Workflows/review-loop.test.mjs Workflows/review-loop.js` | workflow harness | 0 | ALL PASS
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library | 0 | 0 errors
+- `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo memory | 0 | clean
+- `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` / `Sync-AgentsMd.Tests.ps1` | lint controls | 0 | 47 / 8 pass
+- `node Skills/install-skills.mjs --target <temp>` then `--list` | real fetch of the pinned Cloudflare skill | 0 | installed; present, not modified
+- Not run: native Windows, Windows PowerShell 5.1, a full audit with either engine, the first CI run of the new steps.
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
