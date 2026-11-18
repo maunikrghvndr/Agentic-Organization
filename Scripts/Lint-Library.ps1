@@ -23,7 +23,7 @@
 #   W1  AGENTS.md over 200 lines (Anthropic guidance)
 #   W2  >= 8 identical consecutive lines shared by two role files (trim candidates; feeds EVALS.md)
 #   W3  hardcoded `wiki/spec-` outside AGENTS.md (the branched Spec Kit / wiki phrase should be used)
-#   W4  a role file (EngineeringTeam/*.md) of 1,800 lines or more - Claude Code's Read tool returns 2,000 lines
+#   W4  a role file (EngineeringTeam/<Folder>/*.md) of 1,800 lines or more - Claude Code's Read tool returns 2,000 lines
 #       by default (a Claude Code default, not a cross-host fact); relocate a section verbatim to _shared/, never compress
 #
 # Zero runtime tokens: this never runs an agent. PowerShell 5.1+ / 7+.
@@ -45,7 +45,7 @@ $agentsPath = Join-Path $LibraryRoot "AGENTS.md"
 $agentsText = Read-Utf8 $agentsPath
 $agentsLines = $agentsText -split "`n"
 
-$roleFiles = Get-ChildItem (Join-Path $LibraryRoot "EngineeringTeam") -Filter "*.md" -File
+$roleFiles = @(Get-ChildItem (Join-Path $LibraryRoot "EngineeringTeam") -Recurse -Filter "*.md" -File | Where-Object { (Rel $_.FullName) -notmatch '[\\/]_shared[\\/]' })
 $mdFiles = @(Get-ChildItem $LibraryRoot -Recurse -Filter "*.md" -File | Where-Object {
     $rel = Rel $_.FullName
     $rel -notmatch '^(_archive|\.git|graphify-out|\.ai-memory)[\\/]' -and $rel -notmatch '[\\/]_archive[\\/]'
@@ -65,7 +65,7 @@ foreach ($f in $mdFiles) {
 }
 
 # ---- E2: role names not in the AGENTS.md table -----------------------------------------------
-$tableRoles = @($agentsLines | Where-Object { $_ -match '^\| `([a-z-]+)` \| `[a-z-]+\.md` \|' } | ForEach-Object { $Matches[1] })
+$tableRoles = @($agentsLines | Where-Object { $_ -match '^\| `([a-z-]+)` \| `[A-Za-z]+/` \|' } | ForEach-Object { $Matches[1] })
 if ($tableRoles.Count -lt 20) { $errors.Add("E2 AGENTS.md role table parsed only $($tableRoles.Count) roles - table format changed?") }
 $singleWordRoles = @('analyst', 'architect', 'planner', 'debugger', 'researcher')
 $rolePattern = [regex]'`([a-z]+(?:-[a-z]+)*)`'

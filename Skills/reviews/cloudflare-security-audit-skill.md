@@ -2,7 +2,7 @@
 
 - **Verdict: Pass with conditions** (conditions C1 to C7 below).
 - Listed in `Skills/skills.manifest.json`.
-- Reviewed: 2026-11-18. Role: `security-engineer` (checks: `EngineeringTeam/security-engineer.md` → Agent Configuration And Supply Chain Review, "Reviewing a skill, plugin or MCP server before it is installed or enabled").
+- Reviewed: 2026-11-18. Role: `security-engineer` (checks: `EngineeringTeam/Quality/security-engineer.md` → Agent Configuration And Supply Chain Review, "Reviewing a skill, plugin or MCP server before it is installed or enabled").
 - Source: `https://github.com/cloudflare/security-audit-skill`
 - Reviewed commit: `c1c8a8c1471069fb0e188eeaff69b8e8db6564a8` (committed 2026-09-14; it was also the default-branch head on 2026-11-18). No tags or releases upstream, so the pin is this commit sha.
 - Installed path: `skills/security-audit/` (20 files, about 290 KB). `README.md` and `LICENSE` at the repository root are not copied.

@@ -3,7 +3,7 @@
 - **Verdict: Pass with conditions** (conditions C1 to C7 below; the result is the same for both listed skills).
 - Listed in `Skills/skills.manifest.json` as `wrangler` and `workers-best-practices` (area `cloudflare`).
 - Not listed from the same repository: `cf-cli` (read in full, held back) and `cloudflare` (the umbrella product-selection skill, read in part, held back). See "Skills from this repository that are not listed" below. The other 18 skills in the repository were not looked at.
-- Reviewed: 2026-11-18. Role: `security-engineer` (checks: `EngineeringTeam/security-engineer.md` → Agent Configuration And Supply Chain Review, "Reviewing a skill, plugin or MCP server before it is installed or enabled").
+- Reviewed: 2026-11-18. Role: `security-engineer` (checks: `EngineeringTeam/Quality/security-engineer.md` → Agent Configuration And Supply Chain Review, "Reviewing a skill, plugin or MCP server before it is installed or enabled").
 - Source: `https://github.com/cloudflare/skills`
 - Reviewed commit: `5108325ecceabc899c761e07aa617b09c02445ee` (committed 2026-11-17; it was the default-branch head on 2026-11-18). No tags upstream, so the pin is this commit sha.
 - Installed paths: `skills/wrangler/` (2 files, about 15 KB: `SKILL.md`, `references/skill-feedback.md`) and `skills/workers-best-practices/` (5 files, about 34 KB: `SKILL.md` and four files under `references/`). All Markdown; no script, no executable bit, no symlink. Not copied: the repository's `.mcp.json`, `mcp.json`, `mcp_config.json`, the five plugin manifests, `rules/workers.mdc` and every other skill.
@@ -46,7 +46,7 @@ Checked, nothing found: instructions to fetch the skill's own rules from a URL; 
 
 ## Library fit
 
-- **(a) Conflict with library rules.** No instruction to skip review, tests or project conventions. The pulls are C2 (deploys), C3 (remote agent page), C4 (dependencies) and the defaults in F6, where the project's own choice wins (`EngineeringTeam/frontend-engineer.md:70` states the same order for UI skills; the same order applies here through the instruction source hierarchy in `AGENTS.md` → Universal Rules).
+- **(a) Conflict with library rules.** No instruction to skip review, tests or project conventions. The pulls are C2 (deploys), C3 (remote agent page), C4 (dependencies) and the defaults in F6, where the project's own choice wins (`EngineeringTeam/Frontend/frontend-engineer.md:70` states the same order for UI skills; the same order applies here through the instruction source hierarchy in `AGENTS.md` → Universal Rules).
 - **(b) Token weight.** `wrangler`: `SKILL.md` 11.8 KB (about 3,000 tokens), plus 2.8 KB only when feedback is given. `workers-best-practices`: `SKILL.md` 6.2 KB (about 1,600 tokens); its three reference files add 6.7, 3.9 and 14.1 KB when read (about 6,000 tokens for all three). Each fetched documentation page adds its own size.
 - **(c) Overlap.** The two do not overlap each other (CLI operation versus code and configuration review) and do not overlap the UI skills. `security-audit` (cloudflare/security-audit-skill) is a different repository and job. For Workers code, `workers-best-practices` is the one to load; `wrangler` only when a command or a Wrangler configuration is in play.
 

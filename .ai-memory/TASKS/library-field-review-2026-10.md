@@ -397,6 +397,21 @@ Evidence (sha `e4a8d68`):
 - `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo memory | 0 | clean
 - `node Workflows/review-loop.test.mjs Workflows/review-loop.js` | workflow harness | 0 | ALL PASS
 
+### 2026-11-18 — role files moved into department folders
+
+- Approval (Maunik, 2026-11-18): "Also keep the department related agents in their respective folder".
+- `git mv` of all 24 role files (history kept): `Research/` researcher; `Product/` analyst, architect, planner; `Backend/`, `Frontend/`, `DevOps/` engineer + reviewer each; `Data/` data-engineer, data-scientist, data-reviewer; `ML/` ml-engineer, mlops-engineer, ml-reviewer; `AI/` ai-, prompt-, rag-, nlp-engineer, ai-reviewer; `Quality/` qa-engineer, debugger, security-engineer. `_shared/` unchanged. No role text changed.
+- `AGENTS.md`: the table's File column is now Folder (a role's file is `<Folder>/<role>.md`); probe path is `EngineeringTeam/Product/planner.md`. 32,538 B / 196 lines.
+- Updated to match: the 9 subagent shims, the cloud hook probe and its tests, `Lint-Library.ps1` (recursive role discovery, table pattern) and its test fixtures, `Workflows/review-loop.js` (role → folder map), README Structure, Skills docs, the two deprecated runners (find the role file by name).
+- **After merging, on each machine:** re-run `Scripts\Sync-AgentsMd.ps1` (old `AGENTS.md` copies in other repos still name the old flat paths) and `Scripts\Install-Overlays.ps1` (installed shims carry the old paths).
+- Paths written in earlier entries of this file and in the research folder are the old flat ones; they are history and were left as written.
+- `node --test "Hooks/*.test.mjs"` | hooks | 0 | 15 pass
+- `node --test Scripts/validate-release-audit.test.mjs` | validator | 0 | 65 pass
+- `node --test "Skills/*.test.mjs"` | installer | 0 | 42 pass
+- `node Workflows/review-loop.test.mjs Workflows/review-loop.js` | workflow harness | 0 | ALL PASS
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library, 24 roles found in folders | 0 | 0 errors
+- `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint controls | 0 | 47 pass
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

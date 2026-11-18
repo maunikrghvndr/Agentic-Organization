@@ -2,7 +2,7 @@
 
 - **Verdict: Pass with conditions** (conditions C1 to C3 below).
 - Listed in `Skills/skills.manifest.json` as `frontend-design` (area `ui-design`).
-- Reviewed: 2026-11-18. Role: `security-engineer` (checks: `EngineeringTeam/security-engineer.md` → Agent Configuration And Supply Chain Review, "Reviewing a skill, plugin or MCP server before it is installed or enabled").
+- Reviewed: 2026-11-18. Role: `security-engineer` (checks: `EngineeringTeam/Quality/security-engineer.md` → Agent Configuration And Supply Chain Review, "Reviewing a skill, plugin or MCP server before it is installed or enabled").
 - Source: `https://github.com/anthropics/skills`
 - Reviewed commit: `e4bb5d960d87126ff3b3a8af1a104b7db67560ba` (committed 2026-11-16; it was the default-branch head on 2026-11-18). No tags upstream, so the pin is this commit sha.
 - Installed path: `skills/frontend-design/` (2 files, about 20 KB: `SKILL.md` and `LICENSE.txt`). No script, no executable bit, no symlink. Nothing else from the repository is copied: this record covers this one skill only, not the other 18 skills in the repository (several of those ship Python scripts and were not reviewed).
@@ -17,7 +17,7 @@ List it, as an optional overlay. Risk Level: **Low**. Blocking: **none**.
 
 ## Conditions
 
-- **C1. The project's design system comes first.** The skill has the agent plan "a compact token system" with 4 to 6 named hex values and pick typefaces for the brief (`skills/frontend-design/SKILL.md:47-51`). In a repository that already has design tokens, a theme or a brand, those are the brief: use the existing tokens and add none without the project's convention (the no-hardcoding rule in `AGENTS.md` → Universal Rules; `EngineeringTeam/frontend-engineer.md:70`). The skill agrees in its own words ("Where the brief pins down a visual direction, follow it exactly", `SKILL.md:45`); this condition makes the project's tokens part of that brief.
+- **C1. The project's design system comes first.** The skill has the agent plan "a compact token system" with 4 to 6 named hex values and pick typefaces for the brief (`skills/frontend-design/SKILL.md:47-51`). In a repository that already has design tokens, a theme or a brand, those are the brief: use the existing tokens and add none without the project's convention (the no-hardcoding rule in `AGENTS.md` → Universal Rules; `EngineeringTeam/Frontend/frontend-engineer.md:70`). The skill agrees in its own words ("Where the brief pins down a visual direction, follow it exactly", `SKILL.md:45`); this condition makes the project's tokens part of that brief.
 - **C2. "Confirm with the client" does not replace the Grill Checkpoint.** The skill asks the agent to propose a subject, audience and job and confirm them (`SKILL.md:13`). That is compatible with the library's checkpoint and is done inside it, once.
 - **C3. A new pin is a new review.** Any change of `commit` in the manifest needs this record redone against the new sha (a diff of the two files is enough) before the manifest changes.
 

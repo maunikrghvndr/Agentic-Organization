@@ -54,10 +54,10 @@ $RoleNames = @('researcher', 'analyst', 'architect', 'planner', 'backend-enginee
 
 function New-LibraryFixture([string]$Name) {
     $root = Join-Path $TempRoot $Name
-    $table = ($RoleNames | ForEach-Object { '| `' + $_ + '` | `' + $_ + '.md` | scope |' }) -join "`n"
-    Write-Fixture $root "AGENTS.md" ("# Agents`n`n## Available Roles`n`n| Role | File | Use for |`n|---|---|---|`n$table`n`n## Routing`n`n- route`n")
-    Write-Fixture $root "EngineeringTeam/planner.md" ("# planner`n`nSee ``AGENTS.md`` -> Routing. Hands off to ``backend-engineer``.`n")
-    Write-Fixture $root "README/ORCHESTRATION_README.md" ("# Readme`n`n## Structure`n`n``````text`nLibrary/`n  AGENTS.md                master copy`n  EngineeringTeam/         role files`n    planner.md             one role`n``````n")
+    $table = ($RoleNames | ForEach-Object { '| `' + $_ + '` | `Product/` | scope |' }) -join "`n"
+    Write-Fixture $root "AGENTS.md" ("# Agents`n`n## Available Roles`n`n| Role | Folder | Use for |`n|---|---|---|`n$table`n`n## Routing`n`n- route`n")
+    Write-Fixture $root "EngineeringTeam/Product/planner.md" ("# planner`n`nSee ``AGENTS.md`` -> Routing. Hands off to ``backend-engineer``.`n")
+    Write-Fixture $root "README/ORCHESTRATION_README.md" ("# Readme`n`n## Structure`n`n``````text`nLibrary/`n  AGENTS.md                master copy`n  EngineeringTeam/         role files`n    Product/               one department`n      planner.md           one role`n``````n")
     Write-Fixture $root "LESSONS.md" ("# Lessons`n`n## Lessons`n`n- A dated lesson. [2026-11-18]`n")
     return $root
 }
@@ -75,12 +75,12 @@ $r = Invoke-Lint $LintLibrary @('-LibraryRoot', $root)
 Assert-True "library clean fixture: exit 0 and no Errors block" (($r.ExitCode -eq 0) -and ($r.Output -notmatch 'Errors \(')) $r.Output
 
 $libraryPlants = @(
-    @{ Id = 'E1'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/planner.md" ("See ``AGENTS.md`` -> Nonexistent Heading.`n") } },
-    @{ Id = 'E2'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/planner.md" ("Hand off to ``ghost-engineer``.`n") } },
+    @{ Id = 'E1'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/Product/planner.md" ("See ``AGENTS.md`` -> Nonexistent Heading.`n") } },
+    @{ Id = 'E2'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/Product/planner.md" ("Hand off to ``ghost-engineer``.`n") } },
     @{ Id = 'E3'; Plant = { param($root) Write-Fixture $root "README/ORCHESTRATION_README.md" ("# Readme`n`n## Structure`n`n``````text`nLibrary/`n  AGENTS.md                master copy`n  not-on-disk.md           planted`n``````n") } },
-    @{ Id = 'E4'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/planner.md" ("Update the tracker file if one exists.`n") } },
+    @{ Id = 'E4'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/Product/planner.md" ("Update the tracker file if one exists.`n") } },
     @{ Id = 'E5'; Plant = { param($root) Add-ToFixture $root "LESSONS.md" ("- An undated lesson.`n") } },
-    @{ Id = 'E6'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/planner.md" ("hidden" + $ZeroWidthSpace + "text`n") } },
+    @{ Id = 'E6'; Plant = { param($root) Add-ToFixture $root "EngineeringTeam/Product/planner.md" ("hidden" + $ZeroWidthSpace + "text`n") } },
     @{ Id = 'E7'; Plant = { param($root) Add-ToFixture $root "AGENTS.md" (("x" * 99 + "`n") * 400) } }
 )
 foreach ($plant in $libraryPlants) {
@@ -94,11 +94,11 @@ foreach ($plant in $libraryPlants) {
 
 # W4 (warning): 1,800 lines warns, 1,799 does not; exit code stays 0.
 $root = New-LibraryFixture "lib-W4-at"
-Write-Fixture $root "EngineeringTeam/planner.md" (("line`n") * 1800)
+Write-Fixture $root "EngineeringTeam/Product/planner.md" (("line`n") * 1800)
 $r = Invoke-Lint $LintLibrary @('-LibraryRoot', $root)
 Assert-True "W4 warns at 1,800 lines, exit 0" ((Test-RuleFired $r.Output 'W4') -and ($r.ExitCode -eq 0)) $r.Output
 $root = New-LibraryFixture "lib-W4-under"
-Write-Fixture $root "EngineeringTeam/planner.md" (("line`n") * 1799)
+Write-Fixture $root "EngineeringTeam/Product/planner.md" (("line`n") * 1799)
 $r = Invoke-Lint $LintLibrary @('-LibraryRoot', $root)
 Assert-True "W4 is silent at 1,799 lines" (-not (Test-RuleFired $r.Output 'W4')) $r.Output
 

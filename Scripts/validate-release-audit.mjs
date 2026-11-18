@@ -2,7 +2,7 @@
 /**
  * Validate the `## Release Audit` record of a task file.
  *
- * Format and rules: EngineeringTeam/security-engineer.md -> Release Audit
+ * Format and rules: EngineeringTeam/Quality/security-engineer.md -> Release Audit
  * (whole application) -> Record Format.
  *
  * Usage:

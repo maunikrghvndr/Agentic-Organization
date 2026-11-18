@@ -8,11 +8,11 @@ Role library root (single source of truth — edit this one line if the library 
 C:\Users\mauni\source\repos\Agentic-Organization\EngineeringTeam\
 ```
 
-This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference a `CLAUDE.md` — this project uses `AGENTS.md` only. Load exactly **one** role file per phase from the folder above. Do not copy role files into this repository. The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
+This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference a `CLAUDE.md` — this project uses `AGENTS.md` only. Load exactly **one** role file per phase from the folder above. Roles sit in department folders: a role's file is `<Folder>/<role>.md` (Folder column below). Do not copy role files into this repository. The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
 
 **Role library resolution (the agent runs this before loading any role — the user never edits the path by hand):**
 
-1. Try the path above: can you read `EngineeringTeam/planner.md` there? If yes, proceed.
+1. Try the path above: can you read `EngineeringTeam/Product/planner.md` there? If yes, proceed.
 2. If not (new machine, moved library, fresh clone), check a few likely locations quickly — the user's home and usual repo folders — for an `EngineeringTeam/` folder containing the role files. If found, ask the user to confirm, then update the path line above to match.
 3. If it is still not found, ask the user for permission to clone it from `https://github.com/maunikrghvndr/Agentic-Organization` to a standard location, then set the path line to the cloned `EngineeringTeam/` folder. In a non-interactive session (cloud/CI, `-p`) clone it to a sibling folder without asking and say so.
 4. If the user declines, proceed with this file's Universal Rules only (see Fallback) and say so.
@@ -21,32 +21,32 @@ Ask permission before writing the path line or cloning, except the non-interacti
 
 ## Available Roles
 
-| Role | File | Use for |
+| Role | Folder | Use for |
 |---|---|---|
-| `researcher` | `researcher.md` | Discover the best *current* approach — survey newer papers/tech/tools, challenge the status quo, evaluate options with cited evidence; owns `sources/` → `wiki/ref-*`; skill scout for work outside this table |
-| `analyst` | `analyst.md` | Capture user intent, run full grill mode, produce EARS acceptance criteria, promote them to a durable `wiki/spec-<feature>.md` |
-| `architect` | `architect.md` | System design decisions — data model, API shape, service boundaries, integration approach, tech choice, reuse mapping |
-| `planner` | `planner.md` | Sequence a settled feature into role-scoped phases with handoffs; run the pre-implementation completeness gate |
-| `backend-engineer` | `backend-engineer.md` | APIs, controllers, services, domain logic, repositories, DB, migrations, queues, workers, backend auth/validation/logging/tests |
-| `frontend-engineer` | `frontend-engineer.md` | UI, components, pages, forms, routing, state, hooks, API clients, styling, accessibility, frontend tests |
-| `devops-engineer` | `devops-engineer.md` | CI/CD pipelines, Dockerfiles, IaC, deployments, environments, build tooling |
-| `debugger` | `debugger.md` | Reproduce bugs, diagnose failures, root-cause analysis (diagnosis only, no fixes) |
-| `data-engineer` | `data-engineer.md` | Pipelines, ingestion, ETL/ELT, transformation, data quality, orchestration, warehousing |
-| `data-scientist` | `data-scientist.md` | EDA, statistics, feature engineering, experimentation, model selection, offline evaluation |
-| `ml-engineer` | `ml-engineer.md` | Productionize models: training pipelines, serving/inference, feature parity, performance |
-| `mlops-engineer` | `mlops-engineer.md` | ML platform: tracking, registry, model CI/CD, retraining, drift/monitoring, rollout |
-| `ai-engineer` | `ai-engineer.md` | LLM app logic: integration, agents, tool calling, structured output, guardrails, eval harness |
-| `prompt-engineer` | `prompt-engineer.md` | Prompt design, templates, few-shot, prompt evaluation and optimization, versioning |
-| `rag-engineer` | `rag-engineer.md` | Retrieval: chunking, embeddings, vector stores (pgvector), hybrid search, reranking, retrieval eval |
-| `nlp-engineer` | `nlp-engineer.md` | Text processing, NER, entity linking (UMLS), classification, clinical NLP, OCR post-processing |
-| `backend-reviewer` | `backend-reviewer.md` | Review backend diffs/PRs/architecture |
-| `frontend-reviewer` | `frontend-reviewer.md` | Review frontend diffs/PRs/UI changes |
-| `data-reviewer` | `data-reviewer.md` | Review data-engineer/data-scientist work: pipeline correctness, data quality, analysis/model integrity |
-| `ml-reviewer` | `ml-reviewer.md` | Review ml-engineer/mlops work: reproducibility, train/serve parity, safe inference, lifecycle |
-| `ai-reviewer` | `ai-reviewer.md` | Review ai/prompt/rag/nlp work: eval rigor, LLM safety, prompt injection, retrieval isolation |
-| `devops-reviewer` | `devops-reviewer.md` | Review devops-engineer diffs: pipelines, images, IaC, deploy safety |
-| `qa-engineer` | `qa-engineer.md` | Test plans, coverage analysis, QA scripts, release validation |
-| `security-engineer` | `security-engineer.md` | Security audits, vulnerability/dependency/secret reviews |
+| `researcher` | `Research/` | Discover the best *current* approach — survey newer papers/tech/tools, challenge the status quo, evaluate options with cited evidence; owns `sources/` → `wiki/ref-*`; skill scout for work outside this table |
+| `analyst` | `Product/` | Capture user intent, run full grill mode, produce EARS acceptance criteria, promote them to a durable `wiki/spec-<feature>.md` |
+| `architect` | `Product/` | System design decisions — data model, API shape, service boundaries, integration approach, tech choice, reuse mapping |
+| `planner` | `Product/` | Sequence a settled feature into role-scoped phases with handoffs; run the pre-implementation completeness gate |
+| `backend-engineer` | `Backend/` | APIs, controllers, services, domain logic, repositories, DB, migrations, queues, workers, backend auth/validation/logging/tests |
+| `frontend-engineer` | `Frontend/` | UI, components, pages, forms, routing, state, hooks, API clients, styling, accessibility, frontend tests |
+| `devops-engineer` | `DevOps/` | CI/CD pipelines, Dockerfiles, IaC, deployments, environments, build tooling |
+| `debugger` | `Quality/` | Reproduce bugs, diagnose failures, root-cause analysis (diagnosis only, no fixes) |
+| `data-engineer` | `Data/` | Pipelines, ingestion, ETL/ELT, transformation, data quality, orchestration, warehousing |
+| `data-scientist` | `Data/` | EDA, statistics, feature engineering, experimentation, model selection, offline evaluation |
+| `ml-engineer` | `ML/` | Productionize models: training pipelines, serving/inference, feature parity, performance |
+| `mlops-engineer` | `ML/` | ML platform: tracking, registry, model CI/CD, retraining, drift/monitoring, rollout |
+| `ai-engineer` | `AI/` | LLM app logic: integration, agents, tool calling, structured output, guardrails, eval harness |
+| `prompt-engineer` | `AI/` | Prompt design, templates, few-shot, prompt evaluation and optimization, versioning |
+| `rag-engineer` | `AI/` | Retrieval: chunking, embeddings, vector stores (pgvector), hybrid search, reranking, retrieval eval |
+| `nlp-engineer` | `AI/` | Text processing, NER, entity linking (UMLS), classification, clinical NLP, OCR post-processing |
+| `backend-reviewer` | `Backend/` | Review backend diffs/PRs/architecture |
+| `frontend-reviewer` | `Frontend/` | Review frontend diffs/PRs/UI changes |
+| `data-reviewer` | `Data/` | Review data-engineer/data-scientist work: pipeline correctness, data quality, analysis/model integrity |
+| `ml-reviewer` | `ML/` | Review ml-engineer/mlops work: reproducibility, train/serve parity, safe inference, lifecycle |
+| `ai-reviewer` | `AI/` | Review ai/prompt/rag/nlp work: eval rigor, LLM safety, prompt injection, retrieval isolation |
+| `devops-reviewer` | `DevOps/` | Review devops-engineer diffs: pipelines, images, IaC, deploy safety |
+| `qa-engineer` | `Quality/` | Test plans, coverage analysis, QA scripts, release validation |
+| `security-engineer` | `Quality/` | Security audits, vulnerability/dependency/secret reviews |
 
 ## Routing
 

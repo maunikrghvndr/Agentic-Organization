@@ -24,7 +24,9 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$RolePath = Join-Path $AgentRoot "EngineeringTeam\$RoleFileName"
+# Role files live in department folders (EngineeringTeam\<Folder>\<role>.md): find the file by name.
+$RoleMatch = Get-ChildItem (Join-Path $AgentRoot "EngineeringTeam") -Recurse -Filter $RoleFileName -File -ErrorAction SilentlyContinue | Select-Object -First 1
+$RolePath = if ($RoleMatch) { $RoleMatch.FullName } else { Join-Path $AgentRoot "EngineeringTeam\$RoleFileName" }
 
 if (-not (Test-Path $RolePath)) {
     throw "Role file not found: $RolePath"

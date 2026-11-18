@@ -26,8 +26,8 @@ function makeRepo(pathLine) {
 }
 
 function makeLibrary(root) {
-  fs.mkdirSync(path.join(root, "EngineeringTeam"), { recursive: true });
-  fs.writeFileSync(path.join(root, "EngineeringTeam", "planner.md"), "# Planner\n");
+  fs.mkdirSync(path.join(root, "EngineeringTeam", "Product"), { recursive: true });
+  fs.writeFileSync(path.join(root, "EngineeringTeam", "Product", "planner.md"), "# Planner\n");
 }
 
 function runHook(repo, env) {
@@ -80,7 +80,7 @@ test("remote session, path unresolved: clones depth 1 into ../Agentic-Organizati
   const fakeGit = path.join(binDir, "git");
   fs.writeFileSync(
     fakeGit,
-    `#!/bin/sh\nif [ "$1" = "-C" ]; then echo deadbeef; exit 0; fi\nprintf '%s\\n' "$@" > "${log}"\ntarget="$7"\nmkdir -p "$target/EngineeringTeam" && echo "# Planner" > "$target/EngineeringTeam/planner.md"\n`
+    `#!/bin/sh\nif [ "$1" = "-C" ]; then echo deadbeef; exit 0; fi\nprintf '%s\\n' "$@" > "${log}"\ntarget="$7"\nmkdir -p "$target/EngineeringTeam/Product" && echo "# Planner" > "$target/EngineeringTeam/Product/planner.md"\n`
   );
   fs.chmodSync(fakeGit, 0o755);
 

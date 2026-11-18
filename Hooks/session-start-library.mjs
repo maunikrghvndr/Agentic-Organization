@@ -37,7 +37,7 @@ const LIBRARY_URL = "https://github.com/maunikrghvndr/Agentic-Organization";
 const LIBRARY_REF = "main";
 const LIBRARY_DIR_NAME = "Agentic-Organization";
 const ROLE_DIR_NAME = "EngineeringTeam";
-const PROBE_FILE = "planner.md"; // the file AGENTS.md step 1 tests for
+const PROBE_FILE = path.join("Product", "planner.md"); // the file AGENTS.md step 1 tests for
 const REMOTE_ENV = "CLAUDE_CODE_REMOTE";
 
 function readStdin() {

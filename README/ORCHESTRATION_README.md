@@ -49,10 +49,16 @@ Agentic-Organization/
   LESSONS/                 area files the index maps to roles: backend.md, frontend.md, data-ml-ai.md, tooling-agent-workflow.md
   EVALS.md                 A/B protocol + log for measuring whether roles/sections earn their tokens
 
-  EngineeringTeam/         23 role files — the catalog (name, file, use-for) is the AGENTS.md role table, not repeated here:
-                           researcher analyst architect planner backend-engineer frontend-engineer devops-engineer debugger
-                           data-engineer data-scientist ml-engineer mlops-engineer ai-engineer prompt-engineer rag-engineer nlp-engineer
-                           backend-reviewer frontend-reviewer data-reviewer ml-reviewer ai-reviewer qa-engineer security-engineer
+  EngineeringTeam/         24 role files in department folders — the catalog (role, folder, use-for) is the AGENTS.md role table:
+    Research/              researcher (department triggers; skill scout)
+    Product/               analyst, architect, planner
+    Backend/               backend-engineer, backend-reviewer
+    Frontend/              frontend-engineer, frontend-reviewer
+    DevOps/                devops-engineer, devops-reviewer
+    Data/                  data-engineer, data-scientist, data-reviewer
+    ML/                    ml-engineer, mlops-engineer, ml-reviewer
+    AI/                    ai-engineer, prompt-engineer, rag-engineer, nlp-engineer, ai-reviewer
+    Quality/               qa-engineer, debugger, security-engineer
     _shared/               on-demand detail relocated verbatim from AGENTS.md: graph.md (graph procedure), memory.md (Repo Memory detail), rules-detail.md (long-form rules)
 
   Evals/
@@ -176,7 +182,7 @@ Examples (flag: version-sensitive — check the host's current flags before use)
 # Claude Code, one role, hard limits, JSON result, no interactive prompts
 claude -p --bare `
   --append-system-prompt-file AGENTS.md `
-  --append-system-prompt-file "<library>\EngineeringTeam\backend-engineer.md" `
+  --append-system-prompt-file "<library>\EngineeringTeam\Backend\backend-engineer.md" `
   --max-turns 40 --max-budget-usd 5 `
   --permission-mode acceptEdits --permission-prompts none `
   --output-format json `
@@ -217,7 +223,7 @@ EVALS.md rows need a cost figure with its source. `claude -p --output-format jso
 
 When a release is finished, and before it merges into the default branch, `security-engineer` audits the whole application — not just the last change. A release cannot move to Done without a passing audit record.
 
-- **Two engines, one record.** Engine A is Cloudflare's `security-audit` skill, used when it is installed and can run. Engine B is the library's own procedure in `EngineeringTeam/security-engineer.md` → Release Audit (whole application), used everywhere else (Codex, Cursor, native Windows). Both write the same record into the task file.
+- **Two engines, one record.** Engine A is Cloudflare's `security-audit` skill, used when it is installed and can run. Engine B is the library's own procedure in `EngineeringTeam/Quality/security-engineer.md` → Release Audit (whole application), used everywhere else (Codex, Cursor, native Windows). Both write the same record into the task file.
 - **The procedure:** map the application; build a coverage table (only the table counts as proof an area was reviewed); hunt area by area with the role's checklists; hand every suspected issue to a fresh reviewer told to disprove it; a fresh critic looks for missed areas; the report is written last. An unfinished audit is never a pass.
 - **The checker:** `node Scripts/validate-release-audit.mjs <task file> --repo <root> --release --head <40-character head sha>` exits 0 only for a complete, unambiguous passing record (standard or deep profile, full scope, two clean critics, no open confirmed finding). It proves the record is consistent, not that the audit was honest; the fresh reviewer and critic steps cover that.
 - **Native Windows:** Cloudflare's own validators do not run there, so Engine B is used unless you work in WSL2 or a devcontainer.
