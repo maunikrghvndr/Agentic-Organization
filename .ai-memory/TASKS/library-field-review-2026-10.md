@@ -386,6 +386,17 @@ Evidence (sha `e4a8d68`):
 - `node --test "Skills/*.test.mjs"` | installer | 0 | 36 pass
 - `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library | 0 | 0 errors
 
+### 2026-11-18 — one new role, researcher triggers, skill scout
+
+- Approval (Maunik, 2026-11-18): "Yes build out only the missing agents we don't need too many of them spoiling the broth also overload the context when not needed I'm more interested in the way agents follow my own codingstandards"; "if we can have a skill researcher agent that researches the best skill that is missing and users can install when ever soemthing is missing according to their use case ... usually with the highest github stars and suggest user to install that"; "we need a strong researcher agent for every department triggered at the right time".
+- Decisions: one new role only, `devops-reviewer` (the one engineer role without an independent reviewer), with its subagent shim (`8d98cee`); no new researcher roles — `researcher.md` gains Department Triggers and Skill Scout, `planner.md` and `architect.md` gain the routing rule (`83414e5`); installer `--skill <name>` (`6a60553`); `AGENTS.md` row, routing and skill-scout pointer, with the Optional overlays bullet compacted and its full text moved verbatim to `rules-detail.md` (`4962e49`, `26b06e3`).
+- Security record: `security-engineer`, fresh context, on `e4a8d68..26b06e3` — **Pass With Conditions**, Blocking: none. Condition C1 (this record) met here. Non-blocking 1–6 applied in the next commit: R11 shim list, archive section retitled as in force, EVALS relocation line, "library owner's yes", read-before-run and sandbox rule for the reviewer, mandatory-list catch-all.
+- Not verified: the prose controls rely on the sandbox and `Settings/` baseline being installed on the machine in use.
+- `node --test "Skills/*.test.mjs"` | installer | 0 | 42 pass
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library, 24 roles | 0 | 0 errors; AGENTS.md 32,664 B / 196 lines
+- `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo memory | 0 | clean
+- `node Workflows/review-loop.test.mjs Workflows/review-loop.js` | workflow harness | 0 | ALL PASS
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

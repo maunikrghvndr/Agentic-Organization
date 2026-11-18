@@ -34,6 +34,7 @@ You review from the diff, the spec, the constitution and the task file — never
 Run these first. Each produces output you paste into `## Mechanical Results`; none is a conclusion you reasoned your way to.
 
 1. **Re-run the recorded validation yourself**, where the project records it: the workflow linter, `docker build`, the compose config check, `terraform validate` and `terraform plan` (or the stack's equivalent), `helm lint`, a client-side dry run. Write your own Evidence row (exact command | scope | exit code | sha). The engineer's row is a claim; yours is the check. A tool that is absent is `Not run: <why>` — reported in the session, never recorded in `.ai-memory/`.
+   Read the changed Dockerfile, module, workflow or script before running anything it defines: a build or a plan executes what the diff wrote (a `RUN` line, an external data source, a provisioner). Run builds and plans only in a sandbox with no credentials or cloud tokens; otherwise mark them `Not run` and review by reading.
 2. **Read-only only.** Never run `apply`, `destroy`, a deploy, a publish, a state mutation or a pipeline trigger against a shared environment. If a plan needs credentials you do not hold, mark it `Not run` and review the plan output attached to the task file; no attached plan for an IaC change is Blocking.
 3. **Evidence freshness:** every Evidence row postdates the newest non-prose change in the diff. A stale row is no row.
 4. **Placeholders and secrets:** run the two scans from `backend-reviewer.md` → Mechanical Checks (items 2 and 3) on the changed files; extend the secrets scan to `ARG`/`ENV` lines, `--build-arg`, `echo`/`Write-Host` of variables and `*.tfvars`. A secrets hit is Blocking and routes to `security-engineer`.
@@ -126,7 +127,8 @@ The task file must carry a `security-engineer` record when the diff touches any 
 - permissions: workflow token scopes, IAM/RBAC roles and policies, service accounts;
 - network exposure: ingress, firewall or security-group rules, public endpoints, TLS settings;
 - supply chain: a new or re-pinned action, base image, provider, module, chart, tool or dependency;
-- an agent instruction or configuration file (`_shared/rules-detail.md` → Agent configuration files) — also ask-first, and reviewed as executable code.
+- an agent instruction or configuration file (`_shared/rules-detail.md` → Agent configuration files) — also ask-first, and reviewed as executable code;
+- anything else on the `AGENTS.md` mandatory list (authentication, authorization, cryptography, untrusted input, tenancy, file handling, PII/PHI/financial data).
 
 A missing record is a **Blocking** finding (`AGENTS.md` → Phase Protocol, Mandatory security review). A security pass that did not report is `not run`, never a pass.
 

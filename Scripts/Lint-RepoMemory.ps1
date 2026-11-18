@@ -164,7 +164,7 @@ if ($Archived -and (Test-Path $archDir)) {
 }
 
 # ---- R11: project agents shadowing library shims --------------------------------------------------------
-$shimNames = @('backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer', 'qa-engineer', 'security-engineer', 'debugger')
+$shimNames = @('backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer', 'devops-reviewer', 'qa-engineer', 'security-engineer', 'debugger')
 $projAgents = Join-Path $RepoRoot (Join-Path ".claude" "agents")
 if (Test-Path $projAgents) {
     foreach ($f in Get-ChildItem $projAgents -Filter "*.md" -File) {

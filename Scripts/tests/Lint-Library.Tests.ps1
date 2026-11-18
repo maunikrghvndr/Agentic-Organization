@@ -49,7 +49,7 @@ function Test-RuleFired([string]$Output, [string]$RuleId) { return $Output -matc
 # ---- Lint-Library fixtures ------------------------------------------------------------------------
 $RoleNames = @('researcher', 'analyst', 'architect', 'planner', 'backend-engineer', 'frontend-engineer', 'devops-engineer',
     'debugger', 'data-engineer', 'data-scientist', 'ml-engineer', 'mlops-engineer', 'ai-engineer', 'prompt-engineer',
-    'rag-engineer', 'nlp-engineer', 'backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer',
+    'rag-engineer', 'nlp-engineer', 'backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer', 'devops-reviewer',
     'qa-engineer', 'security-engineer')
 
 function New-LibraryFixture([string]$Name) {
