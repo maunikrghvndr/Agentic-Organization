@@ -14,7 +14,7 @@ This library is a complete software organization run by agents: every stage a pr
 | Planning | `planner` | Role-scoped phases with a done-when that can fail, and a completeness gate before any code |
 | Build | `backend-`, `frontend-`, `devops-`, `data-`, `ml-`, `mlops-`, `ai-`, `prompt-`, `rag-`, `nlp-engineer`, `data-scientist` | The change, with a test seen failing first and an Evidence row for every check |
 | Diagnosis | `debugger` | Root cause only; the engineer fixes in the next phase |
-| Review | `backend-`, `frontend-`, `data-`, `ml-`, `ai-reviewer` | An independent review in a fresh context; findings go back to the engineer (3 rounds at most) |
+| Review | `backend-`, `frontend-`, `devops-`, `data-`, `ml-`, `ai-reviewer` | An independent review in a fresh context; findings go back to the engineer (3 rounds at most) |
 | Test | `qa-engineer` | Each criterion traced to code and a covering test; Ready / Not Ready |
 | Security | `security-engineer` | A mandatory review of every sensitive change, and the **release audit** of the whole application before a release is done |
 | Memory and learning | every role | Repo facts in `.ai-memory/`, the roadmap board, and cross-project lessons you approve in `LESSONS.md` |
@@ -69,7 +69,7 @@ Agentic-Organization/
     TASK_MEMORY.template.md
     REFERENCE.template.md
 
-  Agents/claude/           optional overlay (Decision A): read-only reviewer subagent shims for ~/.claude/agents/ (8 roles; body = read and obey the role file)
+  Agents/claude/           optional overlay (Decision A): read-only reviewer subagent shims for ~/.claude/agents/ (9 roles; body = read and obey the role file)
   Hooks/                   optional enforcement pack (AGENTS.md is the complete contract without it) — see Hooks/README.md
     handoff-check.mjs      Stop hook: blocks a stop once when source changed but the task file lacks a newer Evidence row or Handoff
     session-reentry.mjs    SessionStart (compact|resume): prints the newest task file's Summary and Handoff

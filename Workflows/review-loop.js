@@ -43,7 +43,7 @@ export const meta = {
 }
 
 const MAX_ROUNDS = 3
-const KNOWN_REVIEWERS = ['backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer', 'qa-engineer', 'security-engineer']
+const KNOWN_REVIEWERS = ['backend-reviewer', 'frontend-reviewer', 'data-reviewer', 'ml-reviewer', 'ai-reviewer', 'devops-reviewer', 'qa-engineer', 'security-engineer']
 
 // ---- args ------------------------------------------------------------------------------------------------
 const a = args && typeof args === 'object' ? args : {}
