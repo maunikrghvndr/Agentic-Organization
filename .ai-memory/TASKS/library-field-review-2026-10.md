@@ -356,6 +356,19 @@ Evidence (sha `b362b9d`):
 - `node Skills/install-skills.mjs --target <temp>` then `--list` | real fetch of the pinned Cloudflare skill | 0 | installed; present, not modified
 - Not run: native Windows, Windows PowerShell 5.1, a full audit with either engine, the first CI run of the new steps.
 
+### 2026-11-18 — skills list extended; pull request marked ready
+
+- Approval (Maunik, 2026-11-18): "Don't make it draft just make your final changes and raise a open"; "do a web search you will find all the git repos" (for hallmark and the other skills).
+- PR #1 marked ready for review. No fourth security review was requested for the round-3 validator fix; that point stays open for the owner.
+- `security-engineer` review of third-party skills, each read at a pinned commit and never run; records under `Skills/reviews/` (`e4a8d68`). Listed (Pass with conditions): `hallmark` (nutlope/hallmark), `frontend-design` (anthropics/skills), `vercel-react-best-practices` (vercel-labs/agent-skills), `wrangler` and `workers-best-practices` (cloudflare/skills), plus the existing `security-audit`. Not listed: `web-design-guidelines` (Fail: fetches its rules from another repository's `main` at run time), `cf-cli` (held back: unpinned global install as first step), `cloudflare` umbrella skill (not fully read).
+- Owner decisions open: hallmark's weight (about 7 MB, 25–30k tokens per page build) on an always-install list; whether to list `cf-cli` and the umbrella skill; Vercel repo has no LICENSE file (MIT stated in frontmatter and README only).
+
+Evidence (sha `e4a8d68`):
+- `node --test "Skills/*.test.mjs"` | installer | 0 | 34 pass
+- `node Skills/install-skills.mjs --target <temp>` then `--list` | all 6 listed skills, real fetch | 0 | 6 installed; 6 present, 0 modified
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library | 0 | 0 errors
+- `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo memory | 0 | clean
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
