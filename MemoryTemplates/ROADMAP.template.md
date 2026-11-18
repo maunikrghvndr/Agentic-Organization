@@ -20,6 +20,7 @@ Spec Kit repos: this is the cross-feature progress view that sits *above* each f
 
 ## Done
 (moved here only on the user's acceptance, recorded in the task file Decisions in their words)
+(a release item also needs its `Release audit:` record in the task file before Done — `_shared/rules-detail.md` → Release audit (whole application))
 - <item> — `TASKS/_archive/YYYY-MM-DD-<task>.md` — YYYY-MM-DD
 
 ## Notes

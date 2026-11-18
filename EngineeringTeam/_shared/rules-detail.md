@@ -24,6 +24,7 @@ Executable code for review purposes — any change is ask-first, reviewed as cod
 - Git: `.github/workflows/**`, tracked hook dirs (`.husky/**`, `.githooks/**`, `lefthook.yml`, `.pre-commit-config.yaml`, any `core.hooksPath` target), `.gitattributes` (a `-diff`, `binary` or `merge=` attribute on an instruction file hides it from review), `.gitmodules` (`update = !cmd` executes).
 - Package-manager lifecycle and registry config: `package.json` scripts (`preinstall`, `postinstall`, `prepare`), `.npmrc`, `.yarnrc*`, `NuGet.Config`, `Directory.Build.props/targets`, `pyproject.toml` build hooks, `.cargo/config.toml`, `build.rs`, `Makefile`, `justfile`, `Taskfile.yml`.
 - `.ai-memory/PROJECT_MEMORY.md` Commands block: not ask-first, but a changed recorded command is a reviewer finding and is Tier 4 until the user confirms it.
+- **A blocked action stays blocked (added 2026-11-18; ECC, FailproofAI).** When a guard (hook, deny or ask rule, scanner gate) blocks work the task needs, stop, quote its message and name the rule; never reach the same effect through another tool, a script or an interpreter.
 
 ## Rule of Two (unattended runs)
 
@@ -32,6 +33,7 @@ An unattended run (CI, headless `-p`/`codex exec`, scheduled) may hold at most t
 ## Measure before you trim (Self-Learning)
 
 - **Measure before you trim.** The library also holds `EVALS.md` at its root — a lightweight A/B protocol for checking whether a role or section actually improves output and what it costs. Before removing or trimming any role/section for weight, run (or ask the user to run) an eval to confirm it is not load-bearing, and record the verdict there. This is library-maintenance, not per-task work — do it when deliberately improving the library, not on every task.
+- **Weigh before you add (added 2026-11-18, compound-engineering).** Removing or correcting a line is nearly free; a new line in `AGENTS.md`, a role file or the `LESSONS.md` cross-cutting list is paid for by every later session that loads it. Propose one only when the failure it prevents was observed (dated, with the task it came from) and no check can carry it. Prefer the narrowest file that the affected role actually reads.
 
 ## Self-Learning — when to write a lesson
 
@@ -40,6 +42,7 @@ When a non-trivial task teaches you a durable, generalizable engineering lesson 
 ## Rework loop (Phase Protocol)
 
 - **Rework loop:** reviewer/security/QA findings route back to the engineer role. The first review follows the independence rule above; **every re-review after a fix runs in a fresh context** — a reviewer subagent when the host has one, else a new session (`claude -p` or `--worktree` with the role, `codex review --base`, a new chat), cross-model when available; the floor every host can meet is a new chat that re-reads the diff from scratch and reviews adversarially. Feed it the diff, the AC ids, the constitution and the task file's Decisions — **never the implementer's transcript**. Every Blocking finding carries `Verification: Confirmed` (reproduced, ran, or traced to a failing test) or `Probable` (a concrete `path:line` chain, not executed); `Unverified` is reported but cannot block. Blocking stays as each role defines it, the style rules included. **Cap: 3 rounds**; on exhaustion the engineer records the open disagreement in the task file, marks the ROADMAP item Blocked, and the user decides. On Claude Code, `/code-review` and `/security-review` are an optional first pass, never the independent review.
+- **Cross-model review is off by default (added 2026-11-18; gstack, compound-engineering; owner decision 2026-11-18).** "Cross-model when available", here and in the compact form below, applies only where the repository's constitution allows it. Sending the diff, spec or plan to another vendor's model is an external communication: ask-first once per repository, recorded in the constitution (`Cross-model review: allowed with <vendor> | not allowed`); with no such line it is not allowed; never for regulated or client-confidential code; in an unattended run it counts as (C) under the Rule of Two.
 
 ## Parallelism: one writer (Phase Protocol)
 
@@ -74,6 +77,9 @@ This is the same artifact sequence GitHub Spec Kit produces (`constitution → s
 
 - Before the first code change the tree is clean, or the user named what is in flight. Record `Baseline: <full HEAD sha>` (or `NO_VCS`) in the task file Summary — written once, never overwritten on resume. Every review diffs from it: the diff handed to any reviewer is `git diff <Baseline>` plus untracked files, never the engineer's description. Never fold unrelated uncommitted changes into the diff.
 - Stage by path (`git add <paths>`), never `git add -A` or `git add .`. Pushing to any remote, opening a PR, merging any branch or committing to the default branch are the user's (ask-first). Work is delivered as a reviewed diff or a branch the user merges; the agent never merges. The project constitution records the delivery default (branch + PR / direct commit / uncommitted diff).
+- **Commit by path too (added 2026-11-18, compound-engineering):** when a commit is allowed, name the files (`git commit -m "<msg>" -- <paths>`); a bare `git commit` takes the whole index, including anything the user staged before the session. A new file is `git add`ed by path first. Before the first commit run `git diff --cached --name-only`: any staged path this phase did not change is the user's — leave it staged, do not commit it, and say so. A pathspec commit takes the whole working-tree content of each named file: if the user has partly staged one of them, stop and ask.
+- **Never bypass a hook (added 2026-11-18; ECC, FailproofAI).** Never bypass a git hook or CI gate to land a change: no `--no-verify` / `commit -n`, no `-c core.hooksPath=…` override (the forms ECC's hook blocks), and no `HUSKY=0`, `SKIP=…` or equivalent switch (this library's additions). A failing hook is fixed or reported as `Not run: <blocker>`; a bypass is ask-first, per command, recorded as an Approval.
+- **Baseline test row (added 2026-11-18; obra/superpowers, gstack).** For any change larger than trivial, run the recorded test command once at the Baseline sha before the first code change and record it as the `baseline` Evidence row. A failure already present is reported and recorded (in a non-interactive run, as a task-file line); it stops the work only when a failing test covers the code the task changes, and it is never fixed inside the change without being asked. A later failure is called pre-existing only by citing this row; with no row it is `Unverified: may be related to this change` and the check counts as failing. No recorded command, or a suite too slow to run twice: `Not run: baseline — <why>`.
 
 ## Undo (Phase Protocol) — added 2026-10-19 (Kiro, Multica)
 
@@ -81,6 +87,7 @@ This is the same artifact sequence GitHub Spec Kit produces (`constitution → s
 - Host checkpoints (Claude Code, Kiro, Cursor) track only the host's own file tools — anything a shell command, script, formatter or migration tool changed is outside them. Git is the only portable checkpoint.
 - To undo a phase, revert only its `Owns:` paths to the base sha, ask-first; never `reset --hard`, never touch paths outside Owns. An operation with no undo is stated as such before it runs.
 - `[P]` worktree phases: branch `task/<task-file>/<T-id>` cut from the parent's current commit, recorded as `Base: <sha>` in the handoff so `git diff <base>..<branch>` is exactly the phase's work; the phase commits everything before its worktree is removed; a no-change branch is deleted; the phase never merges — the parent merges with the user's go-ahead and records it; conflicts with the user's uncommitted edits prefer the user's and say so.
+- **Worktree phases check where they are and never stash (added 2026-11-18, gsd-core).** A `[P]` phase checks where it is before its first write and before every commit: `git rev-parse --show-toplevel` is its own worktree, the branch is `task/<task-file>/<T-id>`, and `git merge-base --is-ancestor <Base> HEAD` exits 0. Any mismatch: stop and report, write nothing. Never `git stash` in a worktree phase (every worktree of a repository shares one stash); the checkpoint there is a commit on the phase branch.
 
 ## Headless default: an ask-first item is a denial — added 2026-10-19 (Hermes)
 
@@ -93,6 +100,22 @@ An answer to a design question is never consent to proceed; silence is not accep
 ## Rework loop addendum — added 2026-10-19 (cc-sdd)
 
 If the same Blocking finding survives two rounds, round 3 opens with a `debugger` diagnosis before the engineer changes code (the cap of 3 is unchanged).
+
+## Rework loop addendum 2 — review inputs, status and disposition (added 2026-11-18; EGM, obra/superpowers, gstack)
+
+- **Range check first.** Before reading the diff the reviewer runs `git merge-base --is-ancestor <Baseline> HEAD`, `git diff --stat <Baseline>` and `git status --short`. A Baseline that is not an ancestor, or an empty diff with no untracked files, is reported as `NOT REVIEWED — empty or non-descendant range`; it is never an approval. A reviewer started in a new worktree or a clean checkout does not see uncommitted work: hand it the diff or the file list. With `Baseline: NO_VCS`, review the handed-over file list; with none, report `NOT REVIEWED — no VCS range`.
+- **A reviewer that did not report did not pass.** A review, QA or security pass that timed out, failed, returned no report, or could not read a required input (the diff, the task file, the constitution) did not review: record it as `not run: <why>`, retry once, and never count it as a pass or as zero findings. A round is clean only when every required reviewer for the change has status `completed` and no Blocking finding is open. A `not run` on a mandatory `security-engineer` pass leaves the change not done.
+- **Every Blocking finding gets one disposition** in the task file Findings before the re-review: `fixed` (Evidence row) or `disagreed` (a pointer the reviewer can check). None is left blank.
+- **A verdict covers the tree its Evidence row names.** A later edit to a non-prose file voids a review, QA or security verdict exactly as it voids Evidence rows, and the next review reads the whole `git diff <Baseline>` again.
+
+## Release audit (whole application) — added 2026-11-18
+
+- **Trigger.** The release pull request into the default branch: the audit runs on the release head before the merge, so a finding can still block. If the merge already happened it runs on the merged sha, and Blocking findings move the ROADMAP item to Blocked. It also runs on request ("audit the app", "is this ready to ship").
+- **Owner.** `security-engineer`; the procedure, ledger states, verdicts and bounds are in `security-engineer.md` → Release Audit (whole application). It follows `qa-engineer` Ready.
+- **One confirmation before starting,** stating profile and budget (default profile `standard`; two runs recommended for a first release). In a non-interactive run it starts only when the job text asks for it.
+- **Engine.** Engine A (the `cloudflare/security-audit-skill` overlay, pinned to a commit) when it is installed and the host can run its validators, otherwise Engine B (the library procedure, always available); both write the same record, which names the engine and why.
+- **The per-change mandatory security review is unchanged.** The release audit is an addition, never a replacement for it.
+- **Done rule.** A release line moves to Done only with a `Release audit:` line in the task file (`MemoryTemplates/TASK_MEMORY.template.md` → Release Audit), in addition to the user's recorded acceptance.
 
 ## Spec-driven flow and Sizing (Phase Protocol) — full text as of 2026-10-19
 
