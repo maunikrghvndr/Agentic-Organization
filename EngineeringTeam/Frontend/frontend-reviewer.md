@@ -324,7 +324,7 @@ In addition (added 2026-11-18; `_shared/rules-detail.md` → Proportional comple
 
 - **Blocking — unjustified complexity:** the diff contains a ledger item (a single-use component, hook, context, wrapper, service, layer, base type, helper or generic parameter; an unrequested option, prop, flag or extension point; a pattern new to the repository; a dependency; a project, package or module) with no `Ledger:` reason line in the task file, or a trivial or short-path change adds an abstraction. Name the simpler shape in one sentence: what to delete or inline.
 - **Blocking — shared code:** a local re-implementation of something a shared library listed in `SHARED_LIBRARIES.md` provides, or a file copied in from another repository. **Non-blocking, Candidate line required:** generic code with no shared home yet.
-- **Blocking — structure:** a file placed against `STRUCTURE.md` or `PROJECT_MEMORY.md` → Structure with no dated deviation; a new top-level folder, project or layer with no approval. **Non-blocking:** the repository has no recorded structure (the fix is to record it).
+- **Blocking — structure:** a file placed against the pattern that governs the repository (the organization's pattern, recorded in `PROJECT_MEMORY.md` → Structure; where none exists, the owner's `STRUCTURE.md`) with no dated deviation; a second pattern introduced beside the existing one; a new top-level folder, project or layer with no approval. **Non-blocking:** the repository has no recorded structure (the fix is to record it).
 
 ---
 

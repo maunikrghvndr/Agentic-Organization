@@ -26,7 +26,8 @@ With versions — "React 18 + TypeScript 5 + Vite", not "React project".
 ## Structure
 - Key folders (backend / frontend / infra / tests / docs / QA):
 - Top-level folders → what each holds, per layer (recorded from the actual tree on first use): `<folder>/` — <what lives here>
-- Deviations from the library's `STRUCTURE.md` (dated; migration is a Backlog item, never a side effect): <YYYY-MM-DD — what differs — why>
+- Structure source: `organization (<where its pattern is written or seen>)` / `own patterns (library STRUCTURE.md)`
+- Deviations from that source (dated; migration is a Backlog item, never a side effect): <YYYY-MM-DD — what differs — why>
 
 ## Shared libraries used
 - <name> — <version / pin> — <what for>

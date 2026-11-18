@@ -1,6 +1,6 @@
-# Project Structure — the organization's standard layouts
+# Project Structure — the owner's own patterns (the fallback)
 
-Where things live in the owner's projects, per stack. It lives in the role library (beside `LESSONS.md`) and is read by path, never copied into a repository. How it is applied: `EngineeringTeam/_shared/rules-detail.md` → Project structure.
+Where things live when the repository's organization has no pattern of its own. Order of authority (`EngineeringTeam/_shared/rules-detail.md` → Project structure): the pattern of the organization the repository belongs to — an employer, a client or the owner's own projects — comes first and is continued as it is; this file applies to a new or empty repository with no organization pattern, and to any area that pattern leaves open. It lives in the role library (beside `LESSONS.md`) and is read by path, never copied into a repository.
 
 ## Rules of this file
 
@@ -29,7 +29,8 @@ Where things live in the owner's projects, per stack. It lives in the role libra
 | Solution / project layout, folder names per layer | not yet defined by the owner | — |
 | Validators, DTOs / contracts, domain entities — folder | not yet defined by the owner | — |
 | Migrations — folder | not yet defined by the owner | — |
-| Tests — project / folder, naming | not yet defined by the owner | — |
+| Tests — project / folder | "Place unit tests in the existing unit test project/folder"; common locations `tests/unit/`, `test/unit/`, `ProjectName.Tests/`, `ProjectName.UnitTests/`; integration: `tests/integration/`, `test/integration/`, `ProjectName.IntegrationTests/`, `ProjectName.Api.Tests/` | `EngineeringTeam/Quality/qa-engineer.md` → Where QA Artifacts Should Live |
+| Tests — naming | not yet defined by the owner | — |
 | File and namespace naming | not yet defined by the owner | — |
 
 ## Frontend
@@ -46,7 +47,8 @@ Where things live in the owner's projects, per stack. It lives in the role libra
 | Localization | "Put localization text in existing localization/i18n files when the project supports localization." | `EngineeringTeam/Frontend/frontend-engineer.md:145` |
 | Configuration | "place it in configuration or environment-backed settings" | `EngineeringTeam/Frontend/frontend-engineer.md:560` |
 | Folder tree (feature-based or type-based), folder names | not yet defined by the owner | — |
-| Tests — location (beside the file or a test folder), naming | not yet defined by the owner | — |
+| Tests — location | "Place component/UI tests near the component or inside the existing frontend test structure"; common locations `src/components/__tests__/`, `src/pages/__tests__/`, `src/features/<feature>/__tests__/`, `tests/frontend/` | `EngineeringTeam/Quality/qa-engineer.md` → Frontend Component/UI Tests |
+| Tests — naming | not yet defined by the owner | — |
 | File and component naming | not yet defined by the owner | — |
 
 ## DevOps / infrastructure
@@ -82,5 +84,6 @@ Where things live in the owner's projects, per stack. It lives in the role libra
 | Area | Standard | Source |
 |---|---|---|
 | Stable internal values | "the project's constants structure (`Constants.cs` / `constants.ts`)" | `AGENTS.md` → Universal Rules, No hardcoding |
-| Repository root layout (source, tests, docs, infra, scripts) | not yet defined by the owner | — |
+| Tests — root layout when the project has none | `tests/` with `unit/`, `integration/`, `e2e/`, `smoke/`, `regression/`, `performance/` ("Use this default only when the project does not already define a better one.") | `EngineeringTeam/Quality/qa-engineer.md` → the default pattern under "If the project has no existing QA structure" |
+| Repository root layout (source, docs, infra, scripts) | not yet defined by the owner | — |
 | Shared-library repository / package layout | not yet defined by the owner | — |

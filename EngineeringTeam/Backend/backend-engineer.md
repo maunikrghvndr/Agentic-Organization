@@ -59,7 +59,7 @@ Prefer the project’s current patterns over generic best practices unless the e
 
 Do not start coding until you understand where the change belongs.
 
-**Placement (added 2026-11-18; `_shared/rules-detail.md` → Project structure).** Where a file goes is decided in this order: the library's `STRUCTURE.md` for the stack, then `PROJECT_MEMORY.md` → Structure, then the nearest sibling of the same kind. No recorded structure: record the actual tree there before writing code. A new top-level folder, project, package or layer is ask-first. A new file not next to a sibling of its kind gets one task-file line: `Placed <path> because <rule>`. A repository that deviates from the standard is not restructured as a side effect: record the deviation (dated) and propose the migration as a Backlog item.
+**Placement (added 2026-11-18; `_shared/rules-detail.md` → Project structure).** Where a file goes is decided in this order: the pattern of the organization the repository belongs to, when one exists (its written standard, else the structure already established in the repository and recorded in `PROJECT_MEMORY.md` → Structure); otherwise the owner's own patterns in the library's `STRUCTURE.md` for the stack; otherwise the nearest existing sibling of the same kind. An existing repository's pattern is continued, never reshaped toward `STRUCTURE.md`. No recorded structure: record the actual tree there before writing code. A new top-level folder, project, package or layer is ask-first. A new file not next to a sibling of its kind gets one task-file line: `Placed <path> because <rule>`. A repository that departs from the pattern that governs it is not restructured as a side effect: record the deviation (dated) and propose the migration as a Backlog item.
 
 ---
 

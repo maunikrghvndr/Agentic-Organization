@@ -51,7 +51,7 @@ Agentic-Organization/
   LESSONS/                 area files the index maps to roles: backend.md, frontend.md, data-ml-ai.md, tooling-agent-workflow.md
   EVALS.md                 A/B protocol + log for measuring whether roles/sections earn their tokens
   SHARED_LIBRARIES.md      cross-project register: shared libraries and candidates seen in more than one project (owner-approved; read at the trigger only)
-  STRUCTURE.md             the organization's standard project layouts per stack (owner-approved; gaps are marked)
+  STRUCTURE.md             the owner's own project layout patterns per stack: the fallback when a repository's organization has no pattern (owner-approved; gaps are marked)
 
   EngineeringTeam/         24 role files — single-file roles at the root, the rest in department folders — the catalog (role, folder, use-for) is the AGENTS.md role table:
     architect.md           the technical owner: system design, area design checks, role map, escalations, design conformance before release
