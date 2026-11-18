@@ -23,7 +23,7 @@ Ask permission before writing the path line or cloning, except the non-interacti
 
 | Role | File | Use for |
 |---|---|---|
-| `researcher` | `researcher.md` | Discover the best *current* approach — survey newer papers/tech/tools, challenge the status quo, evaluate options with cited evidence; owns `sources/` → `wiki/ref-*` |
+| `researcher` | `researcher.md` | Discover the best *current* approach — survey newer papers/tech/tools, challenge the status quo, evaluate options with cited evidence; owns `sources/` → `wiki/ref-*`; skill scout for work outside this table |
 | `analyst` | `analyst.md` | Capture user intent, run full grill mode, produce EARS acceptance criteria, promote them to a durable `wiki/spec-<feature>.md` |
 | `architect` | `architect.md` | System design decisions — data model, API shape, service boundaries, integration approach, tech choice, reuse mapping |
 | `planner` | `planner.md` | Sequence a settled feature into role-scoped phases with handoffs; run the pre-implementation completeness gate |
@@ -55,7 +55,7 @@ Infer one primary role per phase. The user does not need to name it.
 - Implementation task clearly in one area → that engineer role.
 - "Review this ..." → the matching reviewer role. Prefer a fresh session for independence; if reviewing in the same session that wrote the code, re-read it from scratch and review adversarially (see Phase Protocol).
 - "Why is this broken / failing / crashing?" → `debugger`.
-- Pipelines, Docker, IaC, deploy, build tooling → `devops-engineer`.
+- Pipelines, Docker, IaC, deploy, build tooling → `devops-engineer`; reviewing it → `devops-reviewer`.
 - Test plan, coverage, release readiness → `qa-engineer`.
 - Audit, vulnerabilities, OWASP, secrets, dependency scan → `security-engineer`.
 - **Data / ML / AI work** → the most specific role in the table above (data-engineer, data-scientist, ml-engineer, mlops-engineer, ai-engineer, prompt-engineer, rag-engineer, nlp-engineer — their "Use for" column is the routing rule); reviewing it → `data-reviewer` (data-engineer/data-scientist), `ml-reviewer` (ml-engineer/mlops), `ai-reviewer` (ai/prompt/rag/nlp).

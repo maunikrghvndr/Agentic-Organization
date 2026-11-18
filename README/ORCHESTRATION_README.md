@@ -8,7 +8,7 @@ This library is a complete software organization run by agents: every stage a pr
 
 | Stage | Who (role) | What comes out |
 |---|---|---|
-| Research | `researcher` | Current options compared with dated, cited evidence; nothing built on a guess |
+| Research | `researcher` | Current options compared with dated, cited evidence; runs at fixed trigger moments for every department (before a new dependency, service, model or unfamiliar pattern); for work outside this team, scouts and suggests the best outside skill |
 | Requirements | `analyst` | Your intent grilled into testable acceptance criteria (EARS) and a durable spec |
 | Design | `architect` | Data model, API shape, boundaries, technology choices, reuse map |
 | Planning | `planner` | Role-scoped phases with a done-when that can fail, and a completeness gate before any code |
@@ -232,11 +232,13 @@ node Skills/install-skills.mjs --dry-run        # show what would be installed, 
 node Skills/install-skills.mjs                  # install every listed skill that is missing
 node Skills/install-skills.mjs --with-optional  # also install the skills marked optional
 node Skills/install-skills.mjs --list           # show each skill's state (present / modified / missing)
+node Skills/install-skills.mjs --skill <name>   # install one listed skill by name (used after the skill scout suggests one)
 ```
 
 - **On the list today:** `security-audit` (Cloudflare, the release audit), `frontend-design` (Anthropic, the default UI skill), `wrangler` and `workers-best-practices` (Cloudflare), and `hallmark` (UI for a new page or site built from nothing; optional because it is heavy).
 - **How a skill gets on the list:** a `security-engineer` review of the skill at one commit, read and never run; the record goes under `Skills/reviews/`; you approve the entry. Only skills that pass are listed.
 - **What the installer never does:** run anything from a fetched repository, use an upstream install tool, touch a skill folder it did not install, or write outside the target folder and a temporary folder. Default target is `~/.claude/skills`; pass `--target <dir>` for other hosts.
+- **Skill scout:** ask for work this team does not cover (for example market research) and the `researcher` searches for the best outside skill, opens every candidate, and suggests at most three with stars (dated), last commit, licence and visible risks. It never installs: on your yes the skill gets its security review, goes on the list as optional, and is installed alone with `--skill <name>`.
 - An installed skill never overrides `AGENTS.md`, the project constitution or a role file. Details and per-skill conditions: `Skills/README.md`.
 
 ## Hooks (optional enforcement pack)
