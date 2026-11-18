@@ -123,7 +123,19 @@ foreach ($f in $allMd) {
 
 # ---- R7 / R8: newest open task file -----------------------------------------------------------------
 $openTasks = @()
-if (Test-Path $tasksDir) { $openTasks = @(Get-ChildItem $tasksDir -Filter "*.md" -File | Sort-Object LastWriteTime -Descending) }
+# "Newest" is the file changed by the most recent commit when the repo has history: on a fresh checkout (CI) every file
+# carries the same LastWriteTime, so the write time alone picks a file at random. Uncommitted or non-git: write time.
+function Get-TaskOrderKey($File) {
+    $commitTime = 0
+    try {
+        $out = & git -C $RepoRoot log -1 --format=%ct -- $File.FullName 2>$null
+        if ($LASTEXITCODE -eq 0 -and "$out" -match '^\d+$') { $commitTime = [long]"$out" }
+        $dirty = & git -C $RepoRoot status --porcelain -- $File.FullName 2>$null
+        if ($LASTEXITCODE -eq 0 -and "$dirty") { $commitTime = [long]::MaxValue }
+    } catch { $commitTime = 0 }
+    return $commitTime
+}
+if (Test-Path $tasksDir) { $openTasks = @(Get-ChildItem $tasksDir -Filter "*.md" -File | Sort-Object @{ Expression = { Get-TaskOrderKey $_ }; Descending = $true }, @{ Expression = { $_.LastWriteTime }; Descending = $true }, @{ Expression = { $_.Name }; Descending = $false }) }
 if ($openTasks.Count -gt 0) {
     $newest = $openTasks[0]; $text = Read-Utf8 $newest.FullName; $rel = Rel $newest.FullName
     if ($text -notmatch '(?m)^## Summary') { $errors.Add("R7 ${rel}: no '## Summary' section") }
