@@ -415,6 +415,12 @@ Evidence (sha `e4a8d68`):
 - Security record for the folder move (`security-engineer`, fresh context, on `468c3dc..7b2fb0a`): **Pass With Conditions**, Blocking: none; 24 renames confirmed at 100% similarity, every table row and reference resolves on disk. Condition: the post-merge re-sync above. Non-blocking N1, N2, N4 applied: own-property guard in the workflow's role map; the deprecated runners accept only a plain role file name, skip `_shared`, refuse two matches; `Lint-Library.ps1` now checks each table row's folder against disk and refuses a role name in two folders (seen firing on a planted wrong folder).
 - `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint controls after N4 | 0 | 47 pass
 
+### 2026-11-18 — drop-in file takes care of itself
+
+- Maunik, 2026-11-18: "No I only have to drop in the agents. Md file into a repo root and it should take care of all of it by asking permissions to the user" (in reply to the instruction to re-run the sync and overlay scripts by hand).
+- `AGENTS.md` resolution step 5 (32,737 B, 31 B free): once the library resolves, a copy that differs from the library master is offered a refresh; optional overlays are offered once per machine. Full rule: `rules-detail.md` → Setup (refresh is ask-first, one direction only, never in a non-interactive run; a role file not found is treated as a stale copy before the Fallback; overlay steps run only on a yes per step).
+- Limit: copies of `AGENTS.md` made before this change do not contain step 5, so they cannot refresh themselves; each needs the new file dropped in once.
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

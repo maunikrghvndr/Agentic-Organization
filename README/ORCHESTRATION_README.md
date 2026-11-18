@@ -40,6 +40,8 @@ With the hook in place, git keeps the graph fresh and agents only *query* it —
 
 Nothing manual. `AGENTS.md` points at this library by absolute path (the fenced line near the top). When that path does not resolve — a new machine, WSL, a clone, a teammate's checkout — the agent self-heals per the **Role library resolution** block in `AGENTS.md`: it looks in likely locations, and if it cannot find the library it offers to clone it from GitHub, then updates the path line itself. It always **asks permission** before writing the path or cloning, and falls back to `AGENTS.md`'s universal rules if you decline. You never edit the path by hand.
 
+**Your only step is dropping `AGENTS.md` into a repo root.** The agent does the rest, asking first each time: it finds or clones the library; if the repo's copy of `AGENTS.md` has fallen behind the library's master (for example after roles moved into department folders) it offers to refresh the copy; and once per machine it offers to set up the optional extras (reviewer subagents, hooks and permission baseline, curated skills), running only the steps you accept. The scripts under `Scripts/` are what the agent runs for you; you can also run them yourself. Unattended runs never change anything: they report what is stale and continue. Detail: `EngineeringTeam/_shared/rules-detail.md` → Setup.
+
 ## Structure
 
 ```text

@@ -16,6 +16,7 @@ This file (`AGENTS.md`) is the single entry point. Do not look for, create, or r
 2. If not (new machine, moved library, fresh clone), check a few likely locations quickly — the user's home and usual repo folders — for an `EngineeringTeam/` folder containing the role files. If found, ask the user to confirm, then update the path line above to match.
 3. If it is still not found, ask the user for permission to clone it from `https://github.com/maunikrghvndr/Agentic-Organization` to a standard location, then set the path line to the cloned `EngineeringTeam/` folder. In a non-interactive session (cloud/CI, `-p`) clone it to a sibling folder without asking and say so.
 4. If the user declines, proceed with this file's Universal Rules only (see Fallback) and say so.
+5. Once resolved: if this file differs from the library's `AGENTS.md` (path line aside), ask to refresh it; offer the optional overlays once per machine. Detail: `_shared/rules-detail.md` → Setup.
 
 Ask permission before writing the path line or cloning, except the non-interactive clone in step 3; a non-interactive session never writes the path line. Once the path is correct, later sessions skip this.
 
