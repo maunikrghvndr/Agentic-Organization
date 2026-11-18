@@ -31,20 +31,6 @@
       "notes": "Pass with conditions. Heavy (about 7 MB, 187 files, Node scripts). For a new marketing page or site built from nothing; on an existing design only when the user names Hallmark. Never run its install.mjs or install-hook.mjs (the second edits a tool's settings file). Image generation posts the prompt to Together AI when TOGETHER_API_KEY is set: explicit ask each time. puppeteer-core is an ask-first dependency. AGENTS.md, the constitution and the frontend role outrank its gates."
     },
     {
-      "name": "frontend-design",
-      "area": "ui-design",
-      "source": "https://github.com/anthropics/skills",
-      "commit": "e4bb5d960d87126ff3b3a8af1a104b7db67560ba",
-      "path": "skills/frontend-design",
-      "license": "Apache-2.0",
-      "reviewed": "2026-11-18",
-      "review": "reviews/anthropics-skills.md",
-      "hosts": [
-        "any"
-      ],
-      "notes": "Pass with conditions. Two files, no scripts, about 2,300 tokens. The default UI design skill for everyday work and for work inside an existing design system: the project's tokens and brand are the brief. Prefer hallmark only for a new page or site built from nothing."
-    },
-    {
       "name": "wrangler",
       "area": "cloudflare",
       "source": "https://github.com/cloudflare/skills",

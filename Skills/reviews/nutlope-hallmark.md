@@ -45,7 +45,7 @@ Checked, nothing found: instructions to fetch the skill's real content or rules 
 
 - **(a) Conflict with library rules.** Floor rule 1 (every colour and font through a token) agrees with the library's no-hardcoding rule. The skill never tells the agent to skip review or tests. The pull is precedence, covered by C3, and its own design opinions (no eyebrow labels, about 80 words a screen, a CSS stamp), which a project rule may overrule.
 - **(b) Token weight.** `SKILL.md` is 18 KB (about 4,600 tokens). A page build then loads about 100 to 120 KB more of references and one theme file with its picture (about 25,000 to 30,000 tokens); the skill itself calls loading more "the largest avoidable cost" (`SKILL.md:108`). It is the heaviest skill on the list.
-- **(c) Overlap.** Same job as `frontend-design` (anthropics/skills). Prefer `hallmark` for a new marketing page, landing page or site built from nothing, when a full guided run with a linter is wanted; prefer `frontend-design` for everyday UI work, for work inside an existing design system and whenever a light skill is enough.
+- **(c) Overlap.** No other UI skill is on the list. Use `hallmark` for a new marketing page, landing page or site built from nothing, when a full guided run with a linter is wanted; everyday UI work and work inside an existing design system use the `frontend-engineer` role alone.
 
 ## Tests Needed
 

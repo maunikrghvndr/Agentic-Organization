@@ -457,6 +457,7 @@ Evidence (sha `e4a8d68`):
 - `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library lint | 0 | 0 errors, 7 W2 warnings (unchanged trim candidates)
 - `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo-memory lint | 0 | Clean
 - `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint positive controls | 0 | 45 passed, 0 failed
+- Follow-up to the provider-agnostic cleanup (2026-11-18): the `frontend-design` skill, published by an AI-tool vendor, was removed from the list with its review record (the owner's "pure agnostic of provider"). List: `security-audit`, `wrangler`, `workers-best-practices`, `hallmark` (optional). Left for the owner: the `.claude/` line in the root `.gitignore` (pre-existing, ignores local tool state).
 
 ## Handoff
 
