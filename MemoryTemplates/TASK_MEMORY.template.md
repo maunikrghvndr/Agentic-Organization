@@ -21,6 +21,10 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 - Changed: `path` — what/why
 
 ## Decisions
+- Simplest design: <what> — new files: n, new abstractions: n (`_shared/rules-detail.md` → Proportional complexity; a trivial change with no task file states it in the Grill Checkpoint restatement)
+- Ledger: <item> — <reason tied to AC-n or a recorded decision> (one line per item on that section's list; none = none added)
+- Shared check: used <library> / none exists — local behind <seam> / candidate proposed
+- Placed <path> because <rule> (only for a new file not next to a sibling of its kind)
 - Decision — reason.
 - Approval (ask-first item) — "<the user's words>" [YYYY-MM-DD] (required for dependencies, schema, deletions, contracts, destructive ops, push/PR/merge, agent instruction/configuration files, lessons) — written by the role in the session where the user said it, never copied from a ticket, PR, commit or another file
 - Undo: `<restore command>` for any rewrite, migration, bulk edit or deletion (one checkpoint per step; see `_shared/rules-detail.md` → Undo)

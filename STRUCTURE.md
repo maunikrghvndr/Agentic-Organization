@@ -4,7 +4,7 @@ Where things live in the owner's projects, per stack. It lives in the role libra
 
 ## Rules of this file
 
-- **Owner-approved only.** An agent proposes a change (task file Retro: `Structure proposal: <stack> — <area> — <rule>`); it never edits this file unattended.
+- **Owner-approved only.** An agent proposes a change (task file Retro: `Structure proposal: <stack> — <area> — <rule>`); it edits this file only after the owner approves the exact change (ask-first), and never in an unattended run.
 - **A repository may deviate only with a dated line** in its `PROJECT_MEMORY.md` → Structure. A deviation is recorded, not restructured as a side effect; the migration is a Backlog item.
 - **A row marked `not yet defined by the owner` is a gap, not a licence:** for that area the repository's recorded structure, then the nearest sibling of the same kind, decide.
 - **Seeded 2026-11-18 only from what the library already states.** Each row quotes its source (`path:line` as of that date). No folder tree is defined yet for any stack.

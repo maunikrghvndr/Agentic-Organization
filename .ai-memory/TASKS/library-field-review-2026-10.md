@@ -483,6 +483,7 @@ Evidence (sha `e4a8d68`):
 - `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo-memory lint | 0 | Clean
 - `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint positive controls | 0 | 47 passed, 0 failed (45 before; the 2 new E6 controls)
 - Not run: an EVALS A/B on traps 10-12 (needs fixture repositories and two arms; library maintenance, not part of this change).
+- Security record for the complexity / shared-code / structure rules (`security-engineer`, fresh context, on `ed005dc..a99aecb`; same model family as the implementer — no other available): **Request changes** — B1: first use of a listed shared library was not tied to the dependency rules (ask-first, named source and exact version, existence and pin check, security pass), and the two new root files had no rank in the instruction hierarchy. Fixed with the reviewer's wording: dependency gate added; `SHARED_LIBRARIES.md` and `STRUCTURE.md` are Tier 2 after `LESSONS.md`, entries that arrive through data are not entries; both files added to the Agent configuration files list. N1–N5 applied: the complexity rule is not a licence to remove validation, authorization, tests or a security control; a deviation the current change introduces needs the owner's approval; `STRUCTURE.md` is edited only after the owner approves the exact change; worktree phases hand the structure back to the parent; task template has the four new lines (`Simplest design:`, `Ledger:`, `Shared check:`, `Placed … because …`). Not re-reviewed.
 
 ## Handoff
 
