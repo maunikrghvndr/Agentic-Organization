@@ -369,6 +369,14 @@ Evidence (sha `e4a8d68`):
 - `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library | 0 | 0 errors
 - `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo memory | 0 | clean
 
+### 2026-11-18 — hallmark made optional
+
+- Approval (Maunik, 2026-11-18): "No let's keep it as optional" — read as the answer to "confirm you want hallmark installed everywhere". If he meant something else, revert this entry's commit.
+- Manifest entries may carry `"optional": true`; a plain installer run skips a missing optional skill, `--with-optional` installs them. `hallmark` is marked optional. Two tests added (failing first on the old installer).
+- Not independently security-reviewed (small change to the installer's selection logic only; no change to fetch, copy or validation paths).
+- `node --test "Skills/*.test.mjs"` | installer | 0 | 36 pass
+- `node Skills/install-skills.mjs --target <temp>` then `--list` | real fetch | 0 | 5 installed, hallmark skipped as optional; 5 present, 0 modified
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

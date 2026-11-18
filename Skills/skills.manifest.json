@@ -18,6 +18,7 @@
     },
     {
       "name": "hallmark",
+      "optional": true,
       "area": "ui-design",
       "source": "https://github.com/nutlope/hallmark",
       "commit": "04977e15f3dfd6ee4b74c887dac3eb52665d6c92",

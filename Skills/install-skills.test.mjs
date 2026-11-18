@@ -737,3 +737,26 @@ test("N-6: git never runs with the checked-out work tree as its current director
   // Nothing is left behind.
   assert.deepEqual(calls.map(([cwd]) => cwd).filter((cwd) => fs.existsSync(cwd)), []);
 });
+
+test("optional: a skill marked optional is skipped unless --with-optional is given", (t) => {
+  const sandbox = makeSandbox(t);
+  const skills = [entry(sandbox, { optional: true })];
+  const plain = run(sandbox, skills);
+  assert.equal(plain.status, 0, plain.stderr + plain.stdout);
+  assert.equal(fs.existsSync(path.join(sandbox.target, "demo")), false, "an optional skill is not installed by default");
+  assert.match(plain.stdout, /optional - not installed/);
+  assert.match(plain.stdout, /1 optional not installed/);
+  const withFlag = run(sandbox, skills, ["--with-optional"]);
+  assert.equal(withFlag.status, 0, withFlag.stderr + withFlag.stdout);
+  assert.equal(fs.existsSync(path.join(sandbox.target, "demo", "SKILL.md")), true);
+  const again = run(sandbox, skills);
+  assert.equal(again.status, 0, again.stderr + again.stdout);
+  assert.match(again.stdout, /1 already present/, "once installed, an optional skill is checked like any other");
+});
+
+test("optional: the field must be a boolean", (t) => {
+  const sandbox = makeSandbox(t);
+  const result = run(sandbox, [entry(sandbox, { optional: "yes" })]);
+  assert.equal(result.status, 2, result.stderr + result.stdout);
+  assert.match(result.stderr, /"optional" must be true or false/);
+});

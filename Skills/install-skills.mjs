@@ -11,6 +11,7 @@
  *   node Skills/install-skills.mjs --dry-run    print what would happen, change nothing
  *   node Skills/install-skills.mjs --list       print the list and each skill's state
  *   node Skills/install-skills.mjs --upgrade     also replace a skill installed at another commit
+ *   node Skills/install-skills.mjs --with-optional  also install the skills the list marks "optional": true
  *   node Skills/install-skills.mjs --target <dir>     default: ~/.claude/skills
  *   node Skills/install-skills.mjs --manifest <file>  default: skills.manifest.json beside this script
  *
@@ -92,7 +93,7 @@ const EXIT_OK = 0;
 const EXIT_SKILL_FAILED = 1;
 const EXIT_USAGE = 2;
 
-const SKILL_KEYS = ["name", "area", "source", "commit", "path", "license", "reviewed", "review", "hosts", "notes"];
+const SKILL_KEYS = ["name", "area", "source", "commit", "path", "license", "reviewed", "review", "hosts", "notes", "optional"];
 const NAME_RE = /^[a-z0-9]+(?:[._-][a-z0-9]+)*$/;
 const NAME_MAX = 64;
 const WINDOWS_DEVICE_RE = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i;
@@ -112,8 +113,8 @@ const STATE = {
 
 const MSG = {
   usage:
-    "Usage: node Skills/install-skills.mjs [--target <dir>] [--manifest <file>] [--dry-run] [--list] [--upgrade]\n" +
-    "Installs every skill on the list that is missing. There is no per-skill selection.",
+    "Usage: node Skills/install-skills.mjs [--target <dir>] [--manifest <file>] [--dry-run] [--list] [--upgrade] [--with-optional]\n" +
+    "Installs every skill on the list that is missing. There is no per-skill selection; skills marked optional are installed only with --with-optional.",
   unknownArg: "Unknown argument: ",
   missingValue: "Missing value for ",
   manifestRead: "Cannot read the manifest: ",
@@ -125,6 +126,7 @@ const MSG = {
   installed: "installed",
   updated: "updated",
   present: "present at the pinned commit - skipped",
+  optional: "optional - not installed (re-run with --with-optional to add it)",
   outdated: "installed at another commit - re-run with --upgrade to replace it",
   modified:
     "installed files do not match the digest recorded at install (or none was recorded, or it was recorded in an older format without the executable bits) - re-run with --upgrade to reinstall the pinned commit",
@@ -139,12 +141,13 @@ function fail(code, message) {
 }
 
 function parseArgs(argv) {
-  const options = { target: null, manifest: null, dryRun: false, list: false, update: false };
+  const options = { target: null, manifest: null, dryRun: false, list: false, update: false, withOptional: false };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--dry-run") options.dryRun = true;
     else if (arg === "--list") options.list = true;
     else if (arg === "--upgrade") options.update = true;
+    else if (arg === "--with-optional") options.withOptional = true;
     else if (arg === "--help" || arg === "-h") {
       process.stdout.write(MSG.usage + "\n");
       process.exit(EXIT_OK);
@@ -300,7 +303,7 @@ function validateManifest(manifest, manifestDir) {
       if (!SKILL_KEYS.includes(key)) errors.push(`${at}: unknown key "${key}"`);
     }
     for (const key of SKILL_KEYS) {
-      if (!(key in skill)) errors.push(`${at}: missing "${key}"`);
+      if (!(key in skill) && key !== "optional") errors.push(`${at}: missing "${key}"`);
     }
     if (!isSafeName(skill.name)) {
       errors.push(`${at}: "name" must be lowercase letters, digits and single . _ - separators (max ${NAME_MAX})`);
@@ -328,6 +331,7 @@ function validateManifest(manifest, manifestDir) {
       errors.push(`${at}: "hosts" must be a non-empty array of strings`);
     }
     if (typeof skill.notes !== "string") errors.push(`${at}: "notes" must be a string`);
+    if (skill.optional !== undefined && typeof skill.optional !== "boolean") errors.push(`${at}: "optional" must be true or false when present`);
   });
   return errors;
 }
@@ -629,7 +633,8 @@ function main() {
     }
   });
   const replaceable = (state) => state === STATE.outdated || state === STATE.modified;
-  const needsGit = !readOnly && plans.some((plan) => plan.state === STATE.missing || (replaceable(plan.state) && options.update));
+  const skipOptional = (plan) => plan.state === STATE.missing && plan.skill.optional === true && !options.withOptional;
+  const needsGit = !readOnly && plans.some((plan) => (plan.state === STATE.missing && !skipOptional(plan)) || (replaceable(plan.state) && options.update));
   if (needsGit) {
     const probe = withEmptyDir((cwd) => spawnSync("git", ["--version"], { cwd, encoding: "utf8", shell: false, windowsHide: true, env: gitEnv() }));
     if (probe.error || probe.status !== 0) fail(EXIT_SKILL_FAILED, MSG.noGit + (probe.error ? probe.error.message : `exit ${probe.status}`));
@@ -637,7 +642,7 @@ function main() {
   }
 
   const rows = [];
-  const counts = { installed: 0, updated: 0, present: 0, outdated: 0, modified: 0, clash: 0, failed: 0 };
+  const counts = { installed: 0, updated: 0, present: 0, outdated: 0, modified: 0, clash: 0, failed: 0, optional: 0 };
   for (const plan of plans) {
     const { skill } = plan;
     let status;
@@ -646,6 +651,10 @@ function main() {
       counts.failed += 1;
       status = MSG.failed;
       detail = plan.error;
+    } else if (skipOptional(plan)) {
+      counts.optional += 1;
+      status = "skip";
+      detail = MSG.optional;
     } else if (plan.state === STATE.present) {
       counts.present += 1;
       status = "skip";
@@ -689,7 +698,7 @@ function main() {
   const verbUpdate = readOnly ? "to update" : "updated";
   process.stdout.write(
     `\n${manifest.skills.length} listed: ${counts.installed} ${verb}, ${counts.updated} ${verbUpdate}, ${counts.present} already present, ` +
-      `${counts.outdated} at another commit, ${counts.modified} modified, ${counts.clash} name clash, ${counts.failed} failed.\n`,
+      `${counts.outdated} at another commit, ${counts.modified} modified, ${counts.clash} name clash, ${counts.optional} optional not installed, ${counts.failed} failed.\n`,
   );
   return counts.failed > 0 ? EXIT_SKILL_FAILED : EXIT_OK;
 }
