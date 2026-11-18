@@ -760,3 +760,90 @@ test("optional: the field must be a boolean", (t) => {
   assert.equal(result.status, 2, result.stderr + result.stdout);
   assert.match(result.stderr, /"optional" must be true or false/);
 });
+
+// --- Per-skill install for on-demand use (skill scout), 2026-11-18 ---
+
+test("--skill: the named skill installs alone, even when it is optional, and the others are untouched", (t) => {
+  const sandbox = makeSandbox(t);
+  const skills = [entry(sandbox), entry(sandbox, { name: "scouted", optional: true })];
+  const result = run(sandbox, skills, ["--skill", "scouted"]);
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  assert.deepEqual(fs.readdirSync(sandbox.target), ["scouted"], "only the named skill is installed");
+  assert.equal(JSON.parse(fs.readFileSync(path.join(sandbox.target, "scouted", MARKER), "utf8")).name, "scouted");
+  assert.match(result.stdout, /1 selected: 1 installed/);
+  assert.doesNotMatch(result.stdout, /^demo\s/m, "a skill that was not named has no row");
+  assert.doesNotMatch(result.stdout, /optional - not installed/);
+});
+
+test("--skill: a non-optional skill that was not named is left missing, and a plain run still installs it", (t) => {
+  const sandbox = makeSandbox(t);
+  const skills = [entry(sandbox), entry(sandbox, { name: "other" })];
+  assert.equal(run(sandbox, skills, ["--skill", "other"]).status, 0);
+  assert.deepEqual(fs.readdirSync(sandbox.target), ["other"]);
+  const before = snapshot(path.join(sandbox.target, "other"));
+  const plain = run(sandbox, skills);
+  assert.equal(plain.status, 0, plain.stderr + plain.stdout);
+  assert.deepEqual(fs.readdirSync(sandbox.target).sort(), ["demo", "other"]);
+  assert.match(plain.stdout, /2 listed: 1 installed, 0 updated, 1 already present/);
+  assert.deepEqual(snapshot(path.join(sandbox.target, "other")), before);
+});
+
+test("--skill: an unknown, unsafe or missing name is a usage error that installs nothing", (t) => {
+  const sandbox = makeSandbox(t);
+  const skills = [entry(sandbox), entry(sandbox, { name: "scouted", optional: true })];
+  const unknown = run(sandbox, skills, ["--skill", "absent"]);
+  assert.equal(unknown.status, 2, unknown.stderr + unknown.stdout);
+  assert.match(unknown.stderr, /absent/);
+  assert.match(unknown.stderr, /demo, scouted/, "the valid names are listed");
+  const mixed = run(sandbox, skills, ["--skill", "demo", "--skill", "absent"]);
+  assert.equal(mixed.status, 2, "one unknown name refuses the whole run");
+  for (const name of ["../escape", "Demo", "a/b", "nul", ""]) {
+    const unsafe = run(sandbox, skills, ["--skill", name]);
+    assert.equal(unsafe.status, 2, `${JSON.stringify(name)} -> ${unsafe.status} ${unsafe.stdout}`);
+  }
+  for (const flags of [["--skill"], ["--skill", "--dry-run"]]) {
+    const missing = run(sandbox, skills, flags);
+    assert.equal(missing.status, 2);
+    assert.match(missing.stderr, /Missing value for --skill/);
+  }
+  assert.equal(run(sandbox, [], ["--skill", "demo"]).status, 2, "a name is unknown on an empty list too");
+  assert.deepEqual(fs.readdirSync(sandbox.target), []);
+});
+
+test("--skill: the flag is repeatable, and a repeated name counts once", (t) => {
+  const sandbox = makeSandbox(t);
+  const skills = [entry(sandbox), entry(sandbox, { name: "second", optional: true }), entry(sandbox, { name: "third" })];
+  const result = run(sandbox, skills, ["--skill", "demo", "--skill", "second", "--skill", "demo"]);
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  assert.deepEqual(fs.readdirSync(sandbox.target).sort(), ["demo", "second"]);
+  assert.match(result.stdout, /2 selected: 2 installed/);
+});
+
+test("--skill: with --dry-run or --list only the named skill is reported and nothing changes", (t) => {
+  const sandbox = makeSandbox(t);
+  fs.rmdirSync(sandbox.target);
+  const skills = [entry(sandbox), entry(sandbox, { name: "scouted", optional: true })];
+  for (const flag of ["--dry-run", "--list"]) {
+    const result = run(sandbox, skills, ["--skill", "scouted", flag]);
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.match(result.stdout, /^scouted\s+\S+\s+would install/m);
+    assert.doesNotMatch(result.stdout, /^demo\s/m);
+    assert.match(result.stdout, /1 selected: 1 to install/);
+    assert.equal(fs.existsSync(sandbox.target), false, `${flag} must not create the target`);
+  }
+});
+
+test("--skill: with --upgrade only the named skill is replaced", (t) => {
+  const sandbox = makeSandbox(t);
+  const old = [entry(sandbox, { commit: sandbox.first }), entry(sandbox, { name: "other", commit: sandbox.first })];
+  assert.equal(run(sandbox, old).status, 0);
+  const current = [entry(sandbox), entry(sandbox, { name: "other" })];
+  const reported = run(sandbox, current, ["--skill", "demo"]);
+  assert.match(reported.stdout, /installed at another commit/);
+  assert.match(fs.readFileSync(path.join(sandbox.target, "demo", "SKILL.md"), "utf8"), /description: v1/, "not replaced without --upgrade");
+  const upgraded = run(sandbox, current, ["--skill", "demo", "--upgrade"]);
+  assert.equal(upgraded.status, 0, upgraded.stderr + upgraded.stdout);
+  assert.match(upgraded.stdout, /1 selected: 0 installed, 1 updated/);
+  assert.match(fs.readFileSync(path.join(sandbox.target, "demo", "SKILL.md"), "utf8"), /description: v2/);
+  assert.match(fs.readFileSync(path.join(sandbox.target, "other", "SKILL.md"), "utf8"), /description: v1/, "the skill that was not named stays as it was");
+});

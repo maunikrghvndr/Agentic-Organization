@@ -12,8 +12,15 @@
  *   node Skills/install-skills.mjs --list       print the list and each skill's state
  *   node Skills/install-skills.mjs --upgrade     also replace a skill installed at another commit
  *   node Skills/install-skills.mjs --with-optional  also install the skills the list marks "optional": true
+ *   node Skills/install-skills.mjs --skill <name>     act only on the named listed skill, optional or not (repeatable)
  *   node Skills/install-skills.mjs --target <dir>     default: ~/.claude/skills
  *   node Skills/install-skills.mjs --manifest <file>  default: skills.manifest.json beside this script
+ *
+ * `--skill` is for on-demand use (one reviewed skill wanted for one use case):
+ * the name must be on the list, an unknown name is a usage error that prints
+ * the valid names, and the skills that were not named are neither installed,
+ * replaced nor reported. It combines with --dry-run, --list and --upgrade.
+ * Without it, behaviour is unchanged. The manifest stays the only source.
  *
  * What it does per skill: fetch exactly the pinned commit with git into a new
  * empty temp directory, check `git rev-parse HEAD` equals the pin, copy only
@@ -113,8 +120,13 @@ const STATE = {
 
 const MSG = {
   usage:
-    "Usage: node Skills/install-skills.mjs [--target <dir>] [--manifest <file>] [--dry-run] [--list] [--upgrade] [--with-optional]\n" +
-    "Installs every skill on the list that is missing. There is no per-skill selection; skills marked optional are installed only with --with-optional.",
+    "Usage: node Skills/install-skills.mjs [--target <dir>] [--manifest <file>] [--dry-run] [--list] [--upgrade] [--with-optional] [--skill <name>]...\n" +
+    "Installs every skill on the list that is missing; skills marked optional are installed only with --with-optional.\n" +
+    "--skill <name> (repeatable) acts only on the named listed skill(s), optional or not; the others are left as they are.",
+  skillName: "--skill takes the name of a listed skill (lowercase letters, digits and single . _ - separators): ",
+  skillUnknown: "Not on the list: ",
+  skillValid: "Listed skills: ",
+  skillNone: "(the list is empty)",
   unknownArg: "Unknown argument: ",
   missingValue: "Missing value for ",
   manifestRead: "Cannot read the manifest: ",
@@ -141,7 +153,7 @@ function fail(code, message) {
 }
 
 function parseArgs(argv) {
-  const options = { target: null, manifest: null, dryRun: false, list: false, update: false, withOptional: false };
+  const options = { target: null, manifest: null, dryRun: false, list: false, update: false, withOptional: false, skills: [] };
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--dry-run") options.dryRun = true;
@@ -151,12 +163,17 @@ function parseArgs(argv) {
     else if (arg === "--help" || arg === "-h") {
       process.stdout.write(MSG.usage + "\n");
       process.exit(EXIT_OK);
-    } else if (arg === "--target" || arg === "--manifest") {
+    } else if (arg === "--target" || arg === "--manifest" || arg === "--skill") {
       const value = argv[i + 1];
       if (typeof value !== "string" || value === "" || value.startsWith("--")) {
         fail(EXIT_USAGE, MSG.missingValue + arg + "\n" + MSG.usage);
       }
-      options[arg.slice(2)] = value;
+      if (arg === "--skill") {
+        if (!isSafeName(value)) fail(EXIT_USAGE, MSG.skillName + JSON.stringify(value) + "\n" + MSG.usage);
+        if (!options.skills.includes(value)) options.skills.push(value);
+      } else {
+        options[arg.slice(2)] = value;
+      }
       i += 1;
     } else {
       fail(EXIT_USAGE, MSG.unknownArg + arg + "\n" + MSG.usage);
@@ -619,13 +636,22 @@ function main() {
   const problems = validateManifest(manifest, path.dirname(manifestPath));
   if (problems.length > 0) fail(EXIT_USAGE, [MSG.manifestInvalid, ...problems.map((problem) => "  - " + problem)].join("\n"));
 
-  process.stdout.write(`Manifest: ${manifestPath}\nTarget:   ${target}${options.dryRun ? "\nDry run: nothing is changed." : ""}\n\n`);
+  const selected = options.skills.length > 0;
+  const listedNames = manifest.skills.map((skill) => skill.name);
+  const unknown = options.skills.filter((name) => !listedNames.includes(name));
+  if (unknown.length > 0) {
+    fail(EXIT_USAGE, `${MSG.skillUnknown}${unknown.join(", ")}\n${MSG.skillValid}${listedNames.length > 0 ? listedNames.join(", ") : MSG.skillNone}\n${MSG.usage}`);
+  }
+
+  process.stdout.write(
+    `Manifest: ${manifestPath}\nTarget:   ${target}${selected ? `\nSelected: ${options.skills.join(", ")}` : ""}${options.dryRun ? "\nDry run: nothing is changed." : ""}\n\n`,
+  );
   if (manifest.skills.length === 0) {
     process.stdout.write(MSG.emptyList + "\n");
     return EXIT_OK;
   }
 
-  const plans = manifest.skills.map((skill) => {
+  const plans = manifest.skills.filter((skill) => !selected || options.skills.includes(skill.name)).map((skill) => {
     try {
       return { skill, ...inspect(path.join(target, skill.name), skill) };
     } catch (error) {
@@ -633,7 +659,7 @@ function main() {
     }
   });
   const replaceable = (state) => state === STATE.outdated || state === STATE.modified;
-  const skipOptional = (plan) => plan.state === STATE.missing && plan.skill.optional === true && !options.withOptional;
+  const skipOptional = (plan) => plan.state === STATE.missing && plan.skill.optional === true && !options.withOptional && !selected;
   const needsGit = !readOnly && plans.some((plan) => (plan.state === STATE.missing && !skipOptional(plan)) || (replaceable(plan.state) && options.update));
   if (needsGit) {
     const probe = withEmptyDir((cwd) => spawnSync("git", ["--version"], { cwd, encoding: "utf8", shell: false, windowsHide: true, env: gitEnv() }));
@@ -697,7 +723,7 @@ function main() {
   const verb = readOnly ? "to install" : "installed";
   const verbUpdate = readOnly ? "to update" : "updated";
   process.stdout.write(
-    `\n${manifest.skills.length} listed: ${counts.installed} ${verb}, ${counts.updated} ${verbUpdate}, ${counts.present} already present, ` +
+    `\n${selected ? `${plans.length} selected` : `${manifest.skills.length} listed`}: ${counts.installed} ${verb}, ${counts.updated} ${verbUpdate}, ${counts.present} already present, ` +
       `${counts.outdated} at another commit, ${counts.modified} modified, ${counts.clash} name clash, ${counts.optional} optional not installed, ${counts.failed} failed.\n`,
   );
   return counts.failed > 0 ? EXIT_SKILL_FAILED : EXIT_OK;
