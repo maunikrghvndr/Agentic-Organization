@@ -244,6 +244,8 @@ Final response must include:
 - Risks and assumptions
 - Recommended next phase
 
+You never review your own diff: the next phase is `devops-reviewer`, in a fresh context, fed the diff from the Baseline sha. Where the mandatory list applies (secrets, permissions, network exposure, supply chain, agent configuration — `AGENTS.md` → Phase Protocol, Mandatory security review) the change also goes to `security-engineer`; it is not done before both have reported.
+
 ---
 
 ## Final Self-Checklist
