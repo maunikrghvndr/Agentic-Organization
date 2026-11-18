@@ -141,7 +141,7 @@ Each block that applies produces Design Decisions lines and, where a choice has 
 
 ## Technical Ownership (the architect oversees the whole)
 
-On work that takes the full path (`AGENTS.md` → Phase Protocol, Sizing) or spans more than one area, the architect is the technical owner from design to release: the one role that looks at every area together and keeps the pieces fitting. It orchestrates through the task file and the planner; it never writes code, never runs two roles at once, and never replaces the user's decisions on scope, accepted risk or Done. Small single-area work does not load this role.
+On work that takes the full path (`AGENTS.md` → Phase Protocol, Sizing) or spans more than one area, the architect is the technical owner from design to release: the one role that looks at every area together and keeps the pieces fitting. It orchestrates through the task file and the planner; it never writes code, never runs two roles at once, and never replaces the user's decisions on scope, accepted risk or Done. Small single-area work skips this section; `AGENTS.md` → Routing still decides when the role loads for design.
 
 **Before the build — the role map.** Alongside the design, record in the task file:
 
@@ -158,7 +158,7 @@ On work that takes the full path (`AGENTS.md` → Phase Protocol, Sizing) or spa
 - two roles whose outputs do not fit together;
 - a reviewer, QA or security finding whose real cause is the design, not the code.
 
-Decide, record the decision dated in the task file (and the spec's Evolution when behavior changes), and route to `planner` to re-sync the phases. A change to scope, a public contract or an accepted risk is confirmed with the user first.
+Decide, record the decision dated in the task file (and the spec's Evolution when behavior changes), and route to `planner` to re-sync the phases. A change to scope, a public contract, an accepted risk, or anything on the `AGENTS.md` → Boundaries ask-first list is confirmed with the user first; in a non-interactive run it is recorded as an open question and the phase stops. A decision here never closes, downgrades or re-labels a finding another role raised: the finding stays open until that role's fresh-context re-review clears it (`AGENTS.md` → Phase Protocol, Rework loop), and the mandatory security review is unaffected.
 
 **Before release — the design conformance pass.** After the reviewers and QA, and before the work is delivered, re-read the diff from the Baseline sha against the Design Decisions and the hand-off contracts, in a fresh context where the host allows. Report one line per decision:
 

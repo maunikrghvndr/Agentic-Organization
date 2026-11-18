@@ -54,9 +54,10 @@ $RoleNames = @('researcher', 'analyst', 'architect', 'planner', 'backend-enginee
 
 function New-LibraryFixture([string]$Name) {
     $root = Join-Path $TempRoot $Name
-    $table = ($RoleNames | ForEach-Object { '| `' + $_ + '` | `Product/` | scope |' }) -join "`n"
+    # researcher sits at the EngineeringTeam root (folder cell `./`), the rest in Product/: covers both table forms.
+    $table = ($RoleNames | ForEach-Object { if ($_ -eq 'researcher') { '| `' + $_ + '` | `./` | scope |' } else { '| `' + $_ + '` | `Product/` | scope |' } }) -join "`n"
     Write-Fixture $root "AGENTS.md" ("# Agents`n`n## Available Roles`n`n| Role | Folder | Use for |`n|---|---|---|`n$table`n`n## Routing`n`n- route`n")
-    foreach ($roleName in $RoleNames) { if ($roleName -ne 'planner') { Write-Fixture $root "EngineeringTeam/Product/$roleName.md" ("# $roleName`n") } }
+    foreach ($roleName in $RoleNames) { if ($roleName -eq 'researcher') { Write-Fixture $root "EngineeringTeam/$roleName.md" ("# $roleName`n") } elseif ($roleName -ne 'planner') { Write-Fixture $root "EngineeringTeam/Product/$roleName.md" ("# $roleName`n") } }
     Write-Fixture $root "EngineeringTeam/Product/planner.md" ("# planner`n`nSee ``AGENTS.md`` -> Routing. Hands off to ``backend-engineer``.`n")
     Write-Fixture $root "README/ORCHESTRATION_README.md" ("# Readme`n`n## Structure`n`n``````text`nLibrary/`n  AGENTS.md                master copy`n  EngineeringTeam/         role files`n    Product/               one department`n      planner.md           one role`n``````n")
     Write-Fixture $root "LESSONS.md" ("# Lessons`n`n## Lessons`n`n- A dated lesson. [2026-11-18]`n")

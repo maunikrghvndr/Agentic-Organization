@@ -41,7 +41,7 @@ Adding a skill is adding a dependency: **ask-first, and it needs the owner's app
 
 ## On-demand skills (skill scout)
 
-The list stays short on purpose: a skill that few tasks need is not installed everywhere, and a skill for work outside the role table (market research, sales outreach, legal drafting, video editing) is not listed until someone needs it. `EngineeringTeam/Research/researcher.md` → Skill Scout is the flow:
+The list stays short on purpose: a skill that few tasks need is not installed everywhere, and a skill for work outside the role table (market research, sales outreach, legal drafting, video editing) is not listed until someone needs it. `EngineeringTeam/researcher.md` → Skill Scout is the flow:
 
 1. The `researcher` says the request is outside the role table (or that a role lacks a skill), searches, opens every candidate, and suggests at most three in a table (repo, stars as observed with the date, last commit, license, what it does, weight, visible risks) with one recommendation. Stars are a popularity signal, not a safety or quality check. It installs nothing.
 2. On the user's yes, the steps in "How a skill gets onto the list" above apply unchanged: `security-engineer` review at one commit, a record under `reviews/`, the owner's approval.

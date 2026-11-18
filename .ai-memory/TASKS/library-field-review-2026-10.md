@@ -435,6 +435,7 @@ Evidence (sha `e4a8d68`):
 - Maunik, 2026-11-18: "For architecture the agent should be the orchestrator that looks at all n managed all so yeah if it's more than 1 file we can hv seperate folder if not root is also fine".
 - `architect.md` → new `## Technical Ownership`: role map before the build, escalation point during it, design conformance pass before delivery (`As designed` / `Deviated, approved` / `Drifted` = Blocking), wiki update after. Orchestrates through the task file and `planner`; one role per phase, one writer and the user's authority unchanged. `planner.md` follows the role map and adds the conformance phase; summary in `rules-detail.md` → Architect as technical owner.
 - Folder rule applied: a department with one file sits at the `EngineeringTeam/` root — `architect.md` and `researcher.md` (history kept); `Architecture/` and `Research/` removed. `AGENTS.md` table shows `./` for both; lint pattern, workflow map and README updated. `AGENTS.md` 32,765 B.
+- Security record for the architect changes (`security-engineer`, fresh context, on `953c50a..7e40049`): **Approve**, Blocking: none. Non-blocking 1–3 applied to `architect.md` (a design decision never closes or re-labels another role's finding; the full ask-first list needs the user's confirmation and stops a non-interactive run; small work skips the ownership section, Routing still decides when the role loads). 4: the lint test fixture now has one root role (`./`) and the rest in a folder; no test yet for a rejected `../` row.
 
 ## Handoff
 
