@@ -72,6 +72,9 @@ Agentic-Organization/
     Install-Overlays.ps1   copies Agents/claude/*.md to ~/.claude/agents/ and prints the settings snippets to merge by hand (-DryRun)
     run-claude-ticket.ps1  deprecated headless runner (kept for reference; see Headless / CI use)
     run-codex-ticket.ps1   deprecated headless runner (kept for reference; see Headless / CI use)
+    tests/
+      Lint-Library.Tests.ps1   positive controls for both lints: each error rule (E1-E7, R1-R11) fires on a planted violation; clean fixtures stay clean
+      Sync-AgentsMd.Tests.ps1  the CLAUDE.md shadow check, incl. the <home>\.claude\CLAUDE.md exclusion (-DryRun in a temp tree)
 
   Router/
     classify-ticket.md     deprecated ticket-classification prompt (AGENTS.md routes instead)
@@ -93,7 +96,7 @@ Behavior:
 
 - Idempotent — repos whose `AGENTS.md` already matches are skipped.
 - Overwrites customized copies (the library treats `AGENTS.md` as the single source of truth).
-- Warns when the source exceeds 32,768 bytes (Codex's default cap), naming the sections that fall past the cap, and warns per target repo when a `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists there (Claude Code then ignores `AGENTS.md` unless the user-level `claude-md-and-agents-md` setting is on).
+- Warns when the source exceeds 32,768 bytes (Codex's default cap), naming the sections that fall past the cap, and warns per target repo when a `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists there (Claude Code then ignores `AGENTS.md` unless the user-level `claude-md-and-agents-md` setting is on). The same three files are also tested in the repos folder and every folder above it; `<home>\.claude\CLAUDE.md` is skipped (the user-level file does not count), a `CLAUDE.md` directly in the home folder is not.
 - Skips the library repo itself and any non-git folder.
 - Descends one level under the parent folder (standard "repos folder" layout).
 
@@ -158,7 +161,7 @@ Preferred GitHub path: [claude-code-action](https://github.com/anthropics/claude
 
 | Host | How it finds `AGENTS.md` | Size cap | Shadowing / notes |
 |---|---|---|---|
-| Claude Code ≥ v2.1.277 | Root `AGENTS.md`, as a fallback only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists (the user-level `claude-md-and-agents-md` setting loads both) | ~200-line guidance; `/doctor prompt-audit` (≥ v2.1.283) flags dead references and contradictions | Any `CLAUDE.md` in the repo shadows it — the sync script warns. Role files are loaded by `Read`, so they are not re-injected after compaction (see Phase Protocol compaction rule). |
+| Claude Code ≥ v2.1.277 | Root `AGENTS.md`, as a fallback only when no `CLAUDE.md`, `.claude/CLAUDE.md` or `CLAUDE.local.md` exists (the user-level `claude-md-and-agents-md` setting loads both) | ~200-line guidance; `/doctor prompt-audit` (≥ v2.1.283) flags dead references and contradictions | Any `CLAUDE.md` in the repo shadows it — the sync script warns. A `CLAUDE.md` or `CLAUDE.local.md` in any parent folder shadows it as well. Role files are loaded by `Read`, so they are not re-injected after compaction (see Phase Protocol compaction rule). To confirm it loaded: an interactive session prints "no CLAUDE.md found; AGENTS.md loaded: <path>" at start, and `/memory` or `/context all` lists it (≥ v2.1.280). `InstructionsLoaded` hooks do not fire for a natively read `AGENTS.md`. |
 | Claude Code Review (Team/Enterprise product, GA 2026-10) | Reads `CLAUDE.md` and `REVIEW.md`, not `AGENTS.md` | — | Copy the `## Code Review Rules` section of `AGENTS.md` into a root `REVIEW.md` on such an org |
 | Codex (CLI, cloud, GitHub) | `AGENTS.md` walking up from the cwd, concatenated | 32 KiB combined by default (`project_doc_max_bytes`) — the sync script warns past it | Reads `## Code Review Rules` from the nearest `AGENTS.md` for its review product |
 | Cursor | Root `AGENTS.md` | None documented | `.cursor/rules` add to it; also reads `.claude/skills` and `.claude/agents` |
@@ -166,13 +169,15 @@ Preferred GitHub path: [claude-code-action](https://github.com/anthropics/claude
 | Gemini CLI | Only when `context.fileName` includes `AGENTS.md` | — | `GEMINI.md` is its default |
 | Devin / Windsurf | Reads `AGENTS.md` | 12k characters per rule file | — |
 
+Fresh context is not filesystem isolation: a reviewer can read any file in the workspace, including the task file's notes; only its Summary, AC ids, Decisions, `Owns:` and Evidence are inputs.
+
 ## Measuring cost
 
 EVALS.md rows need a cost figure with its source. `claude -p --output-format json` returns `total_cost_usd`; in-session `/cost` prints the session total; [ccusage](https://github.com/ryoppippi/ccusage) reads the local logs of Claude Code and Codex (and other agent CLIs) and reports per-day/per-session tokens and list-price cost. Cursor exposes no equivalent — write `cost: n/a`. All figures are list-price estimates.
 
 ## Maintaining The Library
 
-- **Before every library commit run `.\Scripts\Lint-Library.ps1`** (CI runs it too via `.github/workflows/lint-library.yml`; `Scripts\Lint-RepoMemory.ps1 -RepoRoot <repo>` is the optional sibling for a project's `.ai-memory/`, pasted as an Evidence row at the completion sweep) (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines; warnings: AGENTS.md size, duplicate blocks across role files, hardcoded `wiki/spec-`). Optionally, from a synced repo on Claude Code, run `/doctor prompt-audit` once per release (Claude-only; degrades to nothing elsewhere).
+- **Before every library commit run `.\Scripts\Lint-Library.ps1`** (CI runs it too via `.github/workflows/lint-library.yml`; `Scripts\Lint-RepoMemory.ps1 -RepoRoot <repo>` is the optional sibling for a project's `.ai-memory/`, pasted as an Evidence row at the completion sweep) (errors: dead `AGENTS.md → Heading` references, roles missing from the table, README Structure vs disk, relic strings, undated LESSONS lines; warnings: AGENTS.md size, duplicate blocks across role files, hardcoded `wiki/spec-`, a role file of 1,800 lines or more). After changing either lint or the sync script, run `.\Scripts\tests\Lint-Library.Tests.ps1` and `.\Scripts\tests\Sync-AgentsMd.Tests.ps1` (plain PowerShell, temp fixtures only): a lint that has only been seen to pass has not been seen to work. Optionally, from a synced repo on Claude Code, run `/doctor prompt-audit` once per release (Claude-only; degrades to nothing elsewhere).
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
 - The role library path appears exactly once, at the top of `AGENTS.md`. The agent self-heals it (Role library resolution block) with the user's permission; no manual edit needed.
 - Coding-style rules (explicit types / no `var` abuse, no `any`, `Constants.cs` / `FrontendConstants` patterns, structured logging with constant templates, no hardcoding) live in the engineer role files and are enforced by the reviewer roles — keep both sides in sync when changing a style rule.

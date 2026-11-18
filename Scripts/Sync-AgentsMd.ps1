@@ -36,6 +36,10 @@
 #   when a CLAUDE.md / .claude/CLAUDE.md / CLAUDE.local.md exists there, because
 #   Claude Code then ignores AGENTS.md unless the user-level
 #   claude-md-and-agents-md setting is on.
+#   The same three files are also tested in RepoRoot and every folder above it (the host
+#   counts the working directory and any directory above it); <home>\.claude\CLAUDE.md is
+#   skipped because the user-level file does not count, while a CLAUDE.md directly in the
+#   home folder does. Checked against code.claude.com/docs/en/memory on 2026-11-18.
 
 [CmdletBinding()]
 param(
@@ -155,6 +159,20 @@ $updated   = New-Object System.Collections.Generic.List[string]
 $unchanged = New-Object System.Collections.Generic.List[string]
 $shadowed  = New-Object System.Collections.Generic.List[string]
 $ClaudeShadowFiles = @('CLAUDE.md', 'CLAUDE.local.md', (Join-Path '.claude' 'CLAUDE.md'))
+# A CLAUDE.md above the repos shadows AGENTS.md in every repo under it. <home>\.claude\CLAUDE.md is the
+# user-level file: it loads alongside AGENTS.md and does not count, so it is skipped.
+$homeDir = if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
+$userLevelClaudeMd = if ($homeDir) { Join-Path $homeDir.TrimEnd('\', '/') (Join-Path '.claude' 'CLAUDE.md') } else { $null }
+$ancestorShadows = New-Object System.Collections.Generic.List[string]
+$ancestorDir = $RepoRoot
+while ($ancestorDir) {
+    foreach ($shadowName in $ClaudeShadowFiles) {
+        $candidate = Join-Path $ancestorDir $shadowName
+        if ($userLevelClaudeMd -and ($candidate -eq $userLevelClaudeMd)) { continue }
+        if (Test-Path -LiteralPath $candidate -PathType Leaf) { $ancestorShadows.Add($candidate) }
+    }
+    $ancestorDir = Split-Path $ancestorDir -Parent
+}
 $rulesCreated   = New-Object System.Collections.Generic.List[string]
 $rulesUpdated   = New-Object System.Collections.Generic.List[string]
 $rulesUnchanged = New-Object System.Collections.Generic.List[string]
@@ -250,11 +268,12 @@ if ($WithCloudHook) {
         Write-Host $hookSettingsJson
     }
 }
-if ($sourceWarnings.Count -gt 0 -or $shadowed.Count -gt 0) {
+if ($sourceWarnings.Count -gt 0 -or $shadowed.Count -gt 0 -or $ancestorShadows.Count -gt 0) {
     Write-Host ""
     Write-Host "Warnings:" -ForegroundColor Yellow
     $sourceWarnings | ForEach-Object { Write-Host "  ! $_" }
     $shadowed | ForEach-Object { Write-Host "  ! $_ - Claude Code will ignore AGENTS.md here unless the user-level 'claude-md-and-agents-md' setting is on" }
+    $ancestorShadows | ForEach-Object { Write-Host "  ! $_ - sits in or above the repos folder: Claude Code will ignore AGENTS.md in every repo under it unless the user-level 'claude-md-and-agents-md' setting is on" }
 }
 if ($DryRun) {
     Write-Host ""

@@ -8,6 +8,8 @@
 # Errors (exit 1):
 #   R1  a wiki page with no index line in PROJECT_MEMORY.md, or more than one; an index line whose page is missing
 #   R2  a link to TASKS/... or wiki/... in ROADMAP.md or a task file that does not resolve
+#       (2026-11-18: wiki/*.md pages are link sources too; a path that only ends in wiki/... or TASKS/...,
+#       such as docs/wiki/setup.md, is not a link)
 #   R3  a Done item whose task file is not under TASKS/_archive/, or an In Progress / In Review / Blocked
 #       item whose task file is under TASKS/_archive/
 #   R4  both .ai-memory/CONSTITUTION.md and .specify/memory/constitution.md exist
@@ -22,8 +24,12 @@
 #       the user-level shim and replace the independent review)
 # Warnings (exit 0):
 #   RW1 PROJECT_MEMORY.md over 100 lines with no wiki/ index lines
+#       (2026-11-18: counts index lines of the R1 shape, wiki/<page>.md; a bare mention of wiki/ no longer silences it)
 #   RW2 a spec page over ~120 lines
 #   RW3 always-on weight table (bytes / 4 ~ tokens) per memory file; 10% of the context budget is a soft guideline
+#   RW6 a tracked .ai-memory markdown file (outside TASKS/_archive/) under two thirds of its line count at HEAD
+#       (catches a shrink only before it is committed; skipped for untracked files, without git, and in a repo
+#       with no commits; a legitimate split into wiki/ pages warns too)
 #
 # Zero runtime tokens. PowerShell 5.1+ / 7+.
 
@@ -68,8 +74,10 @@ foreach ($m in [regex]::Matches($pm, 'wiki/([A-Za-z0-9_.-]+\.md)')) {
 $linkSources = @()
 if (Test-Path $roadPath) { $linkSources += Get-Item $roadPath }
 if (Test-Path $tasksDir) { $linkSources += Get-ChildItem $tasksDir -Filter "*.md" -File }
+if (Test-Path $wikiDir)  { $linkSources += Get-ChildItem $wikiDir -Filter "*.md" -File }   # PROJECT_MEMORY.md is R1's job
+# Anchored: the path must not continue a longer one, so docs/wiki/setup.md or a .../wiki/blob/... URL is not a link.
 foreach ($f in $linkSources) {
-    foreach ($m in [regex]::Matches((Read-Utf8 $f.FullName), '`?((?:TASKS|wiki)/[A-Za-z0-9_./-]+\.md)`?')) {
+    foreach ($m in [regex]::Matches((Read-Utf8 $f.FullName), '(?<![A-Za-z0-9_./-])(?:\.ai-memory/)?((?:TASKS|wiki)/[A-Za-z0-9_./-]+\.md)')) {
         $target = Join-Path $mem ($m.Groups[1].Value -replace '/', [IO.Path]::DirectorySeparatorChar)
         if (-not (Test-Path $target)) { $errors.Add("R2 $(Rel $f.FullName): link $($m.Groups[1].Value) does not resolve") }
     }
@@ -168,12 +176,34 @@ if (Test-Path $projAgents) {
 # ---- RW1 / RW3: size signals ---------------------------------------------------------------------------
 if ($pm) {
     $pmLines = ($pm -split "`n").Count
-    if ($pmLines -gt 100 -and $pm -notmatch 'wiki/') { $warnings.Add("RW1 PROJECT_MEMORY.md is $pmLines lines with no wiki/ index - split into wiki/ pages (grow by reorganizing)") }
+    $pmIndexLines = ([regex]::Matches($pm, 'wiki/[A-Za-z0-9_.-]+\.md')).Count   # the R1 index-line shape
+    if ($pmLines -gt 100 -and $pmIndexLines -eq 0) { $warnings.Add("RW1 PROJECT_MEMORY.md is $pmLines lines with no wiki/ index - split into wiki/ pages (grow by reorganizing)") }
 }
 $weight = @()
 foreach ($f in $allMd) {
     if ((Rel $f.FullName) -match '/_archive/') { continue }
     $weight += [pscustomobject]@{ File = (Rel $f.FullName); Bytes = $f.Length; ApproxTokens = [math]::Round($f.Length / 4) }
+}
+
+# ---- RW6: a memory file much shorter than its committed version ---------------------------------------
+# Compares the working tree with HEAD, so it catches a shrink only before it is committed.
+if (Get-Command git -ErrorAction SilentlyContinue) {
+    $savedPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"   # git writes to stderr for an untracked path; that is not a lint failure
+    & git -C $RepoRoot rev-parse --verify --quiet HEAD 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) {
+        foreach ($f in $allMd) {
+            $rel = Rel $f.FullName
+            if ($rel -match '/_archive/') { continue }
+            $headLines = @(& git -C $RepoRoot show "HEAD:./$rel" 2>$null)
+            if ($LASTEXITCODE -ne 0) { continue }   # untracked, or not in HEAD yet
+            $nowCount = @([IO.File]::ReadAllLines($f.FullName)).Count
+            if ($headLines.Count -gt 0 -and ($nowCount * 3) -lt ($headLines.Count * 2)) {
+                $warnings.Add("RW6 $rel is $nowCount lines, under two thirds of the $($headLines.Count) at HEAD - memory is updated or reorganized, never deleted; confirm the removed content moved (wiki/, archive) before committing")
+            }
+        }
+    }
+    $ErrorActionPreference = $savedPreference
 }
 
 # ---- report ----------------------------------------------------------------------------------------------

@@ -23,6 +23,8 @@
 #   W1  AGENTS.md over 200 lines (Anthropic guidance)
 #   W2  >= 8 identical consecutive lines shared by two role files (trim candidates; feeds EVALS.md)
 #   W3  hardcoded `wiki/spec-` outside AGENTS.md (the branched Spec Kit / wiki phrase should be used)
+#   W4  a role file (EngineeringTeam/*.md) of 1,800 lines or more - Claude Code's Read tool returns 2,000 lines
+#       by default (a Claude Code default, not a cross-host fact); relocate a section verbatim to _shared/, never compress
 #
 # Zero runtime tokens: this never runs an agent. PowerShell 5.1+ / 7+.
 
@@ -184,6 +186,13 @@ foreach ($f in $mdFiles) {
         $n++
         if ($line -match 'wiki/spec-' -and $line -notmatch 'specs/<feature>/spec\.md') { $warnings.Add("W3 ${rel}:${n}: hardcoded wiki/spec- without the Spec Kit branch") }
     }
+}
+
+# ---- W4: role-file length ----------------------------------------------------------------------------
+$RoleFileLineWarn = 1800
+foreach ($f in $roleFiles) {
+    $roleLineCount = @([IO.File]::ReadAllLines($f.FullName)).Count
+    if ($roleLineCount -ge $RoleFileLineWarn) { $warnings.Add("W4 $(Rel $f.FullName) is $roleLineCount lines (>= $RoleFileLineWarn; Claude Code's Read tool returns 2,000 lines by default - a Claude Code default, not a cross-host fact) - relocate a section verbatim to EngineeringTeam/_shared/, never compress") }
 }
 
 # ---- report --------------------------------------------------------------------------------------
