@@ -5,7 +5,7 @@
  * by default the library's own Skills/installed/ folder beside this script.
  *
  * Optional: the role library works with no skill installed. An installed
- * skill is read by path, like a role file; nothing is written outside the target.
+ * skill is read by path as reviewed third-party guidance, ranked below the role file; nothing is written outside the target.
  * Node only, no dependencies, Windows/macOS/Linux. Needs `git` on PATH.
  *
  * Usage (from the library root):
@@ -627,6 +627,18 @@ function main() {
   const options = parseArgs(process.argv.slice(2));
   const manifestPath = path.resolve(options.manifest ?? path.join(HERE, MANIFEST_FILE));
   const target = path.resolve(options.target ?? path.join(HERE, DEFAULT_TARGET_DIR));
+  if (options.target === null || options.target === undefined) {
+    // The default target must be a real folder inside the library: a symlink committed at Skills/installed would redirect every write.
+    let stat = null;
+    try {
+      stat = fs.lstatSync(target);
+    } catch {
+      stat = null;
+    }
+    if (stat !== null && (stat.isSymbolicLink() || !stat.isDirectory() || fs.realpathSync(target) !== path.join(fs.realpathSync(HERE), DEFAULT_TARGET_DIR))) {
+      fail(EXIT_USAGE, `The default target ${target} is not a real folder inside the library (a symlink or a file is in its place) - nothing was installed. Remove it or pass --target.`);
+    }
+  }
   const readOnly = options.dryRun || options.list;
 
   let manifest;

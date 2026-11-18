@@ -1,6 +1,6 @@
 # Agentic Organization Role Library
 
-A portable, provider-agnostic role library for coding agents: it names and depends on no AI tool or vendor. Drop `AGENTS.md` into any repo; the agent routes each task to one specialized role and follows that role's discipline.
+A portable, provider-agnostic role library for coding agents: it depends on no AI tool or vendor. Drop `AGENTS.md` into any repo; the agent routes each task to one specialized role and follows that role's discipline.
 
 ## From idea to release: the whole team, as agents
 
@@ -182,7 +182,7 @@ When a release is finished, and before it merges into the default branch, `secur
 
 ## Skills (optional, curated third-party skills)
 
-The roles are complete without any skill. `Skills/` is an optional list of third-party skills that passed a security review and are pinned to an exact commit, with an installer that fetches them into the library's own `Skills/installed/` folder in one command. An installed skill is read by path, like a role file, by whatever tool is in use; no tool's own folder is written, and the fetched copies are git-ignored, never committed.
+The roles are complete without any skill. `Skills/` is an optional list of third-party skills that passed a security review and are pinned to an exact commit, with an installer that fetches them into the library's own `Skills/installed/` folder in one command. An installed skill is read by path as reviewed third-party guidance, ranked below the role file, by whatever tool is in use; no tool's own folder is written, and the fetched copies are git-ignored, never committed.
 
 ```powershell
 node Skills/install-skills.mjs --dry-run        # show what would be installed, change nothing

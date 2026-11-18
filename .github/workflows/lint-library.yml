@@ -35,3 +35,5 @@ jobs:
         run: |
           node --test Scripts/validate-release-audit.test.mjs
           node --test "Skills/*.test.mjs"
+      - name: No fetched skill content is committed
+        run: test -z "$(git ls-files Skills/installed)"
