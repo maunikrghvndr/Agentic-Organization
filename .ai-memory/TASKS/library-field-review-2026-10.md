@@ -430,6 +430,12 @@ Evidence (sha `e4a8d68`):
 - `architect` moved (history kept) to `EngineeringTeam/Architecture/`; new section `## Area Design Checks` (backend, frontend, data, ML, AI/LLM/RAG, DevOps), read only for the areas a task touches, with the owner's standards as design inputs. One role, no per-department architects. `AGENTS.md` row, workflow map and README updated; `AGENTS.md` 32,763 B.
 - Not independently security-reviewed yet (role-file change).
 
+### 2026-11-18 — architect is the technical owner of the whole; single-file roles at the root
+
+- Maunik, 2026-11-18: "For architecture the agent should be the orchestrator that looks at all n managed all so yeah if it's more than 1 file we can hv seperate folder if not root is also fine".
+- `architect.md` → new `## Technical Ownership`: role map before the build, escalation point during it, design conformance pass before delivery (`As designed` / `Deviated, approved` / `Drifted` = Blocking), wiki update after. Orchestrates through the task file and `planner`; one role per phase, one writer and the user's authority unchanged. `planner.md` follows the role map and adds the conformance phase; summary in `rules-detail.md` → Architect as technical owner.
+- Folder rule applied: a department with one file sits at the `EngineeringTeam/` root — `architect.md` and `researcher.md` (history kept); `Architecture/` and `Research/` removed. `AGENTS.md` table shows `./` for both; lint pattern, workflow map and README updated. `AGENTS.md` 32,765 B.
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

@@ -109,6 +109,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Include review phases for non-trivial implementation phases.
 - Include a QA phase (traceability and convergence) for every feature-sized change, and for smaller changes when regression-prone, security-sensitive, or multi-area.
 - Include a security phase when the change touches auth, tenancy, file handling, external input, payments, or sensitive data.
+- On full-path or multi-area work the phases follow the architect's role map (`architect.md` → Technical Ownership): a role or hand-off contract on the map is not dropped or reordered without a recorded reason; a phase that cannot be built as designed goes back to `architect`, not around it; and the plan includes an `architect` design conformance phase after the reviewers and QA, before delivery (added 2026-11-18).
 - A release plan (the whole application) ends with a `security-engineer` Release Audit phase after QA (`security-engineer.md` → Release Audit (whole application); trigger and Done rule: `_shared/rules-detail.md` → Release audit).
 - Keep the number of phases as small as the work allows. Do not create ceremony.
 - A phase that runs unattended (CI, headless, scheduled) holds at most two of untrusted input, access to secrets/private data, and any state change or external communication (Rule of Two — `_shared/rules-detail.md`); split it or put a human gate in the plan, and name the token scope that enforces it.

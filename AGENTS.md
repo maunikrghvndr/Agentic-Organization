@@ -24,9 +24,9 @@ Ask permission before writing the path line or cloning, except the non-interacti
 
 | Role | Folder | Use for |
 |---|---|---|
-| `researcher` | `Research/` | Discover the best *current* approach — survey newer papers/tech/tools, challenge the status quo, evaluate options with cited evidence; owns `sources/` → `wiki/ref-*`; skill scout for work outside this table |
+| `researcher` | `./` | Discover the best *current* approach — survey newer papers/tech/tools, challenge the status quo, evaluate options with cited evidence; owns `sources/` → `wiki/ref-*`; skill scout for work outside this table |
 | `analyst` | `Product/` | Capture user intent, run full grill mode, produce EARS acceptance criteria, promote them to a durable `wiki/spec-<feature>.md` |
-| `architect` | `Architecture/` | System design decisions — data model, API shape, service boundaries, integration approach, tech choice, reuse mapping |
+| `architect` | `./` | System design decisions — data model, API shape, service boundaries, integration approach, tech choice, reuse mapping; oversees all areas |
 | `planner` | `Product/` | Sequence a settled feature into role-scoped phases with handoffs; run the pre-implementation completeness gate |
 | `backend-engineer` | `Backend/` | APIs, controllers, services, domain logic, repositories, DB, migrations, queues, workers, backend auth/validation/logging/tests |
 | `frontend-engineer` | `Frontend/` | UI, components, pages, forms, routing, state, hooks, API clients, styling, accessibility, frontend tests |

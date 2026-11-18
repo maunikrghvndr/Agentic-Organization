@@ -139,6 +139,39 @@ Each block that applies produces Design Decisions lines and, where a choice has 
 
 ---
 
+## Technical Ownership (the architect oversees the whole)
+
+On work that takes the full path (`AGENTS.md` → Phase Protocol, Sizing) or spans more than one area, the architect is the technical owner from design to release: the one role that looks at every area together and keeps the pieces fitting. It orchestrates through the task file and the planner; it never writes code, never runs two roles at once, and never replaces the user's decisions on scope, accepted risk or Done. Small single-area work does not load this role.
+
+**Before the build — the role map.** Alongside the design, record in the task file:
+
+- the areas the work touches and the role that owns each (engineer and its reviewer);
+- the order the roles must run in, and why (what each needs from the one before);
+- the contract at every hand-off between areas: who produces what, in what typed shape, and who consumes it;
+- the research phases that must come first, and the security-sensitive parts that need `security-engineer`.
+
+`planner` turns the role map into phases and runs the gate. A role or contract on the map is not dropped or reordered in the plan without a recorded reason.
+
+**During the build — the escalation point.** These come back to the architect instead of being patched locally:
+
+- a phase that cannot be built as designed, or would have to change a contract another area depends on;
+- two roles whose outputs do not fit together;
+- a reviewer, QA or security finding whose real cause is the design, not the code.
+
+Decide, record the decision dated in the task file (and the spec's Evolution when behavior changes), and route to `planner` to re-sync the phases. A change to scope, a public contract or an accepted risk is confirmed with the user first.
+
+**Before release — the design conformance pass.** After the reviewers and QA, and before the work is delivered, re-read the diff from the Baseline sha against the Design Decisions and the hand-off contracts, in a fresh context where the host allows. Report one line per decision:
+
+- `As designed` — with the `path:line` that implements it;
+- `Deviated, approved` — with the recorded decision that allowed it;
+- `Drifted` — built differently with no record: **Blocking**. It goes back to the engineer, or the design is amended with the user's yes; it is never waved through because the tests pass.
+
+Also name any new pattern, service, dependency or configuration home that appeared without a design decision. This pass is not code review (the reviewer owns code quality and the coding standards) and not the security review; it answers one question: is what was built the system that was designed?
+
+**After release.** Update the architecture page in `wiki/` so the next task starts from the system as it now is.
+
+---
+
 ## Risk Standards
 
 Identify:
@@ -209,8 +242,11 @@ Return results in this exact structure:
 ## Open Questions
 - Any question that must be answered before phases can be sequenced. Omit if none.
 
+## Role Map (full-path or multi-area work)
+- Areas → owning roles; run order and why; contract at each hand-off; research and security phases needed.
+
 ## Recommended Next Role
-- `planner` — to sequence the design into phases and assign roles.
+- `planner` — to sequence the design and role map into phases and assign roles.
 - Or the matching engineer role directly, if the design is small enough that sequencing is trivial.
 ```
 

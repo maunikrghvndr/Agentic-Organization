@@ -65,10 +65,10 @@ foreach ($f in $mdFiles) {
 }
 
 # ---- E2: role names not in the AGENTS.md table -----------------------------------------------
-$tableRoles = @($agentsLines | Where-Object { $_ -match '^\| `([a-z-]+)` \| `[A-Za-z]+/` \|' } | ForEach-Object { $Matches[1] })
+$tableRoles = @($agentsLines | Where-Object { $_ -match '^\| `([a-z-]+)` \| `(?:[A-Za-z]+|\.)/` \|' } | ForEach-Object { $Matches[1] })
 # Each table row names the role's folder: the file must be on disk there, and a role name must be unique across folders.
 foreach ($line in $agentsLines) {
-    if ($line -match '^\| `([a-z-]+)` \| `([A-Za-z]+)/` \|') {
+    if ($line -match '^\| `([a-z-]+)` \| `([A-Za-z]+|\.)/` \|') {
         $rolePathOnDisk = Join-Path (Join-Path (Join-Path $LibraryRoot "EngineeringTeam") $Matches[2]) ($Matches[1] + ".md")
         if (-not (Test-Path $rolePathOnDisk)) { $errors.Add("E2 AGENTS.md table: role '$($Matches[1])' is listed in folder '$($Matches[2])/' but EngineeringTeam/$($Matches[2])/$($Matches[1]).md is not on disk") }
     }

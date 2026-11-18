@@ -10,7 +10,7 @@ This library is a complete software organization run by agents: every stage a pr
 |---|---|---|
 | Research | `researcher` | Current options compared with dated, cited evidence; runs at fixed trigger moments for every department (before a new dependency, service, model or unfamiliar pattern); for work outside this team, scouts and suggests the best outside skill |
 | Requirements | `analyst` | Your intent grilled into testable acceptance criteria (EARS) and a durable spec |
-| Design | `architect` | Data model, API shape, boundaries, technology choices, reuse map |
+| Design and oversight | `architect` | Data model, API shape, boundaries, technology choices, reuse map; then the technical owner of the whole: the role map, the escalation point when areas do not fit, and a design conformance pass before release |
 | Planning | `planner` | Role-scoped phases with a done-when that can fail, and a completeness gate before any code |
 | Build | `backend-`, `frontend-`, `devops-`, `data-`, `ml-`, `mlops-`, `ai-`, `prompt-`, `rag-`, `nlp-engineer`, `data-scientist` | The change, with a test seen failing first and an Evidence row for every check |
 | Diagnosis | `debugger` | Root cause only; the engineer fixes in the next phase |
@@ -51,10 +51,10 @@ Agentic-Organization/
   LESSONS/                 area files the index maps to roles: backend.md, frontend.md, data-ml-ai.md, tooling-agent-workflow.md
   EVALS.md                 A/B protocol + log for measuring whether roles/sections earn their tokens
 
-  EngineeringTeam/         24 role files in department folders — the catalog (role, folder, use-for) is the AGENTS.md role table:
-    Research/              researcher (department triggers; skill scout)
+  EngineeringTeam/         24 role files — single-file roles at the root, the rest in department folders — the catalog (role, folder, use-for) is the AGENTS.md role table:
+    architect.md           the technical owner: system design, area design checks, role map, escalations, design conformance before release
+    researcher.md          research for every department (triggers) and the skill scout
     Product/               analyst, planner
-    Architecture/          architect (system design; area design checks for backend, frontend, data, ML, AI, DevOps)
     Backend/               backend-engineer, backend-reviewer
     Frontend/              frontend-engineer, frontend-reviewer
     DevOps/                devops-engineer, devops-reviewer
