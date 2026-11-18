@@ -18,12 +18,17 @@
  * empty temp directory, check `git rev-parse HEAD` equals the pin, copy only
  * the skill's `path` into <target>/<name>, write a marker file, remove the
  * temp directory. It never runs anything from the fetched repository.
+ * Every git call names the temp repository explicitly and runs without any
+ * inherited GIT_* variable, so it cannot be redirected into another repository.
+ * The marker stores a sha256 digest of the installed files; a skill whose
+ * files no longer match is reported as modified.
  *
  * Exit codes: 0 = nothing failed; 1 = at least one skill failed;
  * 2 = bad arguments or an invalid manifest (nothing was installed).
  */
 
 import { spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -41,6 +46,14 @@ const DEFAULT_TARGET_PARTS = [".claude", "skills"];
 const FILE_URL_ENV = "AGENTIC_SKILLS_TEST_ALLOW_FILE_URL";
 const GIT_TIMEOUT_MS = 120000;
 const SHORT_SHA = 12;
+const GIT_ENV_PREFIX = "GIT_";
+const GIT_DIR_NAME = ".git";
+/** `.git` and its Windows 8.3 short name, compared in lower case. */
+const GIT_SEGMENTS = [GIT_DIR_NAME, "git~1"];
+const DIGEST_PREFIX = "sha256:";
+const MAX_REVIEW_BYTES = 2 * 1024 * 1024;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const CLOCK_SKEW_DAYS = 1;
 
 const EXIT_OK = 0;
 const EXIT_SKILL_FAILED = 1;
@@ -52,7 +65,7 @@ const NAME_MAX = 64;
 const WINDOWS_DEVICE_RE = /^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i;
 const SEGMENT_RE = /^[A-Za-z0-9._-]+$/;
 const SHA_RE = /^[0-9a-f]{40}$/;
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 const HTTPS_RE = /^https:\/\/[A-Za-z0-9.-]+(?::\d+)?\/[A-Za-z0-9._~/-]+$/;
 const FILE_RE = /^file:\/\/\/[A-Za-z0-9._~/:%-]+$/;
 
@@ -60,6 +73,7 @@ const STATE = {
   missing: "missing",
   present: "present",
   outdated: "outdated",
+  modified: "modified",
   clash: "clash",
 };
 
@@ -79,6 +93,8 @@ const MSG = {
   updated: "updated",
   present: "present at the pinned commit - skipped",
   outdated: "installed at another commit - re-run with --upgrade to replace it",
+  modified: "installed files do not match the digest recorded at install (or none was recorded) - re-run with --upgrade to reinstall the pinned commit",
+  modifiedStatus: "modified",
   clash: "name clash: a folder with this name exists and was not installed by this script - left untouched",
   failed: "FAILED",
 };
@@ -142,6 +158,39 @@ function isAllowedSource(value) {
   return process.env[FILE_URL_ENV] === "1" && FILE_RE.test(value);
 }
 
+/** A real calendar date written YYYY-MM-DD, not later than today plus the allowed clock skew. */
+function isPastOrPresentDate(value) {
+  const match = typeof value === "string" ? DATE_RE.exec(value) : null;
+  if (!match) return false;
+  const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
+  const date = new Date(Date.UTC(year, month - 1, day));
+  if (date.getUTCFullYear() !== year || date.getUTCMonth() !== month - 1 || date.getUTCDate() !== day) return false;
+  const now = new Date();
+  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+  return date.getTime() <= today + CLOCK_SKEW_DAYS * DAY_MS;
+}
+
+/** Why the review record is not acceptable for this commit, or null when it is. */
+function reviewRecordProblem(file, commit) {
+  let stat;
+  try {
+    stat = fs.lstatSync(file);
+  } catch {
+    return "does not exist beside the manifest - a skill is listed only after its review";
+  }
+  if (!stat.isFile() || stat.size > MAX_REVIEW_BYTES) return "is not a regular file (or is too large)";
+  let text;
+  try {
+    text = fs.readFileSync(file, "utf8");
+  } catch {
+    return "cannot be read";
+  }
+  if (typeof commit === "string" && SHA_RE.test(commit) && !text.includes(commit)) {
+    return "does not contain the full pinned commit - the review must be of the commit that is installed";
+  }
+  return null;
+}
+
 function isNonEmptyString(value) {
   return typeof value === "string" && value.trim() !== "";
 }
@@ -187,11 +236,12 @@ function validateManifest(manifest, manifestDir) {
     if (!isSafeRelativePath(skill.path, true)) errors.push(`${at}: "path" must be "." or a relative folder with no ".." segment`);
     if (!isNonEmptyString(skill.area)) errors.push(`${at}: "area" must be a non-empty string`);
     if (!isNonEmptyString(skill.license)) errors.push(`${at}: "license" must be a non-empty string`);
-    if (typeof skill.reviewed !== "string" || !DATE_RE.test(skill.reviewed)) errors.push(`${at}: "reviewed" must be a YYYY-MM-DD date`);
+    if (!isPastOrPresentDate(skill.reviewed)) errors.push(`${at}: "reviewed" must be a real YYYY-MM-DD date that is not in the future`);
     if (!isSafeRelativePath(skill.review, false)) {
       errors.push(`${at}: "review" must be a relative path to the review record`);
-    } else if (!fs.existsSync(path.join(manifestDir, ...skill.review.split("/")))) {
-      errors.push(`${at}: review record "${skill.review}" does not exist beside the manifest - a skill is listed only after its review`);
+    } else {
+      const problem = reviewRecordProblem(path.join(manifestDir, ...skill.review.split("/")), skill.commit);
+      if (problem !== null) errors.push(`${at}: review record "${skill.review}" ${problem}`);
     }
     if (!Array.isArray(skill.hosts) || skill.hosts.length === 0 || !skill.hosts.every(isNonEmptyString)) {
       errors.push(`${at}: "hosts" must be a non-empty array of strings`);
@@ -213,6 +263,45 @@ function readMarker(dest) {
   }
 }
 
+/**
+ * sha256 over the installed tree: every entry below `dir` except the marker,
+ * as sorted forward-slash relative paths, each with its kind and, for a file,
+ * its bytes. Any added, removed, renamed or edited entry changes the digest.
+ */
+function digestTree(dir) {
+  const entries = [];
+  const walk = (current, prefix) => {
+    for (const name of fs.readdirSync(current)) {
+      const relative = prefix === "" ? name : `${prefix}/${name}`;
+      if (relative === MARKER_FILE) continue;
+      const full = path.join(current, name);
+      const stat = fs.lstatSync(full);
+      if (stat.isDirectory()) {
+        entries.push({ relative, kind: "d", full });
+        walk(full, relative);
+      } else if (stat.isFile()) {
+        entries.push({ relative, kind: "f", full });
+      } else {
+        entries.push({ relative, kind: stat.isSymbolicLink() ? "l" : "o", full });
+      }
+    }
+  };
+  walk(dir, "");
+  entries.sort((a, b) => (a.relative < b.relative ? -1 : a.relative > b.relative ? 1 : 0));
+  const hash = crypto.createHash("sha256");
+  for (const entry of entries) {
+    hash.update(`${entry.kind}\0${entry.relative}\0`);
+    if (entry.kind === "f") {
+      const bytes = fs.readFileSync(entry.full);
+      hash.update(`${bytes.length}\0`);
+      hash.update(bytes);
+    } else if (entry.kind === "l") {
+      hash.update(`${fs.readlinkSync(entry.full)}\0`);
+    }
+  }
+  return DIGEST_PREFIX + hash.digest("hex");
+}
+
 /** Read-only: what is at <target>/<name> right now. */
 function inspect(dest, skill) {
   let stat;
@@ -225,25 +314,63 @@ function inspect(dest, skill) {
   const marker = stat.isDirectory() ? readMarker(dest) : null;
   if (marker === null || marker.name !== skill.name) return { state: STATE.clash, installedCommit: null };
   const same = marker.commit === skill.commit && marker.source === skill.source && marker.path === skill.path;
+  let state = same ? STATE.present : STATE.outdated;
+  if (same && (typeof marker.digest !== "string" || marker.digest !== digestTree(dest))) state = STATE.modified;
   return {
-    state: same ? STATE.present : STATE.outdated,
+    state,
     installedCommit: typeof marker.commit === "string" ? marker.commit : null,
   };
 }
 
-function git(cwd, args) {
+/**
+ * The environment for git: the caller's, minus every GIT_* variable (GIT_DIR,
+ * GIT_WORK_TREE, GIT_INDEX_FILE, GIT_CONFIG_*, GIT_ALLOW_PROTOCOL ... would
+ * redirect or reconfigure the call), plus only what the installer needs.
+ */
+function gitEnv() {
+  const env = {};
+  for (const [name, value] of Object.entries(process.env)) {
+    if (!name.toUpperCase().startsWith(GIT_ENV_PREFIX)) env[name] = value;
+  }
+  env.GIT_TERMINAL_PROMPT = "0";
+  env.GIT_ASKPASS = "";
+  env.GCM_INTERACTIVE = "never";
+  env.GIT_ALLOW_PROTOCOL = process.env[FILE_URL_ENV] === "1" ? "https:file" : "https";
+  env.GIT_CONFIG_NOSYSTEM = "1";
+  env.GIT_LFS_SKIP_SMUDGE = "1";
+  return env;
+}
+
+/** Runs git against the repository in `repo` and nothing else: --git-dir and --work-tree are explicit on every call. */
+function git(repo, args) {
+  const cwd = repo;
   const allowedProtocols = ["-c", "protocol.allow=never", "-c", "protocol.https.allow=always"];
   if (process.env[FILE_URL_ENV] === "1") allowedProtocols.push("-c", "protocol.file.allow=always");
+  const noFilters = ["-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=", "-c", "filter.lfs.required=false"];
   const result = spawnSync(
     "git",
-    ["-c", `core.hooksPath=${os.devNull}`, "-c", "core.fsmonitor=false", "-c", "advice.detachedHead=false", ...allowedProtocols, ...args],
+    [
+      "--git-dir",
+      path.join(repo, GIT_DIR_NAME),
+      "--work-tree",
+      repo,
+      "-c",
+      `core.hooksPath=${os.devNull}`,
+      "-c",
+      "core.fsmonitor=false",
+      "-c",
+      "advice.detachedHead=false",
+      ...allowedProtocols,
+      ...noFilters,
+      ...args,
+    ],
     {
       cwd,
       encoding: "utf8",
       shell: false,
       windowsHide: true,
       timeout: GIT_TIMEOUT_MS,
-      env: { ...process.env, GIT_TERMINAL_PROMPT: "0", GIT_ASKPASS: "", GCM_INTERACTIVE: "never" },
+      env: gitEnv(),
     },
   );
   if (result.error) throw new Error(`git ${args[0]}: ${result.error.message}`);
@@ -258,17 +385,26 @@ function isInside(root, candidate) {
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
 }
 
+function hasGitSegment(root, candidate) {
+  return path
+    .relative(root, candidate)
+    .split(/[\\/]/)
+    .some((segment) => GIT_SEGMENTS.includes(segment.toLowerCase()));
+}
+
 /**
  * Copies a directory tree with no code execution. Regular files and
  * directories only; a symlink is followed only when it resolves to a regular
- * file inside the skill folder, and is otherwise refused.
+ * file inside the skill folder, and is otherwise refused. Nothing is ever
+ * copied from a `.git` folder: an entry of that name is skipped, and a symlink
+ * that resolves into one is refused.
  */
 function copyTree(skillRoot, from, to) {
   fs.mkdirSync(to);
   for (const entry of fs.readdirSync(from)) {
     const source = path.join(from, entry);
     const relative = path.relative(skillRoot, source);
-    if (entry.toLowerCase() === ".git") continue;
+    if (GIT_SEGMENTS.includes(entry.toLowerCase())) continue;
     if (entry === MARKER_FILE) throw new Error(`the skill ships its own ${MARKER_FILE} (${relative}) - refused`);
     const stat = fs.lstatSync(source);
     if (stat.isDirectory()) {
@@ -283,6 +419,7 @@ function copyTree(skillRoot, from, to) {
         throw new Error(`symlink ${relative} does not resolve - refused`);
       }
       if (!isInside(skillRoot, resolved)) throw new Error(`symlink ${relative} points outside the skill folder - refused`);
+      if (hasGitSegment(skillRoot, resolved)) throw new Error(`symlink ${relative} resolves into ${GIT_DIR_NAME} - refused`);
       if (!fs.lstatSync(resolved).isFile()) throw new Error(`symlink ${relative} does not point to a regular file - refused`);
       fs.copyFileSync(resolved, path.join(to, entry), fs.constants.COPYFILE_EXCL);
     } else {
@@ -319,6 +456,7 @@ function installSkill(skill, target, replace) {
     if (skillRoot !== skillDir || !fs.lstatSync(skillRoot).isDirectory()) {
       throw new Error(`path "${skill.path}" is not a plain folder inside the repository - refused`);
     }
+    if (hasGitSegment(tempReal, skillRoot)) throw new Error(`path "${skill.path}" resolves into ${GIT_DIR_NAME} - refused`);
     const skillFile = path.join(skillRoot, SKILL_FILE);
     if (!fs.existsSync(skillFile) || !fs.lstatSync(skillFile).isFile()) {
       throw new Error(`path "${skill.path}" holds no ${SKILL_FILE}`);
@@ -333,6 +471,7 @@ function installSkill(skill, target, replace) {
       commit: skill.commit,
       path: skill.path,
       installedAt: new Date().toISOString(),
+      digest: digestTree(staging),
     };
     fs.writeFileSync(path.join(staging, MARKER_FILE), JSON.stringify(marker, null, 2) + "\n", { flag: "wx" });
 
@@ -388,7 +527,8 @@ function main() {
       return { skill, state: null, installedCommit: null, error: error.message };
     }
   });
-  const needsGit = !readOnly && plans.some((plan) => plan.state === STATE.missing || (plan.state === STATE.outdated && options.update));
+  const replaceable = (state) => state === STATE.outdated || state === STATE.modified;
+  const needsGit = !readOnly && plans.some((plan) => plan.state === STATE.missing || (replaceable(plan.state) && options.update));
   if (needsGit) {
     const probe = spawnSync("git", ["--version"], { encoding: "utf8", shell: false, windowsHide: true });
     if (probe.error || probe.status !== 0) fail(EXIT_SKILL_FAILED, MSG.noGit + (probe.error ? probe.error.message : `exit ${probe.status}`));
@@ -396,7 +536,7 @@ function main() {
   }
 
   const rows = [];
-  const counts = { installed: 0, updated: 0, present: 0, outdated: 0, clash: 0, failed: 0 };
+  const counts = { installed: 0, updated: 0, present: 0, outdated: 0, modified: 0, clash: 0, failed: 0 };
   for (const plan of plans) {
     const { skill } = plan;
     let status;
@@ -417,8 +557,12 @@ function main() {
       counts.outdated += 1;
       status = "skip";
       detail = `${MSG.outdated} (installed: ${String(plan.installedCommit).slice(0, SHORT_SHA)})`;
+    } else if (plan.state === STATE.modified && (!options.update || options.list)) {
+      counts.modified += 1;
+      status = MSG.modifiedStatus;
+      detail = MSG.modified;
     } else {
-      const replace = plan.state === STATE.outdated;
+      const replace = replaceable(plan.state);
       if (readOnly) {
         counts[replace ? "updated" : "installed"] += 1;
         status = replace ? MSG.wouldUpdate : MSG.wouldInstall;
@@ -444,7 +588,7 @@ function main() {
   const verbUpdate = readOnly ? "to update" : "updated";
   process.stdout.write(
     `\n${manifest.skills.length} listed: ${counts.installed} ${verb}, ${counts.updated} ${verbUpdate}, ${counts.present} already present, ` +
-      `${counts.outdated} at another commit, ${counts.clash} name clash, ${counts.failed} failed.\n`,
+      `${counts.outdated} at another commit, ${counts.modified} modified, ${counts.clash} name clash, ${counts.failed} failed.\n`,
   );
   return counts.failed > 0 ? EXIT_SKILL_FAILED : EXIT_OK;
 }
