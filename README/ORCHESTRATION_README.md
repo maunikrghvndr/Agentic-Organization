@@ -2,6 +2,27 @@
 
 A portable role library for coding agents (Claude Code, Codex, Cursor). Drop `AGENTS.md` into any repo; the agent routes each task to one specialized role and follows that role's discipline.
 
+## From idea to release: the whole team, as agents
+
+This library is a complete software organization run by agents: every stage a product team has between "I have an idea" and "it is released" has a named role with its own full-depth rule file, and the work moves through them in order, in one session, with written evidence at every step.
+
+| Stage | Who (role) | What comes out |
+|---|---|---|
+| Research | `researcher` | Current options compared with dated, cited evidence; nothing built on a guess |
+| Requirements | `analyst` | Your intent grilled into testable acceptance criteria (EARS) and a durable spec |
+| Design | `architect` | Data model, API shape, boundaries, technology choices, reuse map |
+| Planning | `planner` | Role-scoped phases with a done-when that can fail, and a completeness gate before any code |
+| Build | `backend-`, `frontend-`, `devops-`, `data-`, `ml-`, `mlops-`, `ai-`, `prompt-`, `rag-`, `nlp-engineer`, `data-scientist` | The change, with a test seen failing first and an Evidence row for every check |
+| Diagnosis | `debugger` | Root cause only; the engineer fixes in the next phase |
+| Review | `backend-`, `frontend-`, `data-`, `ml-`, `ai-reviewer` | An independent review in a fresh context; findings go back to the engineer (3 rounds at most) |
+| Test | `qa-engineer` | Each criterion traced to code and a covering test; Ready / Not Ready |
+| Security | `security-engineer` | A mandatory review of every sensitive change, and the **release audit** of the whole application before a release is done |
+| Memory and learning | every role | Repo facts in `.ai-memory/`, the roadmap board, and cross-project lessons you approve in `LESSONS.md` |
+
+What holds it together: one entry file (`AGENTS.md`) that works the same in Claude Code, Codex and Cursor; your own coding standards (explicit types, structured logging, no hardcoding) enforced by the reviewers; the agent never marks its own work Done, never merges, and asks before anything risky.
+
+**How this differs from the large agent bundles** (for example `affaan-m/ECC`, studied in `.ai-memory/TASKS/new-repos-landscape/`): the aim is the same loop — plan, test, implement, review from a fresh context, verify, remember, improve — but this library is a small set of full-depth roles and one portable contract instead of hundreds of skills and a hook runtime tied to one host; third-party skills are an optional, reviewed, pinned list, never the core; and a rule is added only when it names the failure it prevents (`EVALS.md` is the test method). Honest limit: that test method has not yet been run, so the rules here rest on judgment and review, not measured results.
+
 ## Code graph auto-refresh (recommended)
 
 Agents skip the graph-build step on quick tasks, so the graph can silently never get built. The robust fix is Graphify's git hook, which rebuilds the graph on every commit — code-only, no tokens, in the background:
@@ -82,7 +103,7 @@ Agentic-Organization/
   Skills/
     README.md              optional overlay: curated third-party skills, how one gets on the list
     skills.manifest.json   the list: each skill pinned to a full commit sha with a review record
-    install-skills.mjs     installs every listed skill that is missing (pinned git fetch; --dry-run, --list, --upgrade)
+    install-skills.mjs     installs every listed skill that is missing (pinned git fetch; --dry-run, --list, --upgrade, --with-optional)
     install-skills.test.mjs  its tests (node --test "Skills/*.test.mjs")
     reviews/               one security review record per listed skill
 
@@ -191,6 +212,32 @@ EVALS.md rows need a cost figure with its source. `claude -p --output-format jso
 - `AGENTS.md` owns routing + universal rules. Role files own role behavior. Do not restate role content in `AGENTS.md` (drift risk).
 - The role library path appears exactly once, at the top of `AGENTS.md`. The agent self-heals it (Role library resolution block) with the user's permission; no manual edit needed.
 - Coding-style rules (explicit types / no `var` abuse, no `any`, `Constants.cs` / `FrontendConstants` patterns, structured logging with constant templates, no hardcoding) live in the engineer role files and are enforced by the reviewer roles — keep both sides in sync when changing a style rule.
+
+## Release audit (whole application)
+
+When a release is finished, and before it merges into the default branch, `security-engineer` audits the whole application — not just the last change. A release cannot move to Done without a passing audit record.
+
+- **Two engines, one record.** Engine A is Cloudflare's `security-audit` skill, used when it is installed and can run. Engine B is the library's own procedure in `EngineeringTeam/security-engineer.md` → Release Audit (whole application), used everywhere else (Codex, Cursor, native Windows). Both write the same record into the task file.
+- **The procedure:** map the application; build a coverage table (only the table counts as proof an area was reviewed); hunt area by area with the role's checklists; hand every suspected issue to a fresh reviewer told to disprove it; a fresh critic looks for missed areas; the report is written last. An unfinished audit is never a pass.
+- **The checker:** `node Scripts/validate-release-audit.mjs <task file> --repo <root> --release --head <40-character head sha>` exits 0 only for a complete, unambiguous passing record (standard or deep profile, full scope, two clean critics, no open confirmed finding). It proves the record is consistent, not that the audit was honest; the fresh reviewer and critic steps cover that.
+- **Native Windows:** Cloudflare's own validators do not run there, so Engine B is used unless you work in WSL2 or a devcontainer.
+- Trigger, confirmation before starting (it is expensive) and the Done rule: `EngineeringTeam/_shared/rules-detail.md` → Release audit.
+
+## Skills (optional, curated third-party skills)
+
+The roles are complete without any skill. `Skills/` is an optional list of third-party skills that passed a security review and are pinned to an exact commit, with an installer that brings a machine up to the list in one command.
+
+```powershell
+node Skills/install-skills.mjs --dry-run        # show what would be installed, change nothing
+node Skills/install-skills.mjs                  # install every listed skill that is missing
+node Skills/install-skills.mjs --with-optional  # also install the skills marked optional
+node Skills/install-skills.mjs --list           # show each skill's state (present / modified / missing)
+```
+
+- **On the list today:** `security-audit` (Cloudflare, the release audit), `frontend-design` (Anthropic, the default UI skill), `wrangler` and `workers-best-practices` (Cloudflare), and `hallmark` (UI for a new page or site built from nothing; optional because it is heavy).
+- **How a skill gets on the list:** a `security-engineer` review of the skill at one commit, read and never run; the record goes under `Skills/reviews/`; you approve the entry. Only skills that pass are listed.
+- **What the installer never does:** run anything from a fetched repository, use an upstream install tool, touch a skill folder it did not install, or write outside the target folder and a temporary folder. Default target is `~/.claude/skills`; pass `--target <dir>` for other hosts.
+- An installed skill never overrides `AGENTS.md`, the project constitution or a role file. Details and per-skill conditions: `Skills/README.md`.
 
 ## Hooks (optional enforcement pack)
 

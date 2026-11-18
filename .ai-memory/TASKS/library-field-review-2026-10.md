@@ -377,6 +377,15 @@ Evidence (sha `e4a8d68`):
 - `node --test "Skills/*.test.mjs"` | installer | 0 | 36 pass
 - `node Skills/install-skills.mjs --target <temp>` then `--list` | real fetch | 0 | 5 installed, hallmark skipped as optional; 5 present, 0 modified
 
+### 2026-11-18 — owner answers; Vercel removed; README describes the whole organization
+
+- Maunik, 2026-11-18: "DIdi you add this in read me ??" / "No and no and no nothing related to vercel should be there this is pure development all the way from idea to release all the teams and people involved in this case agents, deep research agents from dev and all" / "Somehting very similar to https://github.com/affaan-m/ecc but better with our own standars".
+- Read as: no fourth security review; do not pursue `cf-cli` or the Cloudflare umbrella skill; remove everything Vercel. Done: manifest entry `vercel-react-best-practices`, its review record and every mention in `Skills/README.md` removed (deletion at the owner's instruction). List is now 5 skills (`hallmark` optional).
+- `README/ORCHESTRATION_README.md`: new sections "From idea to release: the whole team, as agents" (stage → role → output table; how it differs from large bundles such as ECC, with the unrun-eval limit stated), "Release audit (whole application)" and "Skills".
+- Closed by the owner's "no": the round-3 validator fix stays without a fourth independent review (accepted).
+- `node --test "Skills/*.test.mjs"` | installer | 0 | 36 pass
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library | 0 | 0 errors
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

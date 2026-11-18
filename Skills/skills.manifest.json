@@ -48,21 +48,6 @@
       "notes": "Pass with conditions. Two files, no scripts, about 2,300 tokens. The default UI design skill for everyday work and for work inside an existing design system: the project's tokens and brand are the brief. Prefer hallmark only for a new page or site built from nothing."
     },
     {
-      "name": "vercel-react-best-practices",
-      "area": "frontend",
-      "source": "https://github.com/vercel-labs/agent-skills",
-      "commit": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
-      "path": "skills/react-best-practices",
-      "license": "MIT",
-      "reviewed": "2026-11-18",
-      "review": "reviews/vercel-labs-agent-skills.md",
-      "hosts": [
-        "claude-code",
-        "other hosts: pass --target (not verified here)"
-      ],
-      "notes": "Pass with conditions. React and Next.js performance rules, Markdown only. Read single rule files, not the 108 KB compiled AGENTS.md. A package a rule names (better-all, swr, lru-cache) is still an ask-first dependency. The folder is named after the skill's frontmatter name. web-design-guidelines from the same repository is not listed: it fetches its rules from a URL at run time."
-    },
-    {
       "name": "wrangler",
       "area": "cloudflare",
       "source": "https://github.com/cloudflare/skills",

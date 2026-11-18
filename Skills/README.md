@@ -56,13 +56,12 @@ Limits, stated plainly: the digest detects a change to the installed files, not 
 | `security-audit` | security | `cloudflare/security-audit-skill` at `c1c8a8c` | `reviews/cloudflare-security-audit-skill.md` (Pass with conditions) |
 | `hallmark` | ui-design | `nutlope/hallmark` at `04977e1`, path `skills/hallmark` | `reviews/nutlope-hallmark.md` (Pass with conditions) |
 | `frontend-design` | ui-design | `anthropics/skills` at `e4bb5d9`, path `skills/frontend-design` | `reviews/anthropics-skills.md` (Pass with conditions) |
-| `vercel-react-best-practices` | frontend | `vercel-labs/agent-skills` at `1a2c79d`, path `skills/react-best-practices` | `reviews/vercel-labs-agent-skills.md` (Pass with conditions) |
 | `wrangler` | cloudflare | `cloudflare/skills` at `5108325`, path `skills/wrangler` | `reviews/cloudflare-skills.md` (Pass with conditions) |
 | `workers-best-practices` | cloudflare | `cloudflare/skills` at `5108325`, path `skills/workers-best-practices` | `reviews/cloudflare-skills.md` (Pass with conditions) |
 
 One record can cover several skills from one repository at one commit when their result is the same (`reviews/cloudflare-skills.md`); a record still names one result, so a skill from the same repository that does not pass is described there without a second result line and is not listed.
 
-**Which UI skill for what.** `frontend-design` is the default: two files, about 2,300 tokens, right for everyday UI work and for work inside an existing design system (the project's tokens and brand are the brief). `hallmark` is for a new marketing page or site built from nothing, when a full guided run with its linter is wanted: it is heavy (about 7 MB, a page build loads roughly 25,000 to 30,000 tokens) and, by its own description, is used on an existing design only when the user names it. `vercel-react-best-practices` is React and Next.js performance, not visual design. No installed skill overrides `AGENTS.md`, the constitution or the role file (`EngineeringTeam/frontend-engineer.md`).
+**Which UI skill for what.** `frontend-design` is the default: two files, about 2,300 tokens, right for everyday UI work and for work inside an existing design system (the project's tokens and brand are the brief). `hallmark` is for a new marketing page or site built from nothing, when a full guided run with its linter is wanted: it is heavy (about 7 MB, a page build loads roughly 25,000 to 30,000 tokens) and, by its own description, is used on an existing design only when the user names it. No installed skill overrides `AGENTS.md`, the constitution or the role file (`EngineeringTeam/frontend-engineer.md`).
 
 **Notes for `hallmark`.** Never run its bundled `scripts/install.mjs` or `scripts/install-hook.mjs`: the second adds a `PostToolUse` hook to `.claude/settings.json`, which is an agent configuration change (ask-first, security pass). Its image step posts the prompt to Together AI whenever `TOGETHER_API_KEY` is set in the environment: leave the variable unset unless that is wanted. Its render checks need `puppeteer-core` and Chrome, an ask-first dependency; without them the static checks still run.
 
@@ -72,10 +71,9 @@ One record can cover several skills from one repository at one commit when their
 
 ## Reviewed and not listed
 
-- `web-design-guidelines` (`vercel-labs/agent-skills` at `1a2c79d`): fails. The skill holds no rules; it tells the agent to fetch them from the `main` branch of another repository before each review, an unpinned instruction channel. Record: `reviews/vercel-labs-agent-skills.md`.
 - `cf-cli` (`cloudflare/skills` at `5108325`): held back for the owner. Its first step is an unpinned global `npm install` of a beta CLI, it runs unpinned `npx wrangler`, and it suggests editing the user-level `AGENTS.md` or `CLAUDE.md`. Record: `reviews/cloudflare-skills.md`.
 
 ## Candidates not yet reviewed
 
 - `cloudflare` (`cloudflare/skills`, the umbrella product-selection skill): read in part only (130 files, a 32 KB `SKILL.md`). It loads on any architecture question and tells the agent to surface Cloudflare products unasked, so it needs the owner's decision as well as a full read. Notes: `reviews/cloudflare-skills.md`.
-- The other skills in `cloudflare/skills`, `vercel-labs/agent-skills` and `anthropics/skills` were not looked at.
+- The other skills in `cloudflare/skills` and `anthropics/skills` were not looked at.
