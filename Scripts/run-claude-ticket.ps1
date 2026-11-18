@@ -25,7 +25,10 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Role files live in department folders (EngineeringTeam\<Folder>\<role>.md): find the file by name.
-$RoleMatch = Get-ChildItem (Join-Path $AgentRoot "EngineeringTeam") -Recurse -Filter $RoleFileName -File -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($RoleFileName -notmatch '^[a-z-]+\.md$') { throw "Role file name must look like backend-engineer.md: $RoleFileName" }
+$RoleMatch = @(Get-ChildItem (Join-Path $AgentRoot "EngineeringTeam") -Recurse -Filter $RoleFileName -File -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '[\\/]_shared[\\/]' })
+if ($RoleMatch.Count -gt 1) { throw "More than one role file named $RoleFileName" }
+$RoleMatch = $RoleMatch | Select-Object -First 1
 $RolePath = if ($RoleMatch) { $RoleMatch.FullName } else { Join-Path $AgentRoot "EngineeringTeam\$RoleFileName" }
 
 if (-not (Test-Path $RolePath)) {

@@ -412,6 +412,9 @@ Evidence (sha `e4a8d68`):
 - `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library, 24 roles found in folders | 0 | 0 errors
 - `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint controls | 0 | 47 pass
 
+- Security record for the folder move (`security-engineer`, fresh context, on `468c3dc..7b2fb0a`): **Pass With Conditions**, Blocking: none; 24 renames confirmed at 100% similarity, every table row and reference resolves on disk. Condition: the post-merge re-sync above. Non-blocking N1, N2, N4 applied: own-property guard in the workflow's role map; the deprecated runners accept only a plain role file name, skip `_shared`, refuse two matches; `Lint-Library.ps1` now checks each table row's folder against disk and refuses a role name in two folders (seen firing on a planted wrong folder).
+- `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint controls after N4 | 0 | 47 pass
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
