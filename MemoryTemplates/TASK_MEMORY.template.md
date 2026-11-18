@@ -45,7 +45,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 
 ## Release Audit
 (used only for a release task; omit otherwise — `_shared/rules-detail.md` → Release audit (whole application); owner `security-engineer`; a `Confirmed` finding stays open until `Resolved: <fix sha>` is appended to its `verified by` cell; a `Needs validation` impact cell starts `Missing fact:`; check with `node Scripts/validate-release-audit.mjs`)
-- Release audit: <Pass | Needs Changes | Incomplete: reason> | sha <sha> | engine <A: cloudflare@commit | B: library> (<why this engine>) | profile <quick|standard|deep> | run <n> | YYYY-MM-DD
+- Release audit: <Pass | Needs Changes | Incomplete: reason> | sha <sha> | engine <A: cloudflare@commit | B: library> (<why this engine>) | profile <quick|standard|deep> | scope <full | name> | critics clean <n> | run <n> | YYYY-MM-DD
 
 ### Coverage Ledger
 | id | surface | boundary | subsystem | checklist | state | paths read | checks | findings |

@@ -6,16 +6,26 @@
  * (whole application) -> Record Format.
  *
  * Usage:
- *   node Scripts/validate-release-audit.mjs <task-file> [--repo <root>]
+ *   node Scripts/validate-release-audit.mjs <task-file> [--repo <root>] [--release [--head <sha>]]
  *
  * --repo is the root of the audited repository; cited paths are resolved
  * against it (default: the current directory).
+ * --release additionally requires what a release needs: the latest verdict is
+ * `Pass`, profile `standard` or `deep`, `scope full`, no `out-of-scope` row
+ * and, with --head <sha>, a headline sha that prefix-matches the release head.
+ * Without --release a scoped Pass is valid as a scoped audit; the OK line says
+ * `scoped` or `release-grade`.
  *
  * Exit 0 = record is consistent. Exit 1 = validation errors (stderr, one per
  * line). Exit 2 = usage error or unreadable input.
  *
  * A pass proves the record is well formed and self-consistent. It does not
  * prove that a finding is true or that coverage is complete.
+ *
+ * Nothing inside the section is skipped: a code fence, an HTML comment, raw
+ * HTML, a headline in another spelling, or a table-like line outside the two
+ * tables is an error, because a human reader would see it and the parser
+ * would not.
  *
  * The task file is untrusted input: size is bounded, nothing in it is
  * evaluated or passed to a shell, cited paths cannot leave the repository
@@ -32,9 +42,17 @@ const MAX_ROWS = 5000;
 const MAX_PATHS_PER_CELL = 500;
 const MAX_ERRORS = 100;
 const MAX_ECHO = 120;
+const MAX_TOKEN = 4096;
+const MAX_SCOPE = 80;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const CLOCK_SKEW_DAYS = 1;
 
 const SECTION_HEADING = /^##[ \t]+Release Audit[ \t]*$/;
 const HEADLINE_PREFIX = "- Release audit:";
+/** Any line a reader would take for a headline: other case, bullet, indent, quote or emphasis. */
+const HEADLINE_LIKE = /^[\s>]*(?:[-*+]\s*)?[*_`]*release audit[*_`]*\s*:/i;
+const EOF_TRAILER = "<!-- END-OF-FILE -->";
+const HEADLINE_FIELDS = "verdict, sha, engine, profile, scope, critics clean, run, date";
 const LEDGER_HEADING = "Coverage Ledger";
 const FINDINGS_HEADING = "Audit Findings";
 const LEDGER_COLUMNS = ["id", "surface", "boundary", "subsystem", "checklist", "state", "paths read", "checks", "findings"];
@@ -45,14 +63,23 @@ const STATES_BLOCKING_PASS = ["planned", "candidate", "deferred"];
 const VERDICTS = ["Confirmed", "Needs validation", "Rejected"];
 const SEVERITIES = ["Critical", "High", "Medium", "Low", "Informational"];
 const PROFILES = ["quick", "standard", "deep"];
+const RELEASE_PROFILES = ["standard", "deep"];
+const SCOPE_FULL = "full";
+const GRADE_SCOPED = "scoped";
+const GRADE_RELEASE = "release-grade";
 const EMPTY_MARKERS = new Set(["", "-", "--", "\u2014", "none", "n/a"]);
 const ID_PATTERN = /^[A-Za-z][A-Za-z0-9._-]{0,63}$/;
 const SHA = "[0-9a-f]{7,40}";
 const SHA_FIELD = new RegExp(`^sha (${SHA})$`);
 const ENGINE_FIELD = new RegExp(`^engine (A: cloudflare@${SHA}|B: library) \\((.+)\\)$`);
+const HEAD_VALUE = new RegExp(`^${SHA}$`);
+const ZERO_SHA = /^0+$/;
+const SCOPE_FIELD = /^scope (\S.*)$/;
+const CRITICS_FIELD = /^critics clean (0|[1-9][0-9]{0,3})$/;
 const RUN_FIELD = /^run ([1-9][0-9]{0,5})$/;
 const DATE_FIELD = /^(\d{4})-(\d{2})-(\d{2})$/;
-const RESOLVED_MARKER = new RegExp(`\\bResolved: ${SHA}\\b`);
+/** Anchored: the marker is the last `;`-separated item of the cell, so "not Resolved: ..." does not match. */
+const RESOLVED_MARKER = new RegExp(`(?:^|;\\s*)Resolved:\\s*(${SHA})\\s*$`);
 const MISSING_FACT_PREFIX = /^missing fact:\s*\S/i;
 const LINE_SUFFIX = /:(\d{1,7})(?:-(\d{1,7}))?$/;
 
@@ -103,7 +130,11 @@ function isSeparatorRow(cells, width) {
   return cells.length === width && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
 }
 
-/** Lines of the single `## Release Audit` section, with fenced code blocks removed. */
+/**
+ * Lines of the single `## Release Audit` section. Fences outside the section
+ * are skipped (a record inside a fence is not a record); a fence, an HTML
+ * comment or raw HTML inside the section is an error.
+ */
 function extractSection(lines, errors) {
   let fence = null;
   let start = -1;
@@ -113,6 +144,7 @@ function extractSection(lines, errors) {
     const line = lines[i];
     const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
     if (fenceMatch) {
+      if (start >= 0 && count === 1) errors.push(`line ${i + 1}: code fence inside \`## Release Audit\`; nothing in the record may be fenced`);
       if (fence === null) fence = fenceMatch[1][0];
       else if (fenceMatch[1][0] === fence) fence = null;
       continue;
@@ -125,7 +157,14 @@ function extractSection(lines, errors) {
     }
     if (start !== -1 && count === 1) {
       if (/^#{1,2}[ \t]+\S/.test(line)) start = -2;
-      else if (start >= 0) section.push({ text: line, number: i + 1 });
+      else if (start >= 0) {
+        const trimmed = line.trim();
+        if (trimmed !== EOF_TRAILER) {
+          if (line.includes("<!--")) errors.push(`line ${i + 1}: HTML comment inside \`## Release Audit\`; nothing in the record may be commented out`);
+          else if (trimmed.startsWith("<")) errors.push(`line ${i + 1}: raw HTML inside \`## Release Audit\`; the record is plain Markdown`);
+        }
+        section.push({ text: line, number: i + 1 });
+      }
     }
   }
   if (count === 0) errors.push("no `## Release Audit` section found (outside code fences)");
@@ -133,38 +172,61 @@ function extractSection(lines, errors) {
   return count === 1 ? section : null;
 }
 
-function isValidDate(text) {
+/** UTC midnight of a real YYYY-MM-DD calendar date in milliseconds, or null. */
+function parseDate(text) {
   const match = DATE_FIELD.exec(text);
-  if (!match) return false;
+  if (!match) return null;
   const [year, month, day] = [Number(match[1]), Number(match[2]), Number(match[3])];
   const date = new Date(Date.UTC(year, month - 1, day));
-  return date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  const real = date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day;
+  return real ? date.getTime() : null;
 }
 
 function parseHeadline(entry, errors) {
   const where = `line ${entry.number}`;
   const fields = entry.text.slice(HEADLINE_PREFIX.length).split("|").map((field) => field.trim());
-  if (fields.length !== 6) {
-    errors.push(`${where}: headline needs 6 fields separated by \`|\` (verdict, sha, engine, profile, run, date), found ${fields.length}`);
+  if (fields.length !== 8) {
+    errors.push(`${where}: headline needs 8 fields separated by \`|\` (${HEADLINE_FIELDS}), found ${fields.length}`);
     return null;
   }
-  const [verdictText, shaText, engineText, profileText, runText, dateText] = fields;
+  const [verdictText, shaText, engineText, profileText, scopeText, criticsText, runText, dateText] = fields;
   let verdict = null;
   if (verdictText === "Pass" || verdictText === "Needs Changes") verdict = verdictText;
   else if (/^Incomplete: \S/.test(verdictText)) verdict = "Incomplete";
   else errors.push(`${where}: headline verdict ${safe(verdictText)} is not \`Pass\`, \`Needs Changes\` or \`Incomplete: <reason>\``);
-  if (!SHA_FIELD.test(shaText)) errors.push(`${where}: headline field 2 ${safe(shaText)} is not \`sha <7-40 lowercase hex>\``);
+  const shaMatch = SHA_FIELD.exec(shaText);
+  if (!shaMatch) errors.push(`${where}: headline field 2 ${safe(shaText)} is not \`sha <7-40 lowercase hex>\``);
+  else if (ZERO_SHA.test(shaMatch[1])) errors.push(`${where}: headline field 2 ${safe(shaText)} is all zeros; write the audited commit`);
   if (!ENGINE_FIELD.test(engineText)) errors.push(`${where}: headline field 3 ${safe(engineText)} is not \`engine A: cloudflare@<commit> (<why>)\` or \`engine B: library (<why>)\``);
   const profileMatch = /^profile (\S+)$/.exec(profileText);
   if (!profileMatch || !PROFILES.includes(profileMatch[1])) errors.push(`${where}: headline field 4 ${safe(profileText)} is not \`profile quick|standard|deep\``);
+  const scopeMatch = SCOPE_FIELD.exec(scopeText);
+  if (!scopeMatch || scopeMatch[1].length > MAX_SCOPE) errors.push(`${where}: headline field 5 ${safe(scopeText)} is not \`scope full\` or \`scope <name of the audited part>\``);
+  const criticsMatch = CRITICS_FIELD.exec(criticsText);
+  if (!criticsMatch) errors.push(`${where}: headline field 6 ${safe(criticsText)} is not \`critics clean <number of critics that returned nothing new>\``);
   const runMatch = RUN_FIELD.exec(runText);
-  if (!runMatch) errors.push(`${where}: headline field 5 ${safe(runText)} is not \`run <positive integer>\``);
-  if (!isValidDate(dateText)) errors.push(`${where}: headline field 6 ${safe(dateText)} is not a valid YYYY-MM-DD date`);
-  return { verdict, run: runMatch ? Number(runMatch[1]) : null, number: entry.number };
+  if (!runMatch) errors.push(`${where}: headline field 7 ${safe(runText)} is not \`run <positive integer>\``);
+  const date = parseDate(dateText);
+  if (date === null) errors.push(`${where}: headline field 8 ${safe(dateText)} is not a valid YYYY-MM-DD date`);
+  return {
+    verdict,
+    verdictText: verdict === "Incomplete" ? "Incomplete" : verdictText,
+    sha: shaMatch ? shaMatch[1] : null,
+    profile: profileMatch && PROFILES.includes(profileMatch[1]) ? profileMatch[1] : null,
+    scope: scopeMatch && scopeMatch[1].length <= MAX_SCOPE ? scopeMatch[1] : null,
+    criticsClean: criticsMatch ? Number(criticsMatch[1]) : null,
+    run: runMatch ? Number(runMatch[1]) : null,
+    date,
+    dateText,
+    number: entry.number,
+  };
 }
 
-/** Parse the table under `### <heading>` inside the section. */
-function parseTable(section, heading, columns, errors) {
+/**
+ * Parse the table under `### <heading>` inside the section. The index of every
+ * section line that belongs to the table is added to `consumed`.
+ */
+function parseTable(section, heading, columns, errors, consumed) {
   const headingPattern = new RegExp(`^###[ \\t]+${heading}[ \\t]*$`);
   const indexes = [];
   section.forEach((entry, index) => {
@@ -192,15 +254,18 @@ function parseTable(section, heading, columns, errors) {
     errors.push(`\`### ${heading}\` line ${section[cursor].number}: header must be exactly \`| ${columns.join(" | ")} |\``);
     return null;
   }
+  consumed.add(cursor);
   cursor += 1;
   if (cursor >= section.length || !isSeparatorRow(splitRow(section[cursor].text), columns.length)) {
     errors.push(`\`### ${heading}\`: the header row must be followed by a \`|---|\` separator row with ${columns.length} columns`);
     return null;
   }
+  consumed.add(cursor);
   cursor += 1;
   const rows = [];
   for (; cursor < section.length && section[cursor].text.trim().startsWith("|"); cursor += 1) {
     const entry = section[cursor];
+    consumed.add(cursor);
     if (rows.length >= MAX_ROWS) {
       errors.push(`\`### ${heading}\`: more than ${MAX_ROWS} rows; the rest was not read`);
       break;
@@ -255,6 +320,19 @@ function splitList(cell) {
   return cell.split(/<br\s*\/?>|[;,]/i).map(stripTicks).filter((item) => item !== "");
 }
 
+/** Error text for a `:line` or `:from-to` suffix that does not fit the file, or null. */
+function lineRangeError(match, file) {
+  const first = Number(match[1]);
+  const last = Number(match[2] ?? match[1]);
+  if (first < 1 || last < first) return "has an invalid line range";
+  if (last > countLines(file)) return "points past the end of the file";
+  return null;
+}
+
+function hasPathsRead(cell) {
+  return splitList(cell).some((item) => !isEmpty(item));
+}
+
 function checkPathsRead(row, root, errors) {
   const where = `ledger row ${safe(row.id)} (line ${row.number})`;
   const items = splitList(row["paths read"]);
@@ -263,17 +341,37 @@ function checkPathsRead(row, root, errors) {
     return;
   }
   for (const item of items) {
+    if (item.length > MAX_TOKEN) {
+      errors.push(`${where}: \`paths read\` entry ${safe(item)} is longer than ${MAX_TOKEN} characters`);
+      continue;
+    }
+    const match = LINE_SUFFIX.exec(item);
     const cited = item.replace(LINE_SUFFIX, "");
     const result = resolveCitedPath(cited, root);
-    if (result.error) errors.push(`${where}: \`paths read\` entry ${safe(item)} ${result.error}`);
+    if (result.error) {
+      errors.push(`${where}: \`paths read\` entry ${safe(item)} ${result.error}`);
+      continue;
+    }
+    const rangeError = match ? lineRangeError(match, result.file) : null;
+    if (rangeError) errors.push(`${where}: \`paths read\` entry ${safe(item)} ${rangeError}`);
   }
 }
 
-/** `path:line` tokens of a trace cell. */
+/** Strip leading `(`/`[` and trailing `)`/`]`/`.` with index loops: linear, no backtracking. */
+function trimPunctuation(token) {
+  let from = 0;
+  let to = token.length;
+  while (from < to && (token[from] === "(" || token[from] === "[")) from += 1;
+  while (to > from && (token[to - 1] === ")" || token[to - 1] === "]" || token[to - 1] === ".")) to -= 1;
+  return token.slice(from, to);
+}
+
+/** `path:line` tokens of a trace cell. A token longer than MAX_TOKEN cannot be a path and is dropped unread. */
 function traceTokens(cell) {
   return cell
     .split(/<br\s*\/?>|->|\u2192|[;,\s]/i)
-    .map((token) => stripTicks(token).replace(/^[([]+|[)\].]+$/g, ""))
+    .filter((token) => token.length <= MAX_TOKEN)
+    .map((token) => trimPunctuation(stripTicks(token)))
     .filter((token) => !token.includes("://") && LINE_SUFFIX.test(token));
 }
 
@@ -303,9 +401,8 @@ function checkTrace(finding, root, checkExistence, errors) {
       errors.push(`${where}: trace entry ${safe(token)} ${result.error}`);
       continue;
     }
-    const last = Number(match[2] ?? match[1]);
-    if (Number(match[1]) < 1 || last < Number(match[1])) errors.push(`${where}: trace entry ${safe(token)} has an invalid line range`);
-    else if (last > countLines(result.file)) errors.push(`${where}: trace entry ${safe(token)} points past the end of the file`);
+    const rangeError = lineRangeError(match, result.file);
+    if (rangeError) errors.push(`${where}: trace entry ${safe(token)} ${rangeError}`);
   }
 }
 
@@ -323,12 +420,20 @@ function checkIds(rows, label, errors) {
 /**
  * Validate the release-audit record in `text`.
  * @param {string} text task file contents
- * @param {{ repoRoot: string }} options absolute root of the audited repository
- * @returns {{ errors: string[], summary: { verdict: string|null, ledgerRows: number, findings: number } }}
+ * @param {{ repoRoot: string, release?: boolean, head?: string|null, today?: Date }} options
+ *   repoRoot: absolute root of the audited repository; release: also apply the
+ *   release rules; head: the release head sha (with release); today: the clock
+ *   (tests only).
+ * @returns {{ errors: string[], summary: { verdict: string|null, ledgerRows: number, findings: number, grade: string } }}
  */
-export function validate(text, { repoRoot }) {
+export function validate(text, { repoRoot, release = false, head = null, today = new Date() }) {
   const errors = [];
-  const summary = { verdict: null, ledgerRows: 0, findings: 0 };
+  const summary = { verdict: null, ledgerRows: 0, findings: 0, grade: release ? GRADE_RELEASE : GRADE_SCOPED };
+  let releaseHead = null;
+  if (head !== null) {
+    releaseHead = String(head).toLowerCase();
+    if (!HEAD_VALUE.test(releaseHead) || ZERO_SHA.test(releaseHead)) return { errors: [`--head ${safe(head)} is not a 7-40 character hex sha`], summary };
+  }
   let root;
   try {
     root = fs.realpathSync(repoRoot);
@@ -341,7 +446,13 @@ export function validate(text, { repoRoot }) {
   const section = extractSection(lines, errors);
   if (section === null) return { errors, summary };
 
-  // Headline line(s): one per run, the last one counts.
+  // Headline line(s): one per run, the last one counts. A line that reads as a
+  // headline but is not written exactly is an error, never silently skipped.
+  for (const entry of section) {
+    if (HEADLINE_LIKE.test(entry.text) && !entry.text.startsWith(HEADLINE_PREFIX)) {
+      errors.push(`line ${entry.number}: looks like a headline but is not written exactly \`${HEADLINE_PREFIX} ...\` at the start of the line`);
+    }
+  }
   const headlines = section.filter((entry) => entry.text.startsWith(HEADLINE_PREFIX)).map((entry) => parseHeadline(entry, errors));
   if (headlines.length === 0) errors.push(`missing the \`${HEADLINE_PREFIX} ...\` line under \`## Release Audit\``);
   const parsed = headlines.filter((headline) => headline !== null);
@@ -353,9 +464,18 @@ export function validate(text, { repoRoot }) {
   const current = headlines.length > 0 ? headlines[headlines.length - 1] : null;
   summary.verdict = current ? current.verdict : null;
 
-  const ledger = parseTable(section, LEDGER_HEADING, LEDGER_COLUMNS, errors);
-  const findings = parseTable(section, FINDINGS_HEADING, FINDING_COLUMNS, errors);
+  const consumed = new Set();
+  const ledger = parseTable(section, LEDGER_HEADING, LEDGER_COLUMNS, errors, consumed);
+  const findings = parseTable(section, FINDINGS_HEADING, FINDING_COLUMNS, errors, consumed);
   if (ledger === null || findings === null) return { errors, summary };
+
+  // A table ends at its first line without a leading pipe. Anything table-like
+  // after that would be read by a person and not by this parser.
+  section.forEach((entry, index) => {
+    if (consumed.has(index) || !entry.text.includes("|")) return;
+    if (HEADLINE_LIKE.test(entry.text)) return;
+    errors.push(`line ${entry.number}: table-like line outside the two record tables (a row after a blank line, prose, a second header or another heading is not part of the record; keep every row directly under its table header)`);
+  });
   summary.ledgerRows = ledger.length;
   summary.findings = findings.length;
 
@@ -369,7 +489,7 @@ export function validate(text, { repoRoot }) {
     const state = stripTicks(row.state);
     row.state = state;
     if (!STATES.includes(state)) errors.push(`${where}: state ${safe(state)} is not one of ${STATES.join(", ")}`);
-    const hasPaths = !isEmpty(stripTicks(row["paths read"]));
+    const hasPaths = hasPathsRead(row["paths read"]);
     const hasChecks = !isEmpty(row.checks);
     if (state === "covered" && !hasPaths) errors.push(`${where}: \`covered\` needs non-empty \`paths read\``);
     if (state === "covered" && !hasChecks) errors.push(`${where}: \`covered\` needs non-empty \`checks\``);
@@ -397,7 +517,8 @@ export function validate(text, { repoRoot }) {
     if (isEmpty(finding["verified by"])) errors.push(`${where}: \`verified by\` is empty; every finding names the verifier that did not find it`);
     if (!referenced.has(finding.id)) errors.push(`${where}: no ledger row lists this finding in its \`findings\` cell`);
     if (verdict === "Confirmed") {
-      const resolved = RESOLVED_MARKER.test(finding["verified by"]);
+      const resolvedMatch = RESOLVED_MARKER.exec(stripTicks(finding["verified by"]));
+      const resolved = resolvedMatch !== null && !ZERO_SHA.test(resolvedMatch[1]);
       if (!hasSeverity) errors.push(`${where}: \`Confirmed\` needs a severity`);
       if (!hasImpact) errors.push(`${where}: \`Confirmed\` needs a demonstrated impact`);
       // A resolved finding's trace is historical: the fix may have moved or removed the lines.
@@ -415,12 +536,34 @@ export function validate(text, { repoRoot }) {
   if (current && current.verdict === "Pass") {
     const where = `line ${current.number}: headline says \`Pass\` but`;
     if (ledger.length === 0) errors.push(`${where} the coverage ledger is empty; the ledger is the only coverage claim`);
+    else if (!ledger.some((row) => row.state === "covered")) errors.push(`${where} no ledger row is \`covered\`; a Pass needs audited coverage`);
+    if (current.criticsClean !== null && current.criticsClean < 1) errors.push(`${where} \`critics clean\` is ${current.criticsClean}; a Pass needs at least one critic that returned nothing new`);
+    if (current.date !== null) {
+      const now = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+      if (current.date > now + CLOCK_SKEW_DAYS * DAY_MS) errors.push(`${where} its date ${safe(current.dateText)} is in the future`);
+    }
     for (const state of STATES_BLOCKING_PASS) {
       const ids = ledger.filter((row) => row.state === state).map((row) => row.id);
       if (ids.length > 0) errors.push(`${where} ${ids.length} ledger row(s) are \`${state}\`: ${safe(ids.join(", "))}`);
     }
     if (openConfirmed.length > 0) {
       errors.push(`${where} ${openConfirmed.length} \`Confirmed\` finding(s) have no \`Resolved: <fix sha>\` marker in \`verified by\`: ${safe(openConfirmed.join(", "))}`);
+    }
+  }
+
+  // Release rules: what a release line needs beyond a consistent record.
+  if (release && current) {
+    const where = `line ${current.number}: --release:`;
+    if (current.verdict !== "Pass") {
+      errors.push(`${where} the latest verdict is \`${current.verdict === null ? "unreadable" : current.verdictText}\`, not \`Pass\``);
+    } else {
+      if (current.profile !== null && !RELEASE_PROFILES.includes(current.profile)) errors.push(`${where} profile is \`${current.profile}\`; a release needs \`${RELEASE_PROFILES.join("` or `")}\``);
+      if (current.scope !== null && current.scope !== SCOPE_FULL) errors.push(`${where} scope is ${safe(current.scope)}, not \`${SCOPE_FULL}\``);
+      const excluded = ledger.filter((row) => row.state === "out-of-scope").map((row) => row.id);
+      if (excluded.length > 0) errors.push(`${where} ${excluded.length} ledger row(s) are \`out-of-scope\`: ${safe(excluded.join(", "))}`);
+      if (releaseHead !== null && current.sha !== null && !releaseHead.startsWith(current.sha) && !current.sha.startsWith(releaseHead)) {
+        errors.push(`${where} headline sha ${safe(current.sha)} is not the release head ${safe(releaseHead)}`);
+      }
     }
   }
 
@@ -457,12 +600,14 @@ export function readBounded(file) {
   }
 }
 
-const USAGE = "usage: node validate-release-audit.mjs <task-file> [--repo <root>]";
+const USAGE = "usage: node validate-release-audit.mjs <task-file> [--repo <root>] [--release [--head <sha>]]";
 
 /** @returns {number} process exit code */
 export function main(argv, stdout = process.stdout, stderr = process.stderr) {
   let file = null;
   let repo = null;
+  let release = false;
+  let head = null;
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
     if (arg === "--help" || arg === "-h") {
@@ -476,6 +621,15 @@ export function main(argv, stdout = process.stdout, stderr = process.stderr) {
         return 2;
       }
       repo = argv[i];
+    } else if (arg === "--release" && !release) {
+      release = true;
+    } else if (arg === "--head") {
+      i += 1;
+      if (i >= argv.length || head !== null) {
+        stderr.write(`${USAGE}\n`);
+        return 2;
+      }
+      head = argv[i];
     } else if (arg.startsWith("--") || file !== null) {
       stderr.write(`${USAGE}\n`);
       return 2;
@@ -483,7 +637,7 @@ export function main(argv, stdout = process.stdout, stderr = process.stderr) {
       file = arg;
     }
   }
-  if (file === null) {
+  if (file === null || (head !== null && !release)) {
     stderr.write(`${USAGE}\n`);
     return 2;
   }
@@ -495,14 +649,15 @@ export function main(argv, stdout = process.stdout, stderr = process.stderr) {
     return 2;
   }
   const repoRoot = path.resolve(repo ?? process.cwd());
-  const { errors, summary } = validate(text, { repoRoot });
+  const { errors, summary } = validate(text, { repoRoot, release, head });
   if (errors.length > 0) {
     for (const message of errors.slice(0, MAX_ERRORS)) stderr.write(`release-audit: ${message}\n`);
     if (errors.length > MAX_ERRORS) stderr.write(`release-audit: ${errors.length - MAX_ERRORS} more error(s) not shown\n`);
     stderr.write(`release-audit: FAILED with ${errors.length} error(s)\n`);
     return 1;
   }
-  stdout.write(`release-audit: OK (${summary.verdict}; ${summary.ledgerRows} ledger row(s); ${summary.findings} finding(s)). The record is consistent; this does not prove a finding is true or coverage complete.\n`);
+  const grade = release && head === null ? `${summary.grade}, head not checked: pass --head <sha>` : summary.grade;
+  stdout.write(`release-audit: OK (${summary.verdict}, ${grade}; ${summary.ledgerRows} ledger row(s); ${summary.findings} finding(s)). The record is consistent; this does not prove a finding is true or coverage complete.\n`);
   return 0;
 }
 

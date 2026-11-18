@@ -115,7 +115,7 @@ If the same Blocking finding survives two rounds, round 3 opens with a `debugger
 - **One confirmation before starting,** stating profile and budget (default profile `standard`; two runs recommended for a first release). In a non-interactive run it starts only when the job text asks for it.
 - **Engine.** Engine A (the `cloudflare/security-audit-skill` overlay, pinned to a commit) when it is installed and the host can run its validators, otherwise Engine B (the library procedure, always available); both write the same record, which names the engine and why.
 - **The per-change mandatory security review is unchanged.** The release audit is an addition, never a replacement for it.
-- **Done rule.** A release line moves to Done only with a `Release audit:` line whose latest verdict is `Pass` in the task file (`Needs Changes` or `Incomplete` keeps it In Review or Blocked; `node Scripts/validate-release-audit.mjs <task file> --repo <root>` checks the record) (`MemoryTemplates/TASK_MEMORY.template.md` → Release Audit), in addition to the user's recorded acceptance.
+- **Done rule.** A release line moves to Done only when the latest `Release audit:` verdict in the task file is `Pass` with profile `standard` or `deep`, `scope full`, the sha being the release head, and an Evidence row for `node Scripts/validate-release-audit.mjs <task file> --repo <root> --release --head <sha>` with exit code 0 (`Needs Changes`, `Incomplete`, a `quick` or scoped `Pass`, or a `Pass` on another sha keeps it In Review or Blocked) (`MemoryTemplates/TASK_MEMORY.template.md` → Release Audit), in addition to the user's recorded acceptance.
 
 ## Spec-driven flow and Sizing (Phase Protocol) — full text as of 2026-10-19
 

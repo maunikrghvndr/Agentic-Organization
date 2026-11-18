@@ -22,7 +22,7 @@ Approval (Maunik, 2026-11-18): "Go ahead" — batches A–H of `06-report.md`, t
 
 ```md
 ## Release Audit
-- Release audit: <Pass | Needs Changes | Incomplete: reason> | sha <sha> | engine <A: cloudflare@commit | B: library> (<why this engine>) | profile <quick|standard|deep> | run <n> | YYYY-MM-DD
+- Release audit: <Pass | Needs Changes | Incomplete: reason> | sha <sha> | engine <A: cloudflare@commit | B: library> (<why this engine>) | profile <quick|standard|deep> | scope <full | name> | critics clean <n> | run <n> | YYYY-MM-DD
 
 ### Coverage Ledger
 | id | surface | boundary | subsystem | checklist | state | paths read | checks | findings |

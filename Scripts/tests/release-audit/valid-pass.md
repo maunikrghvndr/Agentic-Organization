@@ -4,7 +4,7 @@
 - Fixture for `Scripts/validate-release-audit.test.mjs`. Not a real audit.
 
 ## Release Audit
-- Release audit: Pass | sha 0a1b2c3d | engine B: library (skill validators cannot run on native Windows) | profile standard | run 1 | 2026-11-18
+- Release audit: Pass | sha 0a1b2c3d | engine B: library (skill validators cannot run on native Windows) | profile standard | scope billing | critics clean 2 | run 1 | 2026-11-18
 
 ### Coverage Ledger
 | id | surface | boundary | subsystem | checklist | state | paths read | checks | findings |

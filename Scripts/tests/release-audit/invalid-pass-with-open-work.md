@@ -1,7 +1,7 @@
 # Task: fixture release (invalid: Pass over open work)
 
 ## Release Audit
-- Release audit: Pass | sha 0a1b2c3d | engine B: library (no isolated agents on this host) | profile quick | run 1 | 2026-11-18
+- Release audit: Pass | sha 0a1b2c3d | engine B: library (no isolated agents on this host) | profile quick | scope full | critics clean 1 | run 1 | 2026-11-18
 
 ### Coverage Ledger
 | id | surface | boundary | subsystem | checklist | state | paths read | checks | findings |
