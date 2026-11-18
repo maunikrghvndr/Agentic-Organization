@@ -6,7 +6,7 @@
  * (whole application) -> Record Format.
  *
  * Usage:
- *   node Scripts/validate-release-audit.mjs <task-file> [--repo <root>] [--release --head <sha>]
+ *   node Scripts/validate-release-audit.mjs <task-file> [--repo <root>] [--release --head <40-character sha>]
  *
  * --repo is the root of the audited repository; cited paths are resolved
  * against it (default: the current directory).
@@ -43,6 +43,21 @@
  * comment, is an error. Inside the section, pipe look-alikes, no-break spaces
  * and control characters are errors.
  *
+ * Inside the section the rule is an allow-list, not a deny-list: only blank
+ * lines, `- Release audit:` headlines, the headings `### Coverage Ledger` and
+ * `### Audit Findings`, the table lines directly under them and a line that is
+ * exactly `<!-- END-OF-FILE -->` are accepted. Every other line is an error.
+ * The section ends only at an unindented level 1 or 2 heading or at the end of
+ * the file.
+ * Headings and headlines are compared after decoding character references and
+ * removing inline HTML tags, backslash escapes, link syntax and emphasis; a
+ * line that is only emphasised text naming the audit counts as a heading.
+ * Tags that collapse or hide text (`<details`, `<summary`, `<script`, `<style`,
+ * `<template`, `<textarea`, `<noscript`, `<iframe`, `<xmp`, `<plaintext`, a
+ * `hidden` attribute, also on a tag that continues on the next lines) are errors anywhere
+ * in the file outside an inline code span, fenced lines included. A line longer
+ * than 20000 characters is an error.
+ *
  * The task file is untrusted input: size is bounded, nothing in it is
  * evaluated or passed to a shell, cited paths cannot leave the repository
  * root, and text echoed in diagnostics is escaped and truncated.
@@ -77,8 +92,32 @@ const AUDIT_WORDS_AT = new RegExp(AUDIT_WORDS, "iuy");
 /** A fuzzy match counts only when this many letters are the real ASCII ones, so foreign-language prose is not flagged. */
 const MIN_KEYWORD_LETTERS = 3;
 /** Any line a reader would take for a headline: other case, bullet, number, checkbox, indent, quote, emphasis or look-alike letters. Tested on folded text. */
-const HEADLINE_LIKE = new RegExp(`^[\\s>]*(?:(?:[-*+]|\\d+[.)])\\s*)?(?:\\[[ xX]?\\]\\s*)?[*_\`~]*${AUDIT_WORDS}[*_\`~]*\\s*:`, "iu");
-const HEADING_LIKE = /^[\s>]*(?:(?:[-*+]|\d+[.)])\s+)*[\s>]*#/;
+const COLON = ":\\u2236\\ua789\\u02d0\\u0589\\u05c3";
+const DASH = "-\\u2010-\\u2015\\u2212";
+/** After the two words: a colon within a few characters (`Release audit (run 2):`), or a dash that stands in for it. A leading `|` covers a table cell. */
+const HEADLINE_LIKE = new RegExp(`^[\\s>|]*(?:(?:[-*+]|\\d+[.)])\\s*)?(?:\\[[ xX]?\\]\\s*)?[*_\`~]*${AUDIT_WORDS}[*_\`~]*(?:[^${COLON}]{0,30}[${COLON}]|\\s*[${DASH}]+(?:\\s|$))`, "iu");
+/** Linear: every repetition consumes at least one character and no two alternatives start alike. */
+const HEADING_LIKE = /^(?:[\s>]|(?:[-*+]|\d+[.)])\s)*#/;
+/** A line that is only emphasised or tagged text: a reader takes it for a heading. */
+const PSEUDO_HEADING_START = /^[\s>]*(?:(?:[-+]|\d+[.)])\s+)?(?:[*_]{1,3}[^\s*_]|<[A-Za-z])/;
+const PSEUDO_HEADING_END = /(?:[*_]|>)[\s:.]*$/;
+/** No line of a task file needs more; the cap bounds every pattern in this file. */
+export const MAX_LINE_LENGTH = 20000;
+/** Tags that collapse, hide or swallow the text after them. */
+const HIDING_TAG = /<\/?(details|summary|script|style|template|textarea|noscript|iframe|xmp|plaintext)(?![A-Za-z0-9-])/i;
+const HIDDEN_ATTRIBUTE = /<[A-Za-z][^<>]*\shidden(?![A-Za-z0-9_-])/i;
+const OPEN_TAG_AT_END = /<[A-Za-z][^<>]*$/;
+const MAX_TAG_LINES = 20;
+const INLINE_TAG = /<[!/?A-Za-z][^<>]*>/g;
+const CHARACTER_REFERENCE = /&(?:#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6})|([A-Za-z][A-Za-z0-9]{1,15}));/g;
+const NAMED_REFERENCES = new Map(Object.entries({
+  amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ensp: " ", emsp: " ", thinsp: " ", Tab: " ", NewLine: " ",
+  colon: ":", num: "#", vert: "|", verbar: "|", VerticalLine: "|", hyphen: "-", dash: "-", ndash: "-", mdash: "-", minus: "-",
+  lpar: "(", rpar: ")", lsqb: "[", rsqb: "]", lbrack: "[", rbrack: "]", ast: "*", midast: "*", lowbar: "_", UnderBar: "_",
+  period: ".", comma: ",", semi: ";", excl: "!", sol: "/", bsol: "\\", grave: "`", DiacriticalGrave: "`", shy: "", zwj: "", zwnj: "",
+}));
+const BACKSLASH_ESCAPE = /\\([!-/:-@[-`{-~])/g;
+const INLINE_LINK = /\[([^[\]]*)\](?:\([^()]*\)|\[[^[\]]*\])/g;
 const FENCE_OPEN = /^ {0,3}(`{3,}|~{3,})(.*)$/;
 const FENCE_MARKER = /^\s*(?:`{3,}|~{3,})/;
 const SETEXT_UNDERLINE = /^ {0,3}(?:=+|-+)[ \t]*$/;
@@ -93,6 +132,9 @@ const EOF_TRAILER = "<!-- END-OF-FILE -->";
 const HEADLINE_FIELDS = "verdict, sha, engine, profile, scope, critics clean, run, date";
 const LEDGER_HEADING = "Coverage Ledger";
 const FINDINGS_HEADING = "Audit Findings";
+const recordHeading = (heading) => new RegExp(`^###[ \\t]+${heading}[ \\t]*$`);
+const RECORD_HEADINGS = [recordHeading(LEDGER_HEADING), recordHeading(FINDINGS_HEADING)];
+const EOF_TRAILER_LINE = /^<!-- END-OF-FILE -->[ \t]*$/;
 const LEDGER_COLUMNS = ["id", "surface", "boundary", "subsystem", "checklist", "state", "paths read", "checks", "findings"];
 const FINDING_COLUMNS = ["id", "verdict", "severity", "title", "trace", "demonstrated impact", "verified by"];
 const STATES = ["planned", "covered", "candidate", "not-applicable", "out-of-scope", "deferred"];
@@ -174,6 +216,76 @@ function fold(line) {
   return line.normalize("NFKD").replace(/[\p{M}\p{Cf}]/gu, "");
 }
 
+function decodeReference(whole, decimal, hex, name) {
+  if (name !== undefined) return NAMED_REFERENCES.get(name) ?? NAMED_REFERENCES.get(name.toLowerCase()) ?? whole;
+  const code = decimal !== undefined ? Number(decimal) : Number.parseInt(hex, 16);
+  return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : whole;
+}
+
+/** What a renderer shows for the inline syntax of a line: character references decoded, backslash escapes and link syntax removed. */
+function unwrapInline(text) {
+  return text.replace(CHARACTER_REFERENCE, decodeReference).replace(BACKSLASH_ESCAPE, "$1").replace(INLINE_LINK, "$1");
+}
+
+/**
+ * The spellings of a line a reader may see, folded: with inline HTML tags
+ * removed (a renderer hides them) and with them kept (a renderer shows what is
+ * not a real tag). A heading or headline test holds when it holds for either.
+ */
+function views(line) {
+  const kept = fold(unwrapInline(line));
+  if (!line.includes("<")) return [kept];
+  return [fold(unwrapInline(line.replace(INLINE_TAG, ""))), kept];
+}
+
+/** The line without its inline code spans, per CommonMark: a run of n backticks is closed by the next run of exactly n; an escaped backtick opens nothing. */
+function stripCodeSpans(line) {
+  if (!line.includes("`")) return line;
+  const length = line.length;
+  const runEnd = (from) => {
+    let to = from;
+    while (to < length && line[to] === "`") to += 1;
+    return to;
+  };
+  let out = "";
+  let i = 0;
+  while (i < length) {
+    if (line[i] !== "`") {
+      out += line[i];
+      i += 1;
+      continue;
+    }
+    let slashes = 0;
+    while (i - slashes > 0 && line[i - slashes - 1] === "\\") slashes += 1;
+    if (slashes % 2 === 1) {
+      out += "`";
+      i += 1;
+      continue;
+    }
+    const end = runEnd(i);
+    let closer = -1;
+    for (let k = end; k < length; ) {
+      if (line[k] !== "`") {
+        k += 1;
+        continue;
+      }
+      const stop = runEnd(k);
+      if (stop - k === end - i) {
+        closer = stop;
+        break;
+      }
+      k = stop;
+    }
+    if (closer < 0) {
+      out += line.slice(i, end);
+      i = end;
+    } else {
+      i = closer;
+    }
+  }
+  return out;
+}
+
 function keywordLetters(match) {
   const found = [...(match[1] + match[2]).toLowerCase()];
   return found.filter((letter, index) => letter === AUDIT_KEYWORD[index]).length;
@@ -182,6 +294,17 @@ function keywordLetters(match) {
 function isHeadlineLike(folded) {
   const match = HEADLINE_LIKE.exec(folded);
   return match !== null && keywordLetters(match) >= MIN_KEYWORD_LETTERS;
+}
+
+/** True for a line a reader would take for a headline, in any spelling `views` knows. */
+function readsAsHeadline(line) {
+  return views(line).some(isHeadlineLike);
+}
+
+/** True for a line a reader would take for a Release Audit heading: `#`-style, or only emphasised or tagged text naming the audit. */
+function readsAsAuditHeading(line) {
+  const pseudo = PSEUDO_HEADING_START.test(line) && PSEUDO_HEADING_END.test(line);
+  return views(line).some((view) => (pseudo || HEADING_LIKE.test(view)) && mentionsAudit(view));
 }
 
 /** True when the folded text holds "release audit" in any case, spacing, punctuation, emphasis or look-alike letters. */
@@ -210,13 +333,31 @@ function extractSection(lines, errors) {
   const section = [];
   const comments = [];
   const htmlBlocks = [];
+  const hiding = [];
   for (let i = 0; i < lines.length; i += 1) {
     const line = lines[i];
     const number = i + 1;
-    const folded = fold(line);
     const inSection = start >= 0 && end < 0;
-    const headline = isHeadlineLike(folded);
-    const auditHeading = HEADING_LIKE.test(folded) && mentionsAudit(folded);
+    const headline = readsAsHeadline(line);
+    const auditHeading = readsAsAuditHeading(line);
+
+    // Checked on every line, fenced and commented ones included: a renderer may not agree that they are fenced.
+    if (line.includes("<")) {
+      const bare = stripCodeSpans(line);
+      const tag = HIDING_TAG.exec(bare);
+      if (tag) hiding.push(`line ${number}: \`<${tag[1].toLowerCase()}\` can collapse or hide the text after it, so a reader may not see the record; write plain Markdown (an inline code span is fine)`);
+      else if (HIDDEN_ATTRIBUTE.test(bare)) hiding.push(`line ${number}: a \`hidden\` attribute hides text from a reader; write plain Markdown (an inline code span is fine)`);
+      else {
+        // A tag whose attributes continue on the following lines.
+        const open = OPEN_TAG_AT_END.exec(bare);
+        if (open) {
+          let rest = "";
+          for (let next = i + 1; next < lines.length && next <= i + MAX_TAG_LINES && !rest.includes(">"); next += 1) rest += ` ${lines[next]}`;
+          const close = rest.indexOf(">");
+          if (close >= 0 && HIDDEN_ATTRIBUTE.test(`${open[0]}${rest.slice(0, close)}`)) hiding.push(`line ${number}: a \`hidden\` attribute (on a tag that continues on the next lines) hides text from a reader; write plain Markdown (an inline code span is fine)`);
+        }
+      }
+    }
 
     if (fence !== null) {
       if (auditHeading || headline) errors.push(`line ${number}: a Release Audit heading or headline inside a code fence (opened on line ${fence.number}); a fenced record is not a record, and a reader cannot tell which one counts`);
@@ -278,7 +419,7 @@ function extractSection(lines, errors) {
     }
     if (auditHeading && !ARCHITECTURE_NOTE_HEADING.test(line)) {
       errors.push(`line ${number}: heading ${safe(line)} reads as a Release Audit heading but is not the single exact \`${SECTION_HEADING_TEXT}\`; a reader would take it for the record, or for a newer one`);
-    } else if (line.trim() !== "" && i + 1 < lines.length && SETEXT_UNDERLINE.test(lines[i + 1]) && mentionsAudit(folded)) {
+    } else if (line.trim() !== "" && i + 1 < lines.length && SETEXT_UNDERLINE.test(lines[i + 1]) && views(line).some(mentionsAudit)) {
       errors.push(`line ${number}: heading ${safe(line)} (underlined on the next line) reads as a Release Audit heading but is not the single exact \`${SECTION_HEADING_TEXT}\`; a reader would take it for the record, or for a newer one`);
     }
     if (headline && !inSection) errors.push(`line ${number}: a \`Release audit:\` headline outside the \`${SECTION_HEADING_TEXT}\` section; a reader would take it for a verdict and this parser would not read it`);
@@ -311,6 +452,7 @@ function extractSection(lines, errors) {
         errors.push(`line ${entry.start + 1}: HTML comment after the \`${SECTION_HEADING_TEXT}\` heading; only a line that is exactly \`${EOF_TRAILER}\` may follow the record`);
       }
     }
+    for (const message of hiding) errors.push(message);
     for (const number of htmlBlocks) errors.push(`line ${number}: raw HTML block before the \`${SECTION_HEADING_TEXT}\` section; a renderer may hide what follows it, write plain Markdown`);
     for (const entry of section) {
       const bad = FORBIDDEN_IN_SECTION.exec(entry.text);
@@ -375,7 +517,7 @@ function parseHeadline(entry, errors) {
  * section line that belongs to the table is added to `consumed`.
  */
 function parseTable(section, heading, columns, errors, consumed) {
-  const headingPattern = new RegExp(`^###[ \\t]+${heading}[ \\t]*$`);
+  const headingPattern = recordHeading(heading);
   const indexes = [];
   section.forEach((entry, index) => {
     if (headingPattern.test(entry.text)) indexes.push(index);
@@ -624,13 +766,17 @@ export function validate(text, { repoRoot, release = false, head = null, taskFil
   const repo = { root, taskFile: taskReal };
 
   const lines = text.replace(/^\uFEFF/, "").split(/\r\n|\n|\r/);
+  lines.forEach((line, index) => {
+    if (line.length > MAX_LINE_LENGTH) errors.push(`line ${index + 1} is longer than ${MAX_LINE_LENGTH} characters; no line of a task file needs that, and the rest of the file was not read`);
+  });
+  if (errors.length > 0) return { errors, summary };
   const section = extractSection(lines, errors);
   if (section === null) return { errors, summary };
 
   // Headline line(s): one per run, the last one counts. A line that reads as a
   // headline but is not written exactly is an error, never silently skipped.
   for (const entry of section) {
-    if (isHeadlineLike(fold(entry.text)) && !entry.text.startsWith(HEADLINE_PREFIX)) {
+    if (readsAsHeadline(entry.text) && !entry.text.startsWith(HEADLINE_PREFIX)) {
       errors.push(`line ${entry.number}: looks like a headline but is not written exactly \`${HEADLINE_PREFIX} ...\` at the start of the line`);
     }
   }
@@ -652,10 +798,13 @@ export function validate(text, { repoRoot, release = false, head = null, taskFil
 
   // A table ends at its first line without a leading pipe. Anything table-like
   // after that would be read by a person and not by this parser.
+  // Allow-list: whatever is not a blank line, a headline, one of the two
+  // headings, a parsed table line or the end-of-file trailer is an error.
   section.forEach((entry, index) => {
-    if (consumed.has(index) || !entry.text.includes("|")) return;
-    if (isHeadlineLike(fold(entry.text))) return;
-    errors.push(`line ${entry.number}: table-like line outside the two record tables (a row after a blank line, prose, a second header or another heading is not part of the record; keep every row directly under its table header)`);
+    if (consumed.has(index) || entry.text.trim() === "") return;
+    if (entry.text.startsWith(HEADLINE_PREFIX) || RECORD_HEADINGS.some((pattern) => pattern.test(entry.text)) || EOF_TRAILER_LINE.test(entry.text)) return;
+    if (entry.text.includes("|")) errors.push(`line ${entry.number}: table-like line outside the two record tables (a row after a blank line, prose, a second header or another heading is not part of the record; keep every row directly under its table header)`);
+    else errors.push(`line ${entry.number}: ${safe(entry.text)} is not part of the record; inside \`${SECTION_HEADING_TEXT}\` only blank lines, \`${HEADLINE_PREFIX}\` headlines, \`### ${LEDGER_HEADING}\`, \`### ${FINDINGS_HEADING}\`, the table lines directly under them and a line that is exactly \`${EOF_TRAILER}\` are allowed, and the section ends only at an unindented level 1 or 2 heading`);
   });
   summary.ledgerRows = ledger.length;
   summary.findings = findings.length;
@@ -834,29 +983,29 @@ export function main(argv, stdout = process.stdout, stderr = process.stderr) {
     return 2;
   }
   if (release && head === null) {
-    stderr.write(`release-audit: ${MISSING_HEAD}\n${USAGE}\n`);
+    stderr.write(`validate-release-audit: ${MISSING_HEAD}\n${USAGE}\n`);
     return 2;
   }
   if (head !== null && (!HEAD_VALUE.test(head.toLowerCase()) || ZERO_SHA.test(head))) {
-    stderr.write(`release-audit: ${badHead(head)}\n${USAGE}\n`);
+    stderr.write(`validate-release-audit: ${badHead(head)}\n${USAGE}\n`);
     return 2;
   }
   let text;
   try {
     text = readBounded(file);
   } catch (error) {
-    stderr.write(`release-audit: ${error.message}\n`);
+    stderr.write(`validate-release-audit: ${error.message}\n`);
     return 2;
   }
   const repoRoot = path.resolve(repo ?? process.cwd());
   const { errors, summary } = validate(text, { repoRoot, release, head, taskFile: path.resolve(file) });
   if (errors.length > 0) {
-    for (const message of errors.slice(0, MAX_ERRORS)) stderr.write(`release-audit: ${message}\n`);
-    if (errors.length > MAX_ERRORS) stderr.write(`release-audit: ${errors.length - MAX_ERRORS} more error(s) not shown\n`);
-    stderr.write(`release-audit: FAILED with ${errors.length} error(s)\n`);
+    for (const message of errors.slice(0, MAX_ERRORS)) stderr.write(`validate-release-audit: ${message}\n`);
+    if (errors.length > MAX_ERRORS) stderr.write(`validate-release-audit: ${errors.length - MAX_ERRORS} more error(s) not shown\n`);
+    stderr.write(`validate-release-audit: FAILED with ${errors.length} error(s)\n`);
     return 1;
   }
-  stdout.write(`release-audit: OK (${summary.verdict}, ${summary.grade}; ${summary.ledgerRows} ledger row(s); ${summary.findings} finding(s)). The record is consistent; this does not prove a finding is true or coverage complete.\n`);
+  stdout.write(`validate-release-audit: OK (${summary.verdict}, ${summary.grade}; ${summary.ledgerRows} ledger row(s); ${summary.findings} finding(s)). The record is consistent; this does not prove a finding is true or coverage complete.\n`);
   return 0;
 }
 

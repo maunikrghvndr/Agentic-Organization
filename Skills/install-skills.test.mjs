@@ -551,7 +551,7 @@ test("N-1: the review record carries a Pass verdict line, and a Fail or Rejected
   for (const [name, verdict] of [
     ["plain", "Verdict: Pass"],
     ["conditions", "Verdict: Pass with conditions"],
-    ["bullet", "- **Verdict: Pass with conditions** (conditions C1 to C7 below). Listed."],
+    ["bullet", "- **Verdict: Pass with conditions** (conditions C1 to C7 below)."],
     ["bold-label", "**Verdict:** Pass"],
     ["bold-value", "Verdict: **Pass**"],
     ["crlf", "Verdict: Pass\r"],
@@ -559,7 +559,7 @@ test("N-1: the review record carries a Pass verdict line, and a Fail or Rejected
     const result = check(name, `# review\n\n${verdict}\n${shas}`);
     assert.equal(result.status, 0, `${verdict} -> ${result.stderr}`);
   }
-  const none = check("none", `# review\n\nThe sha is here and nothing else. Verdict: Pass is only mentioned mid-line.\n${shas}`);
+  const none = check("none", `# review\n\nThe sha is here and nothing else. A pass is only mentioned mid-line.\n${shas}`);
   assert.equal(none.status, 2);
   assert.match(none.stderr, /review record .* has no `Verdict: Pass` or `Verdict: Pass with conditions` line/);
   for (const [name, verdict] of [
@@ -659,4 +659,81 @@ test("N-3: a marker whose digest was written without the executable bit is repor
   assert.match(listed.stdout, /older format/);
   assert.equal(run(sandbox, [entry(sandbox)], ["--upgrade"]).status, 0);
   assert.match(run(sandbox, [entry(sandbox)], ["--list"]).stdout, /1 already present/);
+});
+
+// --- Security review round 3, 2026-11-18: N-5, N-6 ---
+
+test("N-5: every line that states a verdict counts, in any shape, and exactly one is allowed", (t) => {
+  const sandbox = makeSandbox(t);
+  const shas = `Reviewed commit: ${sandbox.second}\n`;
+  const check = (name, text) => {
+    write(sandbox.manifestDir, `reviews/${name}.md`, text);
+    return run(sandbox, [entry(sandbox, { review: `reviews/${name}.md` })], ["--list"]);
+  };
+  const MORE = /review record .* has more than one verdict line/;
+  const NOT_PASS = /review record .* has a verdict line that is not `Pass` or `Pass with conditions`/;
+  const HIDDEN = /review record .* has its verdict line inside a code fence or an HTML comment/;
+  for (const [name, body, pattern] of [
+    ["heading-fail", "- Verdict: Pass\n\n## Verdict: Fail", MORE],
+    ["overall", "- Verdict: Pass\n\n**Overall verdict:** Rejected", MORE],
+    ["quote-fail", "- Verdict: Pass\n\n> Verdict: Fail", MORE],
+    ["final", "Final verdict (after re-review): Fail\n\nVerdict: Pass", MORE],
+    ["table", "Verdict: Pass\n\n| Verdict: | Fail |", MORE],
+    ["fenced-fail", "- Verdict: Pass\n\n```\nVerdict: Fail\n```", MORE],
+    ["commented-fail", "- Verdict: Pass\n\n<!-- verdict: Fail -->", MORE],
+    ["withdrawn", "Verdict: Pass - withdrawn 2026-11-19, now Fail", NOT_PASS],
+    ["after-parenthesis", "Verdict: Pass (conditions below). Withdrawn, now Fail.", NOT_PASS],
+    ["listed", "- **Verdict: Pass with conditions** (conditions C1 to C7 below). Listed.", NOT_PASS],
+    ["mid-line", "The sha is here. Verdict: Pass is only mentioned mid-line.", NOT_PASS],
+    ["heading-pass", "## Verdict: Pass", NOT_PASS],
+    ["quote-pass", "> Verdict: Pass", NOT_PASS],
+    ["overall-pass", "**Overall verdict:** Pass", NOT_PASS],
+    ["fenced-pass", "```\nVerdict: Pass\n```", HIDDEN],
+    ["tilde-fenced-pass", "~~~~md\n```\nVerdict: Pass\n~~~~", HIDDEN],
+    ["commented-pass", "<!--\nVerdict: Pass\n-->", HIDDEN],
+    ["comment-on-line", "Verdict: Pass <!-- not really -->", HIDDEN],
+    ["unclosed-fence", "text\n\n```\n\nVerdict: Pass", HIDDEN],
+  ]) {
+    const result = check(name, `# review\n\n${body}\n${shas}`);
+    assert.equal(result.status, 2, `${name} -> ${result.status} ${result.stdout}`);
+    assert.match(result.stderr, pattern, name);
+  }
+  for (const [name, body] of [
+    ["parenthesis", "- **Verdict: Pass with conditions** (conditions C1 to C7 below)."],
+    ["after-fence", "```\ncode\n```\n<!-- note -->\n\nVerdict: Pass"],
+    ["prose", "The verdict below was reached read-only; nothing was run.\n\nVerdict: Pass"],
+  ]) {
+    const result = check(name, `# review\n\n${body}\n${shas}`);
+    assert.equal(result.status, 0, `${name} -> ${result.stderr}`);
+  }
+});
+
+test("N-6: git never runs with the checked-out work tree as its current directory", { skip: process.platform === "win32" }, (t) => {
+  const sandbox = makeSandbox(t);
+  const bin = path.join(sandbox.root, "bin");
+  const log = path.join(sandbox.root, "git-calls.log");
+  const realGit = execFileSync("sh", ["-c", "command -v git"], { encoding: "utf8" }).trim();
+  fs.mkdirSync(bin);
+  // A stand-in `git` first on PATH: records where it was started and what the directory held, then runs the real one.
+  fs.writeFileSync(path.join(bin, "git"), `#!/bin/sh\nprintf '%s\\t%s\\t%s\\n' "$(pwd -P)" "$(ls -A | wc -l | tr -d ' ')" "$*" >> "${log}"\nexec "${realGit}" "$@"\n`, { mode: 0o755 });
+  const result = run(sandbox, [entry(sandbox)], [], { PATH: `${bin}${path.delimiter}${process.env.PATH}` });
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  assert.match(fs.readFileSync(path.join(sandbox.target, "demo", "SKILL.md"), "utf8"), /description: v2/);
+
+  const calls = fs.readFileSync(log, "utf8").trim().split("\n").map((line) => line.split("\t"));
+  const withRepo = calls.filter(([, , args]) => args.includes("--work-tree"));
+  assert.ok(withRepo.length >= 4, `expected init, fetch, checkout and rev-parse, got:\n${calls.join("\n")}`);
+  assert.equal(calls.length, withRepo.length + 1, "one more call: the `git --version` probe");
+  for (const [cwd, entries, args] of calls) {
+    assert.equal(entries, "0", `git ran in a directory that is not empty: ${cwd} (${args})`);
+    const workTree = /--work-tree (\S+)/.exec(args);
+    if (workTree) {
+      assert.equal(path.relative(workTree[1], cwd).startsWith(".."), true, `cwd ${cwd} is inside the work tree ${workTree[1]}`);
+      assert.equal(path.relative(cwd, workTree[1]).startsWith(".."), true, `the work tree ${workTree[1]} is inside cwd ${cwd}`);
+    }
+    assert.notEqual(cwd, fs.realpathSync(process.cwd()), "git ran in the caller's directory");
+  }
+  assert.ok(calls.some(([, , args]) => / init -q --template=$/.test(args)), "git init uses an empty template");
+  // Nothing is left behind.
+  assert.deepEqual(calls.map(([cwd]) => cwd).filter((cwd) => fs.existsSync(cwd)), []);
 });

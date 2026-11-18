@@ -20,6 +20,10 @@
  * temp directory. It never runs anything from the fetched repository.
  * Every git call names the temp repository explicitly and runs without any
  * inherited GIT_* variable, so it cannot be redirected into another repository.
+ * Every git call also starts in a separate, empty temp directory, never in the
+ * checked-out work tree or the caller's directory (on Windows a bare `git` may
+ * be looked up in the child's current directory), and `git init` uses an empty
+ * template.
  * The checkout is byte-exact: `.git/info/attributes` in the temp repository
  * switches off every filter, line-ending and ident conversion, whatever the
  * user's or the fetched repository's configuration says.
@@ -30,6 +34,11 @@
  * A skill is listed only with a review record at `reviews/<name>.md` beside
  * the manifest that holds one `Verdict: Pass` or `Verdict: Pass with
  * conditions` line and the full pinned commit.
+ * Every line of the record that states a verdict counts, in any shape
+ * (heading, quote, table, `Overall verdict:`, fenced or commented): exactly one
+ * is allowed, it is written at the start of its line outside any code fence or
+ * HTML comment, and nothing follows `Pass` / `Pass with conditions` but an
+ * optional parenthesis.
  *
  * Exit codes: 0 = nothing failed; 1 = at least one skill failed;
  * 2 = bad arguments or an invalid manifest (nothing was installed).
@@ -63,12 +72,16 @@ const MAX_REVIEW_BYTES = 2 * 1024 * 1024;
 const REVIEWS_DIR = "reviews";
 /** `reviews/<safe-name>.md`, relative to the manifest; group 1 is the file name. */
 const REVIEW_PATH_RE = /^reviews\/([a-z0-9]+(?:[._-][a-z0-9]+)*\.md)$/;
-/** A line that states the verdict: `Verdict:` at its start, after an optional bullet and emphasis. */
-const VERDICT_LINE_RE = /^ {0,3}(?:[-*+]\s+)?[*_]*Verdict[*_]*\s*:/i;
+/** A line that states a verdict in any shape: the word, then a colon within a few characters. Counted everywhere, fenced and commented lines included. */
+const VERDICT_LINE_RE = /\bverdict\b[^:]{0,20}:/i;
+const FENCE_OPEN_RE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
+const FENCE_CLOSE_RE = /^ {0,3}(`+|~+)[ \t]*$/;
+const COMMENT_OPEN = "<!--";
+const COMMENT_CLOSE = "-->";
 /** The only verdicts that list a skill; group 2 is what follows the verdict words. */
 const VERDICT_PASS_RE = /^ {0,3}(?:[-*+]\s+)?(?:\*\*)?Verdict:?(?:\*\*)?:?\s*\**(Pass with conditions|Pass)\b(.*)$/i;
-/** After the verdict words: nothing, or punctuation that ends them (so "Pass is not given" is not a Pass). */
-const VERDICT_TAIL_RE = /^[*_\s]*(?:[.,;:(-].*)?$/;
+/** After the verdict words: nothing, or one parenthesis (so "Pass is not given" and "Pass - withdrawn, now Fail" are not a Pass). */
+const VERDICT_TAIL_RE = /^[*_]*\s*(?:\([^()]*\))?[*_]*\.?\s*$/;
 const EXECUTABLE_BITS = 0o111;
 /** In the temp repository's .git/info/attributes: no filter, no line-ending, ident or encoding conversion. */
 const NO_CONVERSION_ATTRIBUTES = "* -filter -text -ident -working-tree-encoding\n";
@@ -191,6 +204,38 @@ function isPastOrPresentDate(value) {
   return date.getTime() <= today + CLOCK_SKEW_DAYS * DAY_MS;
 }
 
+/**
+ * Every line of a review record that states a verdict, each with `hidden` true
+ * when it sits inside a code fence (CommonMark rules; an unclosed fence runs to
+ * the end) or touches an HTML comment. Hidden lines still count, so a renderer
+ * that disagrees about a fence or a comment cannot show a second verdict.
+ */
+function verdictLines(text) {
+  const found = [];
+  let fence = null;
+  let inComment = false;
+  for (const line of text.split(/\r\n|\n|\r/)) {
+    let hidden = fence !== null || inComment || line.includes(COMMENT_OPEN);
+    if (fence !== null) {
+      const closer = FENCE_CLOSE_RE.exec(line);
+      if (closer && closer[1][0] === fence.char && closer[1].length >= fence.length) fence = null;
+    } else {
+      const opener = inComment ? null : FENCE_OPEN_RE.exec(line);
+      if (opener && !(opener[1][0] === "`" && opener[2].includes("`"))) {
+        fence = { char: opener[1][0], length: opener[1].length };
+        hidden = true;
+      } else {
+        const open = line.lastIndexOf(COMMENT_OPEN);
+        const close = line.lastIndexOf(COMMENT_CLOSE);
+        if (open >= 0 && close < open) inComment = true;
+        else if (close >= 0) inComment = false;
+      }
+    }
+    if (VERDICT_LINE_RE.test(line)) found.push({ line, hidden });
+  }
+  return found;
+}
+
 /** Why the review record is not acceptable for this commit, or null when it is. */
 function reviewRecordProblem(manifestDir, name, commit) {
   const file = path.join(manifestDir, REVIEWS_DIR, name);
@@ -212,10 +257,11 @@ function reviewRecordProblem(manifestDir, name, commit) {
   } catch {
     return "cannot be read";
   }
-  const verdicts = text.split(/\r\n|\n|\r/).filter((line) => VERDICT_LINE_RE.test(line));
+  const verdicts = verdictLines(text);
   if (verdicts.length === 0) return "has no `Verdict: Pass` or `Verdict: Pass with conditions` line - a skill is listed only after a passing review";
   if (verdicts.length > 1) return "has more than one verdict line - a review record states one verdict";
-  const pass = VERDICT_PASS_RE.exec(verdicts[0]);
+  if (verdicts[0].hidden) return "has its verdict line inside a code fence or an HTML comment - a reader would not see it as the verdict";
+  const pass = VERDICT_PASS_RE.exec(verdicts[0].line);
   if (pass === null || !VERDICT_TAIL_RE.test(pass[2])) {
     return "has a verdict line that is not `Pass` or `Pass with conditions` - a failed or rejected skill is not listed";
   }
@@ -378,9 +424,22 @@ function gitEnv() {
   return env;
 }
 
-/** Runs git against the repository in `repo` and nothing else: --git-dir and --work-tree are explicit on every call. */
-function git(repo, args) {
-  const cwd = repo;
+/** Runs `run(cwd)` with a new, empty temp directory as `cwd`, and removes it afterwards. */
+function withEmptyDir(run) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "agentic-skill-cwd-"));
+  try {
+    return run(dir);
+  } finally {
+    removeDir(dir);
+  }
+}
+
+/**
+ * Runs git against the repository in `repo` and nothing else: --git-dir and --work-tree are explicit on every call.
+ * `cwd` is a separate, empty directory: the repository is named by the two flags, and the fetched work tree must
+ * never be the child's current directory (on Windows a bare `git` may be looked up there).
+ */
+function git(repo, cwd, args) {
   const allowedProtocols = ["-c", "protocol.allow=never", "-c", "protocol.https.allow=always"];
   if (process.env[FILE_URL_ENV] === "1") allowedProtocols.push("-c", "protocol.file.allow=always");
   const noFilters = ["-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=", "-c", "filter.lfs.required=false", "-c", "core.autocrlf=false", "-c", "core.eol=lf"];
@@ -475,14 +534,15 @@ function installSkill(skill, target, replace) {
   const temp = fs.mkdtempSync(path.join(os.tmpdir(), "agentic-skill-"));
   const staging = path.join(target, `.${skill.name}.installing-${process.pid}`);
   const retired = path.join(target, `.${skill.name}.replaced-${process.pid}`);
+  const emptyCwd = fs.mkdtempSync(path.join(os.tmpdir(), "agentic-skill-cwd-"));
   try {
-    git(temp, ["init", "-q"]);
+    git(temp, emptyCwd, ["init", "-q", "--template="]);
     const infoDir = path.join(temp, GIT_DIR_NAME, "info");
     fs.mkdirSync(infoDir, { recursive: true });
     fs.writeFileSync(path.join(infoDir, "attributes"), NO_CONVERSION_ATTRIBUTES);
-    git(temp, ["fetch", "-q", "--depth", "1", "--no-tags", "--no-recurse-submodules", skill.source, skill.commit]);
-    git(temp, ["checkout", "-q", "--detach", "FETCH_HEAD"]);
-    const head = git(temp, ["rev-parse", "HEAD"]);
+    git(temp, emptyCwd, ["fetch", "-q", "--depth", "1", "--no-tags", "--no-recurse-submodules", skill.source, skill.commit]);
+    git(temp, emptyCwd, ["checkout", "-q", "--detach", "FETCH_HEAD"]);
+    const head = git(temp, emptyCwd, ["rev-parse", "HEAD"]);
     if (head !== skill.commit) throw new Error(`fetched ${head}, pinned ${skill.commit} - refused`);
 
     const tempReal = fs.realpathSync(temp);
@@ -526,6 +586,7 @@ function installSkill(skill, target, replace) {
   } finally {
     removeDir(staging);
     removeDir(temp);
+    removeDir(emptyCwd);
   }
 }
 
@@ -570,7 +631,7 @@ function main() {
   const replaceable = (state) => state === STATE.outdated || state === STATE.modified;
   const needsGit = !readOnly && plans.some((plan) => plan.state === STATE.missing || (replaceable(plan.state) && options.update));
   if (needsGit) {
-    const probe = spawnSync("git", ["--version"], { encoding: "utf8", shell: false, windowsHide: true });
+    const probe = withEmptyDir((cwd) => spawnSync("git", ["--version"], { cwd, encoding: "utf8", shell: false, windowsHide: true, env: gitEnv() }));
     if (probe.error || probe.status !== 0) fail(EXIT_SKILL_FAILED, MSG.noGit + (probe.error ? probe.error.message : `exit ${probe.status}`));
     fs.mkdirSync(target, { recursive: true });
   }

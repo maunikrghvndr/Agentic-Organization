@@ -214,7 +214,7 @@ test("a bad --repo root is an error, not a pass", () => {
 test("CLI: exit 0 on the valid fixture", () => {
   const result = runCli([validFile, "--repo", repoRoot]);
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /release-audit: OK \(Pass, scoped; 4 ledger row\(s\); 3 finding\(s\)\)/);
+  assert.match(result.stdout, /^validate-release-audit: OK \(Pass, scoped; 4 ledger row\(s\); 3 finding\(s\)\)/);
 });
 
 test("CLI: --repo defaults to the current directory", () => {
@@ -375,7 +375,7 @@ test("N6: a 200 KB token in a trace cell is handled in under 2 seconds", () => {
 test("CLI: --release and --head", () => {
   const ok = runCli([releaseFile, "--repo", repoRoot, "--release", "--head", HEAD]);
   assert.equal(ok.status, 0, ok.stderr);
-  assert.match(ok.stdout, /release-audit: OK \(Pass, release-grade; 4 ledger row\(s\); 3 finding\(s\)\)/);
+  assert.match(ok.stdout, /^validate-release-audit: OK \(Pass, release-grade; 4 ledger row\(s\); 3 finding\(s\)\)/);
   assert.match(runCli([releaseFile, "--repo", repoRoot]).stdout, /OK \(Pass, scoped;/);
   const scoped = runCli([validFile, "--repo", repoRoot, "--release", "--head", HEAD]);
   assert.equal(scoped.status, 1);
@@ -546,4 +546,157 @@ test("N-7: a resolved finding's trace is still a well-formed path:line", () => {
   assertFails(swap(VALID, "`src/invoices.js:2` ->", "`/etc/passwd:2` ->"), /trace entry "\/etc\/passwd:2" is absolute/);
   assertFails(swap(VALID, "`src/invoices.js:2` ->", "`src/gone.js:0` ->"), /trace entry "src\/gone\.js:0" has an invalid line range/);
   assertFails(swap(VALID, "`src/invoices.js:2` ->", "`.git/config:1` ->"), /is inside `\.git`/);
+});
+
+// --- Security review round 3, 2026-11-18: B-1, N-1 to N-4, N-7 ---
+
+const RELEASE_LAST_LEDGER_ROW = RELEASE.split("\n").find((candidate) => candidate.startsWith("| L4 |"));
+const HANDOFF = "## Handoff";
+const afterLedger = (text) => swap(RELEASE, RELEASE_LAST_LEDGER_ROW, `${RELEASE_LAST_LEDGER_ROW}\n${text}`);
+const afterHeadline = (text) => swap(RELEASE, RELEASE_LINE, `${RELEASE_LINE}\n${text}`);
+const beforeHeadline = (text) => swap(RELEASE, RELEASE_LINE, `${text}\n${RELEASE_LINE}`);
+const afterFindings = (text) => swap(RELEASE, HANDOFF, `${text}\n\n${HANDOFF}`);
+const laterSection = (text) => swap(RELEASE, HANDOFF, `## Later\n${text}\n\n${HANDOFF}`);
+const beforeSection = (text) => swap(RELEASE, "## Release Audit\n", `${text}\n\n## Release Audit\n`);
+const NOT_RECORD = /line \d+: .* is not part of the record/;
+
+test("B-1: inside the section only blank lines, headlines, the two headings and their tables are accepted", () => {
+  for (const [name, text] of [
+    ["a01 a line Markdown renders as a table row", afterLedger("L3 admin console (operator to all tenants): planned, not reached")],
+    ["a02 a row written with pipe entities", afterLedger("&#124; L9 &#124; admin console &#124; operator &#124; admin &#124; Authz &#124; planned &#124; - &#124; - &#124; - &#124;")],
+    ["a03 a row written with a pipe look-alike", afterLedger("❘ L9 ❘ admin console ❘ operator ❘ admin ❘ Authz ❘ planned ❘ - ❘ - ❘ - ❘")],
+    ["a04 an informal later run", afterHeadline("- Release audit run 2 (2026-11-19): Needs Changes, 2 High findings open")],
+    ["a41 a list under another heading", afterFindings("#### Not reached\n- admin console: planned, budget ran out\n- webhooks: deferred")],
+    ["a42 a verdict after a row of stars", afterFindings("***\nVerdict after re-run: Needs Changes")],
+    ["a43 a strike-through opened before the headline", beforeHeadline("Superseded <s>")],
+    ["a52 an indented heading", afterFindings(" ## Re-run 2026-11-19\n- Outcome: Needs Changes, F7 High open")],
+    ["a51 an empty heading", afterFindings("##\nVerdict: Needs Changes")],
+    ["plain prose", afterHeadline("The audit was withdrawn on 2026-11-19.")],
+    ["a tab-indented heading", afterFindings("\t## Later\n- Outcome: Needs Changes")],
+    ["the template note", afterHeadline("(used only for a release task; omit otherwise)")],
+    ["a third heading", afterFindings("### Notes")],
+  ]) {
+    const errors = errorsOf(text, RELEASE_OPTS);
+    assert.ok(errors.some((message) => NOT_RECORD.test(message) || /table-like line outside the two record tables/.test(message)), `${name}: expected a not-part-of-the-record error, got:\n${errors.join("\n")}`);
+  }
+  assert.deepEqual(errorsOf(RELEASE, RELEASE_OPTS), []);
+  assert.deepEqual(errorsOf(RELEASE.replace(/\n## Handoff[\s\S]*$/, "\n<!-- END-OF-FILE -->\n"), RELEASE_OPTS), []);
+  assert.deepEqual(errorsOf(swap(RELEASE, "### Coverage Ledger\n", "### Coverage Ledger\n\n"), RELEASE_OPTS), []);
+});
+
+test("B-1: the section ends only at an unindented level 1 or 2 heading", () => {
+  assert.deepEqual(errorsOf(swap(RELEASE, HANDOFF, "# Next\nfree text | with a pipe\n\n## Handoff"), RELEASE_OPTS), []);
+  assertFails(afterFindings("   ## Later\nfree text"), NOT_RECORD, RELEASE_OPTS);
+  assertFails(afterFindings("> ## Later\n> free text"), NOT_RECORD, RELEASE_OPTS);
+});
+
+test("N-1: decoy headings and headlines written with entities, inline HTML, links, escapes, emphasis or a dash are errors", () => {
+  const READS_AS = /reads as a Release Audit heading/;
+  const OUTSIDE = /a `Release audit:` headline outside the `## Release Audit` section/;
+  for (const [name, text, pattern] of [
+    ["a07 entity in the heading", laterSection("x\n\n## &#82;elease Audit\n- &#82;elease audit: Needs Changes | sha 0a1b2c3d | run 2 | 2026-11-19"), READS_AS],
+    ["a07 hex entity", laterSection("x\n\n## &#x52;elease&nbsp;Audit"), READS_AS],
+    ["a08 inline HTML in the heading", laterSection("x\n\n## Release <span></span>Audit"), READS_AS],
+    ["a08 inline HTML in the headline", laterSection("- Release <span></span>audit: Needs Changes"), OUTSIDE],
+    ["b02 bold-only pseudo-heading", laterSection("**Release Audit (run 2)**\n\nVerdict: Needs Changes"), READS_AS],
+    ["b02 underscore pseudo-heading", laterSection("__Release audit__"), READS_AS],
+    ["b02 HTML bold pseudo-heading", laterSection("<b>Release Audit, run 2</b>"), READS_AS],
+    ["b03 bold headline with a run", laterSection("**Release audit run 2:** Needs Changes"), OUTSIDE],
+    ["b09 link headline", laterSection("- [Release audit](#x): Needs Changes"), OUTSIDE],
+    ["b09 reference-link headline", laterSection("- [Release audit][x]: Needs Changes"), OUTSIDE],
+    ["b10 escaped colon", laterSection("- Release audit\\: Needs Changes"), OUTSIDE],
+    ["b11 entity colon", laterSection("- Release audit&#58; Needs Changes"), OUTSIDE],
+    ["b11 named entity colon", laterSection("- Release audit&colon; Needs Changes"), OUTSIDE],
+    ["b12 dash", laterSection("- Release audit - Needs Changes (run 2)"), OUTSIDE],
+    ["b12 em dash", laterSection("- Release audit — Needs Changes"), OUTSIDE],
+    ["a05 informal run before the section", beforeSection("- Release audit (run 2): Needs Changes"), OUTSIDE],
+    ["b07 table cell", laterSection("| item | value |\n|---|---|\n| Release audit: | Needs Changes |"), OUTSIDE],
+  ]) {
+    const errors = errorsOf(text, RELEASE_OPTS);
+    assert.ok(errors.some((message) => pattern.test(message)), `${name}: expected ${pattern}, got:\n${errors.join("\n")}`);
+  }
+  // Prose that only mentions the audit stays valid.
+  assert.deepEqual(errorsOf(beforeSection("- Release audit confirmed by the user at profile standard, budget 30 agent runs [2026-11-17]"), RELEASE_OPTS), []);
+  assert.deepEqual(errorsOf(beforeSection("- Done: suite green, the release audit record validates (see below)."), RELEASE_OPTS), []);
+  assert.deepEqual(errorsOf(beforeSection('[spec]: https://example.com/spec "Release audit: Needs Changes"'), RELEASE_OPTS), []);
+});
+
+test("N-2: tags that collapse or hide text are rejected anywhere in a file with a record", () => {
+  const HIDING = /line \d+: `<[a-z]+` .*hide/;
+  const decoy = "## Security Review Record\n- Verdict: Needs Changes (2 High open)\n\n";
+  for (const [name, text] of [
+    ["a14 fence inside a list item", beforeSection(`${decoy}1. item\n   \`\`\`\n<details>\n\`\`\``)],
+    ["a15 mid-line details", beforeSection(`${decoy}Old runs: <details><summary>archive</summary>`)],
+    ["a16 details after a closed comment", beforeSection(`${decoy}<!-- note -->archive<details>`)],
+    ["a50 details inside an indented comment", beforeSection(`${decoy}    <!--\n<details>\n\n    -->`)],
+    ["a20 details after the section", laterSection("<details>\nAudit verdict changed: Needs Changes\n</details>")],
+    ["summary alone", beforeSection("text <SUMMARY>x")],
+    ["script", laterSection("text <script>x</script>")],
+    ["style", laterSection("text <style>x</style>")],
+    ["template", laterSection("text <template>x</template>")],
+    ["textarea", laterSection("text <textarea>")],
+    ["noscript", laterSection("text <noscript>")],
+    ["iframe", laterSection("text <iframe src=x>")],
+    ["xmp", laterSection("text <xmp>")],
+    ["plaintext", laterSection("text <plaintext>")],
+    ["three backticks do not open a span closed by one", laterSection("```<details>` x `")],
+  ]) {
+    const errors = errorsOf(text, RELEASE_OPTS);
+    assert.ok(errors.some((message) => HIDING.test(message)), `${name}: expected ${HIDING}, got:\n${errors.join("\n")}`);
+  }
+  assertFails(laterSection("text <span hidden>x</span>"), /line \d+: a `hidden` attribute/, RELEASE_OPTS);
+  assertFails(laterSection("text <p class=a HIDDEN=\"\">x"), /line \d+: a `hidden` attribute/, RELEASE_OPTS);
+  assertFails(laterSection("text <span\n  class=a\n  hidden>x</span>"), /line \d+: a `hidden` attribute \(on a tag that continues/, RELEASE_OPTS);
+  assertFails(laterSection("\\`<details>` x"), HIDING, RELEASE_OPTS);
+  assert.deepEqual(errorsOf(laterSection("- latency p95 < 200 ms and x<y\n- the next value > 3"), RELEASE_OPTS), [], "a comparison is not a tag");
+  // An inline code span is text, not a tag.
+  assert.deepEqual(errorsOf(laterSection("- XSS through `<script>` and `<details hidden>` in the title; ``a ` <iframe>`` too"), RELEASE_OPTS), []);
+  assert.deepEqual(errorsOf(laterSection("- the hidden field and the summary are plain words"), RELEASE_OPTS), []);
+});
+
+test("N-3: long runs of spaces, quote marks, list markers or words are handled in under 2 seconds, and an over-long line is refused", () => {
+  const SIZE = 200 * 1000;
+  for (const line of [" ".repeat(SIZE), ">".repeat(SIZE), "- ".repeat(SIZE / 2), "release ".repeat(SIZE / 8), "1. ".repeat(SIZE / 4), `${"1".repeat(SIZE)}x`, "[".repeat(SIZE), "<a".repeat(SIZE / 2), "`".repeat(SIZE - 1) + "x`", "&#".repeat(SIZE / 2)]) {
+    const started = process.hrtime.bigint();
+    const errors = errorsOf(`${RELEASE}${line}\n`, RELEASE_OPTS);
+    const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6;
+    assert.ok(elapsedMs < 2000, `took ${elapsedMs} ms for ${safe(line)}`);
+    assert.ok(errors.some((message) => /line \d+ is longer than 20000 characters/.test(message)), errors.join("\n"));
+  }
+  for (const line of [" ".repeat(19000), ">".repeat(19000), "- ".repeat(9500), "release ".repeat(2300), `${" ".repeat(9000)}#${" ".repeat(9000)}`, "[".repeat(19000), "`a".repeat(9500)]) {
+    const started = process.hrtime.bigint();
+    errorsOf(`${RELEASE}${line}\n`, RELEASE_OPTS);
+    const elapsedMs = Number(process.hrtime.bigint() - started) / 1e6;
+    assert.ok(elapsedMs < 2000, `took ${elapsedMs} ms for ${safe(line)}`);
+  }
+  assert.deepEqual(errorsOf(`${RELEASE}${"x".repeat(20000)}\n`, RELEASE_OPTS), []);
+});
+
+test("N-4: the validator's own output, pasted into the task file, does not fail the next run", () => {
+  const ok = runCli([releaseFile, "--repo", repoRoot, "--release", "--head", HEAD]);
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.stdout, /^validate-release-audit: OK \(Pass, release-grade; 4 ledger row\(s\); 3 finding\(s\)\)/);
+  const pasted = ok.stdout.trim();
+  assert.deepEqual(errorsOf(beforeSection(`## Evidence\n- ${pasted}\n\n\`\`\`text\n${pasted}\n\`\`\``), RELEASE_OPTS), []);
+  const failed = runCli([path.join(fixtures, "invalid-pass-with-open-work.md"), "--repo", repoRoot]);
+  assert.equal(failed.status, 1);
+  for (const line of failed.stderr.trim().split("\n")) assert.match(line, /^validate-release-audit: /);
+  assert.deepEqual(errorsOf(beforeSection(`## Evidence\n${failed.stderr.trim().split("\n").map((line) => `- ${line}`).join("\n")}`), RELEASE_OPTS), []);
+});
+
+test("N-7: the usage line and the header comment name the 40-character head", () => {
+  assert.match(runCli(["--help"]).stdout, /--release --head <40-character sha>/);
+  assert.match(fs.readFileSync(script, "utf8"), /^ \* {3}node Scripts\/validate-release-audit\.mjs <task-file> \[--repo <root>\] \[--release --head <40-character sha>\]$/m);
+});
+
+test("the task template, filled in, validates release-grade", () => {
+  const template = fs.readFileSync(path.join(here, "..", "MemoryTemplates", "TASK_MEMORY.template.md"), "utf8");
+  const start = template.indexOf("## Release Audit\n");
+  const end = template.indexOf("## Risks / Follow-ups");
+  assert.ok(start > 0 && end > start);
+  const record = RELEASE.slice(RELEASE.indexOf("## Release Audit\n"), RELEASE.indexOf(HANDOFF));
+  assert.deepEqual(errorsOf(template.slice(0, start) + record + template.slice(end), RELEASE_OPTS), []);
+  // The unfilled section holds nothing but the placeholder headline, the two headings and the two table headers.
+  const lines = template.slice(start, end).split("\n").filter((line) => line.trim() !== "");
+  assert.equal(lines.length, 8, lines.join("\n"));
 });
