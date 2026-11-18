@@ -328,7 +328,6 @@ test("B3: --release needs a full-scope standard or deep Pass at the release head
   const { errors, summary } = validate(RELEASE, { repoRoot, release: true, head: HEAD });
   assert.deepEqual(errors, []);
   assert.equal(summary.grade, "release-grade");
-  assert.deepEqual(errorsOf(RELEASE, { release: true, head: "0a1b2c3d" }), []);
   assert.deepEqual(errorsOf(swap(RELEASE, "profile standard", "profile deep"), { release: true, head: HEAD }), []);
   assert.equal(validate(RELEASE, { repoRoot }).summary.grade, "scoped");
 
@@ -337,7 +336,7 @@ test("B3: --release needs a full-scope standard or deep Pass at the release head
   assertFails(VALID, /--release: 1 ledger row\(s\) are `out-of-scope`: "L4"/, release);
   assertFails(swap(RELEASE, "profile standard", "profile quick"), /--release: profile is `quick`; a release needs `standard` or `deep`/, release);
   assertFails(RELEASE, /--release: headline sha "0a1b2c3d" is not the release head/, { release: true, head: "1a1b2c3d4e5f60718293a4b5c6d7e8f901234567" });
-  assertFails(RELEASE, /--head .* is not a 7-40 character hex sha/, { release: true, head: "HEAD" });
+  assertFails(RELEASE, /--head .* is not a full 40-character hex sha/, { release: true, head: "HEAD" });
   let open = swap(RELEASE, "- Release audit: Pass |", "- Release audit: Needs Changes |");
   open = swap(open, "; Resolved: 4d5e6f70", "");
   assertFails(open, /--release: the latest verdict is `Needs Changes`, not `Pass`/, release);
@@ -383,4 +382,168 @@ test("CLI: --release and --head", () => {
   assert.match(scoped.stderr, /--release: scope is "billing", not `full`/);
   assert.equal(runCli([releaseFile, "--repo", repoRoot, "--head", HEAD]).status, 2, "--head needs --release");
   assert.equal(runCli([releaseFile, "--repo", repoRoot, "--release", "--head"]).status, 2);
+});
+
+// --- Security review round 2, 2026-11-18: NB-1, NB-2, N-4, N-5, N-7 ---
+
+const RELEASE_OPTS = { release: true, head: HEAD };
+const RELEASE_LINE = RELEASE.split("\n").find((candidate) => candidate.startsWith("- Release audit:"));
+const LATER_LINE = RELEASE_LINE.replace("Pass", "Needs Changes").replace("run 1", "run 2");
+
+test("NB-1a: a later section under another spelling of the heading is an error, never a silent end of the record", () => {
+  assert.deepEqual(errorsOf(RELEASE, RELEASE_OPTS), []);
+  for (const heading of [
+    "## Release audit",
+    "## Release Audit (run 2)",
+    "# Release Audit",
+    "## Release Audit ##",
+    "## Release  Audit",
+    " ## Release Audit",
+    "### Release Audit",
+    "## **Release Audit**",
+    "## Release\u00a0Audit",
+    "## Rele\u200base Audit",
+    "## Release-Audit",
+    "## R\u0435lease Audit",
+    "## \uff32elease Audit",
+    "> ## Release Audit",
+    "- ## Release Audit",
+    "Release Audit\n=============",
+    "Release Audit (run 2)\n---",
+  ]) {
+    const text = swap(RELEASE, "## Handoff", `${heading}\n${LATER_LINE.replace("- Release audit:", "- Verdict now:")}\n\n## Handoff`);
+    assertFails(text, /line \d+: .* reads as a Release Audit heading but is not the single exact `## Release Audit`/, RELEASE_OPTS);
+  }
+});
+
+test("NB-1a: `## Architecture Note (release audit)` is the one other heading allowed, and it cannot hold a record", () => {
+  const note = "## Architecture Note (release audit)\n- Product and stack: fixture.\n\n## Handoff";
+  assert.deepEqual(errorsOf(swap(RELEASE, "## Handoff", note), RELEASE_OPTS), []);
+  assert.deepEqual(errorsOf(swap(RELEASE, "## Release Audit\n", `${note.replace("\n\n## Handoff", "")}\n\n## Release Audit\n`), RELEASE_OPTS), []);
+  assertFails(swap(RELEASE, "## Handoff", `## Architecture Note (release audit) v2\n\n## Handoff`), /reads as a Release Audit heading/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "## Handoff", note.replace("- Product and stack: fixture.", LATER_LINE)), /line \d+: a `Release audit:` headline outside the `## Release Audit` section/, RELEASE_OPTS);
+});
+
+test("NB-1: a headline-like line anywhere outside the section is an error", () => {
+  for (const line of [LATER_LINE, `  ${LATER_LINE}`, LATER_LINE.replace("- Release audit:", "1. **Release Audit**:"), LATER_LINE.replace("- Release audit:", "- [x] Release audit\uff1a")]) {
+    assertFails(swap(RELEASE, "- Next role: none.", line), /a `Release audit:` headline outside the `## Release Audit` section/, RELEASE_OPTS);
+    assertFails(swap(RELEASE, "- Fixture for", `${line}\n- Fixture for`), /a `Release audit:` headline outside the `## Release Audit` section/, RELEASE_OPTS);
+  }
+});
+
+test("NB-1b: a record inside an HTML comment opened before the heading is an error", () => {
+  const decoy = `-->\n\n## Audit status\n- Verdict now: Needs Changes\n\n## Handoff`;
+  const hidden = swap(swap(RELEASE, "## Release Audit\n", "<!--\n## Release Audit\n"), "## Handoff", decoy);
+  assertFails(hidden, /line \d+: a Release Audit heading, headline or table row inside an HTML comment/, RELEASE_OPTS);
+  const sameLine = swap(swap(RELEASE, "## Release Audit\n", "<!-- old\n## Release Audit\n"), "## Handoff", decoy);
+  assertFails(sameLine, /inside an HTML comment/, RELEASE_OPTS);
+  const midLine = swap(swap(RELEASE, "- Fixture for", "- Fixture <!-- for"), "## Handoff", decoy);
+  assertFails(midLine, /line \d+: an HTML comment opened in the middle of a line is not closed on that line/, RELEASE_OPTS);
+});
+
+test("NB-1b: comments are allowed only before the section, closed, and silent about the audit", () => {
+  assert.deepEqual(errorsOf(swap(RELEASE, "## Summary", "<!-- reviewed by the owner -->\n<!--\nmulti-line note\n-->\n## Summary"), RELEASE_OPTS), []);
+  assertFails(swap(RELEASE, "## Summary", "<!-- release  audit withdrawn -->\n## Summary"), /line \d+: an HTML comment before the section mentions the release audit/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "- Next role: none.", "- Next role: none. <!-- note -->"), /line \d+: HTML comment after the `## Release Audit` heading/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "## Summary", "<!--\nnote\n--> ## Summary"), /line \d+: text after the `-->` that closes a multi-line HTML comment/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "- Next role: none.", "- Next role: none.\n<!--\nnever closed"), /line \d+: HTML comment is never closed/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "## Summary", "<!--\n```\n-->\n## Summary"), /line \d+: a code fence marker inside an HTML comment/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "## Summary", "<details>\n\n## Summary"), /line \d+: raw HTML block before the `## Release Audit` section/, RELEASE_OPTS);
+});
+
+test("NB-1c: fences follow CommonMark, so a longer fence is not closed by a shorter one", () => {
+  const body = RELEASE.slice(RELEASE.indexOf("## Release Audit"), RELEASE.indexOf("## Handoff"));
+  const rest = "## Audit status\n- Verdict now: Needs Changes\n";
+  for (const [open, inner, close] of [
+    ["````md", "```", "````"],
+    ["~~~~", "~~~", "~~~~"],
+    ["```md", "~~~", "```"],
+    ["~~~", "```", "~~~"],
+    ["```", "``` js", "```"],
+    ["   ````", "```", "````"],
+  ]) {
+    const text = `# Task\n\n${open}\n${inner}\n${body}${close}\n\n${rest}`;
+    assertFails(text, /line \d+: a Release Audit heading or headline inside a code fence/, RELEASE_OPTS);
+    assertFails(text, /no `## Release Audit` section/, RELEASE_OPTS);
+  }
+  assert.deepEqual(errorsOf(swap(RELEASE, "## Summary", "```js\nconst a = 1;\n~~~\n```\n\n## Summary"), RELEASE_OPTS), []);
+  assert.deepEqual(errorsOf(swap(RELEASE, "## Summary", "```not a fence``` because of the backtick\n\n## Summary"), RELEASE_OPTS), []);
+  assertFails(swap(RELEASE, "- Next role: none.", "- Next role: none.\n```\nnever closed"), /line \d+: code fence is never closed/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "## Summary", "````\n```\n## Summary"), /code fence is never closed/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, "## Summary", `\`\`\`\n${LATER_LINE}\n\`\`\`\n## Summary`), /a Release Audit heading or headline inside a code fence/, RELEASE_OPTS);
+});
+
+test("NB-1: a setext underline or thematic break inside the section is an error", () => {
+  assertFails(swap(RELEASE, "### Audit Findings", "Notes\n---\n\n### Audit Findings"), /line \d+: setext underline or thematic break inside `## Release Audit`/, RELEASE_OPTS);
+});
+
+test("NB-2: a release Pass needs two clean critics", () => {
+  const one = swap(RELEASE, "critics clean 2", "critics clean 1");
+  assertFails(one, /--release: `critics clean` is 1; a release needs 2 or more/, RELEASE_OPTS);
+  assert.deepEqual(errorsOf(one), [], "a scoped check still accepts one clean critic");
+  assert.deepEqual(errorsOf(swap(RELEASE, "critics clean 2", "critics clean 3"), RELEASE_OPTS), []);
+});
+
+test("N-4: pipe look-alikes, no-break spaces and foreign letters in keywords are rejected inside the section", () => {
+  for (const ch of ["\uff5c", "\u2502", "\u2223", "\u01c0", "\u00a6", "\u00a0"]) {
+    const later = `${LATER_LINE.split("|").join(ch)}`;
+    assertFails(swap(RELEASE, RELEASE_LINE, `${RELEASE_LINE}\n${later}`), /line \d+: character U\+[0-9A-F]{4} inside `## Release Audit`/, RELEASE_OPTS);
+    assertFails(swap(RELEASE, "no upload or download endpoint", `no upload${ch}or download endpoint`), /character U\+[0-9A-F]{4} inside `## Release Audit`/, RELEASE_OPTS);
+  }
+  for (const prefix of ["- R\u0435lease audit:", "- Release \u0430udit:", "- \uff32\uff45\uff4c\uff45\uff41\uff53\uff45 audit\uff1a", "- Rele\u200base audit:", "- R\u00e9lease audit:", "- [ ] Release audit:", "2) Release audit:"]) {
+    const later = LATER_LINE.replace("- Release audit:", prefix).split(" | ").join(" / ");
+    assertFails(swap(RELEASE, RELEASE_LINE, `${RELEASE_LINE}\n${later}`), /line \d+: looks like a headline but is not written exactly/, RELEASE_OPTS);
+  }
+});
+
+test("N-5: --release needs a full 40-character --head, and the headline sha is a prefix of it", () => {
+  assertFails(RELEASE, /--release needs --head/, { release: true });
+  assertFails(RELEASE, /--head .* is not a full 40-character hex sha/, { release: true, head: "0a1b2c3d" });
+  assertFails(RELEASE, /--head .* is not a full 40-character hex sha/, { release: true, head: "0".repeat(40) });
+  assert.deepEqual(errorsOf(swap(RELEASE, "sha 0a1b2c3d", `sha ${HEAD}`), RELEASE_OPTS), []);
+  assertFails(swap(RELEASE, "sha 0a1b2c3d", `sha ${HEAD.slice(0, 39)}0`), /headline sha .* is not the release head/, RELEASE_OPTS);
+  const noHead = runCli([releaseFile, "--repo", repoRoot, "--release"]);
+  assert.equal(noHead.status, 2);
+  assert.match(noHead.stderr, /--release needs --head/);
+  const short = runCli([releaseFile, "--repo", repoRoot, "--release", "--head", "0a1b2c3d"]);
+  assert.equal(short.status, 2);
+  assert.match(short.stderr, /is not a full 40-character hex sha/);
+});
+
+test("N-7: an empty file, the task file itself and anything under .git are not `paths read`", (t) => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), "release-audit-"));
+  t.after(() => fs.rmSync(temp, { recursive: true, force: true }));
+  fs.cpSync(repoRoot, temp, { recursive: true });
+  fs.writeFileSync(path.join(temp, "src", "empty.js"), "");
+  fs.mkdirSync(path.join(temp, ".git"));
+  fs.writeFileSync(path.join(temp, ".git", "config"), "[core]\n");
+  const taskFile = path.join(temp, "task.md");
+  fs.writeFileSync(taskFile, VALID);
+  const run = (cell) => validate(swap(VALID, "| covered | src/invoices.js | query", `| covered | ${cell} | query`), { repoRoot: temp, taskFile }).errors.join("\n");
+  assert.equal(run("src/invoices.js"), "");
+  assert.match(run("src/empty.js"), /`paths read` entry "src\/empty\.js" is an empty file/);
+  assert.match(run("task.md"), /`paths read` entry "task\.md" is the task file itself/);
+  assert.match(run("./task.md:1"), /is the task file itself/);
+  assert.match(run(".git/config"), /`paths read` entry "\.git\/config" is inside `\.git`/);
+  assert.match(run(".GIT/config"), /is inside `\.git`/);
+  const cli = spawnSync(process.execPath, [script, taskFile, "--repo", temp], { encoding: "utf8" });
+  assert.equal(cli.status, 0, cli.stderr);
+  fs.writeFileSync(taskFile, swap(VALID, "| covered | src/invoices.js | query", "| covered | task.md | query"));
+  const self = spawnSync(process.execPath, [script, taskFile, "--repo", temp], { encoding: "utf8" });
+  assert.equal(self.status, 1);
+  assert.match(self.stderr, /is the task file itself/);
+});
+
+test("N-7: `verified by` names a verifier before the Resolved marker", () => {
+  for (const cell of ["Resolved: 4d5e6f70", "; Resolved: 4d5e6f70", "- ; Resolved: 4d5e6f70", "`Resolved: 4d5e6f70`"]) {
+    assertFails(swap(VALID, "verifier 2 (new session), Probable; Resolved: 4d5e6f70", cell), /finding "F1" \(line \d+\): `verified by` holds only the `Resolved:` marker/);
+  }
+});
+
+test("N-7: a resolved finding's trace is still a well-formed path:line", () => {
+  assert.deepEqual(errorsOf(swap(VALID, "`src/invoices.js:2` ->", "`src/gone.js:2` ->")), []);
+  assertFails(swap(VALID, "`src/invoices.js:2` ->", "`../secret.js:2` ->"), /trace entry "\.\.\/secret\.js:2" contains `\.\.`/);
+  assertFails(swap(VALID, "`src/invoices.js:2` ->", "`/etc/passwd:2` ->"), /trace entry "\/etc\/passwd:2" is absolute/);
+  assertFails(swap(VALID, "`src/invoices.js:2` ->", "`src/gone.js:0` ->"), /trace entry "src\/gone\.js:0" has an invalid line range/);
+  assertFails(swap(VALID, "`src/invoices.js:2` ->", "`.git/config:1` ->"), /is inside `\.git`/);
 });

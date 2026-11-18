@@ -11,6 +11,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { execFileSync, spawnSync } from "node:child_process";
+import crypto from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -72,7 +73,7 @@ function makeSandbox(t, extraWork) {
   git(root, "clone", "-q", "--bare", work, bare);
   git(bare, "config", "uploadpack.allowAnySHA1InWant", "true");
   // The review record names the full commit it covers (and the absent one used by the failure tests).
-  fs.writeFileSync(path.join(manifestDir, "reviews", "demo.md"), `# review\n\nReviewed commits: ${first} ${second} ${MISSING_SHA}\n`);
+  fs.writeFileSync(path.join(manifestDir, "reviews", "demo.md"), `# review\n\nVerdict: Pass\n\nReviewed commits: ${first} ${second} ${MISSING_SHA}\n`);
 
   return { root, work, target, manifestDir, first, second, source: pathToFileURL(bare).href };
 }
@@ -392,8 +393,8 @@ test("B4: an inherited GIT_ALLOW_PROTOCOL or GIT_CONFIG_* cannot widen what git 
 test("N1: the review record must be a regular file that names the full pinned commit", (t) => {
   const sandbox = makeSandbox(t);
   const reviews = path.join(sandbox.manifestDir, "reviews");
-  fs.writeFileSync(path.join(reviews, "other.md"), `# review of another commit\n\n${sandbox.first}\n`);
-  fs.writeFileSync(path.join(reviews, "short.md"), `# review\n\n${sandbox.second.slice(0, 12)}\n`);
+  fs.writeFileSync(path.join(reviews, "other.md"), `# review of another commit\n\nVerdict: Pass\n\n${sandbox.first}\n`);
+  fs.writeFileSync(path.join(reviews, "short.md"), `# review\n\nVerdict: Pass\n\n${sandbox.second.slice(0, 12)}\n`);
   fs.mkdirSync(path.join(reviews, "folder.md"));
   for (const review of ["reviews/other.md", "reviews/short.md", "reviews/folder.md"]) {
     const result = run(sandbox, [entry(sandbox, { review })]);
@@ -509,4 +510,153 @@ test("N4: a root-path skill installs without its .git folder", (t) => {
   const installed = fs.readdirSync(path.join(sandbox.target, "demo"));
   assert.equal(installed.includes(".git"), false);
   assert.equal(installed.includes("SKILL.md"), true);
+});
+
+// --- Security review round 2, 2026-11-18: N-1, N-2, N-3 ---
+
+test("N-1: the review record is `reviews/<name>.md` beside the manifest", (t) => {
+  const sandbox = makeSandbox(t);
+  const record = fs.readFileSync(path.join(sandbox.manifestDir, "reviews", "demo.md"), "utf8");
+  write(sandbox.manifestDir, "notes/demo.md", record);
+  write(sandbox.manifestDir, "demo.md", record);
+  write(sandbox.manifestDir, "reviews/sub/demo.md", record);
+  write(sandbox.manifestDir, "reviews/demo.txt", record);
+  write(sandbox.manifestDir, "reviews/Demo Notes.md", record);
+  write(sandbox.manifestDir, "skills.manifest.json", record);
+  for (const review of ["notes/demo.md", "demo.md", "reviews/sub/demo.md", "reviews/demo.txt", "reviews/Demo Notes.md", "skills.manifest.json", "reviews/.md"]) {
+    const result = run(sandbox, [entry(sandbox, { review })]);
+    assert.equal(result.status, 2, `${review} -> ${result.status} ${result.stdout}`);
+    assert.match(result.stderr, /"review" must be `reviews\/<name>\.md`/);
+  }
+  const outside = path.join(sandbox.root, "elsewhere.md");
+  fs.writeFileSync(outside, record);
+  try {
+    fs.symlinkSync(outside, path.join(sandbox.manifestDir, "reviews", "linked.md"));
+  } catch {
+    return;
+  }
+  const linked = run(sandbox, [entry(sandbox, { review: "reviews/linked.md" })]);
+  assert.equal(linked.status, 2);
+  assert.match(linked.stderr, /review record .* is not a regular file/);
+  assert.deepEqual(fs.readdirSync(sandbox.target), []);
+});
+
+test("N-1: the review record carries a Pass verdict line, and a Fail or Rejected verdict is refused", (t) => {
+  const sandbox = makeSandbox(t);
+  const shas = `Reviewed commit: ${sandbox.second}\n`;
+  const check = (name, text) => {
+    write(sandbox.manifestDir, `reviews/${name}.md`, text);
+    return run(sandbox, [entry(sandbox, { review: `reviews/${name}.md` })], ["--list"]);
+  };
+  for (const [name, verdict] of [
+    ["plain", "Verdict: Pass"],
+    ["conditions", "Verdict: Pass with conditions"],
+    ["bullet", "- **Verdict: Pass with conditions** (conditions C1 to C7 below). Listed."],
+    ["bold-label", "**Verdict:** Pass"],
+    ["bold-value", "Verdict: **Pass**"],
+    ["crlf", "Verdict: Pass\r"],
+  ]) {
+    const result = check(name, `# review\n\n${verdict}\n${shas}`);
+    assert.equal(result.status, 0, `${verdict} -> ${result.stderr}`);
+  }
+  const none = check("none", `# review\n\nThe sha is here and nothing else. Verdict: Pass is only mentioned mid-line.\n${shas}`);
+  assert.equal(none.status, 2);
+  assert.match(none.stderr, /review record .* has no `Verdict: Pass` or `Verdict: Pass with conditions` line/);
+  for (const [name, verdict] of [
+    ["fail", "Verdict: Fail"],
+    ["rejected", "**Verdict: Rejected**"],
+    ["passed-over", "Verdict: Passable, with doubts"],
+    ["needs", "- Verdict: Needs Changes"],
+    ["both", "Verdict: Pass\n\nVerdict: Fail"],
+    ["both-reversed", "Verdict: Fail\n\n- **Verdict: Pass with conditions**"],
+    ["not-pass", "Verdict: Pass is not given"],
+  ]) {
+    const result = check(name, `# review\n\n${verdict}\n${shas}`);
+    assert.equal(result.status, 2, `${verdict} -> ${result.status} ${result.stdout}`);
+    assert.match(result.stderr, /review record .* (has a verdict line that is not `Pass` or `Pass with conditions`|has more than one verdict line)/);
+  }
+});
+
+test("N-1: the shipped manifest and its review records are accepted", () => {
+  const result = spawnSync(process.execPath, [INSTALLER, "--list", "--target", path.join(os.tmpdir(), "skills-test-no-such-target")], { encoding: "utf8" });
+  assert.equal(result.status, 0, result.stderr);
+});
+
+test("N-2: no filter, line-ending or ident conversion from user or repository configuration touches the checkout", (t) => {
+  const lf = "line one\nline two\n";
+  const sandbox = makeSandbox(t, (work) => {
+    git(work, "config", "core.autocrlf", "false");
+    write(work, ".gitattributes", "*.bin filter=evil\n*.crlf text eol=crlf\n*.id ident\n");
+    write(work, "skills/demo/blob.bin", "payload\n");
+    write(work, "skills/demo/plain.txt", lf);
+    write(work, "skills/demo/forced.crlf", lf);
+    write(work, "skills/demo/stamp.id", "$Id$\n");
+  });
+  const home = path.join(sandbox.root, "home");
+  fs.mkdirSync(home);
+  const ran = path.join(sandbox.root, "SMUDGE_RAN");
+  const smudge = `${JSON.stringify(process.execPath)} -e "require('fs').writeFileSync(process.argv[1],'1');process.stdout.write('smudged')" ${JSON.stringify(ran)}`;
+  const config = path.join(home, ".gitconfig");
+  execFileSync("git", ["config", "--file", config, "filter.evil.smudge", smudge]);
+  execFileSync("git", ["config", "--file", config, "filter.evil.required", "true"]);
+  execFileSync("git", ["config", "--file", config, "core.autocrlf", "true"]);
+  execFileSync("git", ["config", "--file", config, "core.eol", "crlf"]);
+  const result = run(sandbox, [entry(sandbox)], [], { HOME: home, USERPROFILE: home, XDG_CONFIG_HOME: path.join(home, "xdg") });
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  assert.equal(fs.existsSync(ran), false, "the smudge command ran");
+  for (const name of ["blob.bin", "plain.txt", "forced.crlf", "stamp.id", "SKILL.md"]) {
+    const committed = execFileSync("git", ["cat-file", "blob", `${sandbox.second}:skills/demo/${name}`], { cwd: sandbox.work, env: GIT_ENV });
+    assert.deepEqual(fs.readFileSync(path.join(sandbox.target, "demo", name)), committed, `${name} differs from the committed bytes`);
+  }
+  assert.equal(fs.readFileSync(path.join(sandbox.target, "demo", "plain.txt"), "utf8"), lf);
+});
+
+test("N-3: the executable bit is part of the digest", { skip: process.platform === "win32" }, (t) => {
+  const sandbox = makeSandbox(t);
+  const dest = path.join(sandbox.target, "demo");
+  const list = () => run(sandbox, [entry(sandbox)], ["--list"]).stdout;
+  assert.equal(run(sandbox, [entry(sandbox)]).status, 0);
+  assert.match(list(), /1 already present/);
+  fs.chmodSync(path.join(dest, "extra", "notes.md"), 0o755);
+  assert.match(list(), /1 modified/);
+  fs.chmodSync(path.join(dest, "extra", "notes.md"), 0o644);
+  assert.match(list(), /1 already present/);
+});
+
+test("N-3: a marker whose digest was written without the executable bit is reported as modified", (t) => {
+  const sandbox = makeSandbox(t);
+  const dest = path.join(sandbox.target, "demo");
+  assert.equal(run(sandbox, [entry(sandbox)]).status, 0);
+  // The digest as the installer wrote it before the executable bit was included.
+  const entries = [];
+  const walk = (current, prefix) => {
+    for (const name of fs.readdirSync(current)) {
+      const relative = prefix === "" ? name : `${prefix}/${name}`;
+      if (relative === MARKER) continue;
+      const full = path.join(current, name);
+      const isDir = fs.lstatSync(full).isDirectory();
+      entries.push({ relative, kind: isDir ? "d" : "f", full });
+      if (isDir) walk(full, relative);
+    }
+  };
+  walk(dest, "");
+  entries.sort((a, b) => (a.relative < b.relative ? -1 : a.relative > b.relative ? 1 : 0));
+  const hash = crypto.createHash("sha256");
+  for (const item of entries) {
+    hash.update(`${item.kind}\0${item.relative}\0`);
+    if (item.kind === "f") {
+      const bytes = fs.readFileSync(item.full);
+      hash.update(`${bytes.length}\0`);
+      hash.update(bytes);
+    }
+  }
+  const markerFile = path.join(dest, MARKER);
+  const marker = JSON.parse(fs.readFileSync(markerFile, "utf8"));
+  marker.digest = `sha256:${hash.digest("hex")}`;
+  fs.writeFileSync(markerFile, JSON.stringify(marker, null, 2) + "\n");
+  const listed = run(sandbox, [entry(sandbox)], ["--list"]);
+  assert.match(listed.stdout, /1 modified/);
+  assert.match(listed.stdout, /older format/);
+  assert.equal(run(sandbox, [entry(sandbox)], ["--upgrade"]).status, 0);
+  assert.match(run(sandbox, [entry(sandbox)], ["--list"]).stdout, /1 already present/);
 });

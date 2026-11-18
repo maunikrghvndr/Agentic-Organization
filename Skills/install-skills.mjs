@@ -20,8 +20,16 @@
  * temp directory. It never runs anything from the fetched repository.
  * Every git call names the temp repository explicitly and runs without any
  * inherited GIT_* variable, so it cannot be redirected into another repository.
- * The marker stores a sha256 digest of the installed files; a skill whose
- * files no longer match is reported as modified.
+ * The checkout is byte-exact: `.git/info/attributes` in the temp repository
+ * switches off every filter, line-ending and ident conversion, whatever the
+ * user's or the fetched repository's configuration says.
+ * The marker stores a sha256 digest of the installed files (paths, bytes and,
+ * outside Windows, the executable bits); a skill whose files no longer match
+ * is reported as modified. A marker written before the executable bits were
+ * included no longer matches either: `--upgrade` reinstalls the pinned commit.
+ * A skill is listed only with a review record at `reviews/<name>.md` beside
+ * the manifest that holds one `Verdict: Pass` or `Verdict: Pass with
+ * conditions` line and the full pinned commit.
  *
  * Exit codes: 0 = nothing failed; 1 = at least one skill failed;
  * 2 = bad arguments or an invalid manifest (nothing was installed).
@@ -52,6 +60,18 @@ const GIT_DIR_NAME = ".git";
 const GIT_SEGMENTS = [GIT_DIR_NAME, "git~1"];
 const DIGEST_PREFIX = "sha256:";
 const MAX_REVIEW_BYTES = 2 * 1024 * 1024;
+const REVIEWS_DIR = "reviews";
+/** `reviews/<safe-name>.md`, relative to the manifest; group 1 is the file name. */
+const REVIEW_PATH_RE = /^reviews\/([a-z0-9]+(?:[._-][a-z0-9]+)*\.md)$/;
+/** A line that states the verdict: `Verdict:` at its start, after an optional bullet and emphasis. */
+const VERDICT_LINE_RE = /^ {0,3}(?:[-*+]\s+)?[*_]*Verdict[*_]*\s*:/i;
+/** The only verdicts that list a skill; group 2 is what follows the verdict words. */
+const VERDICT_PASS_RE = /^ {0,3}(?:[-*+]\s+)?(?:\*\*)?Verdict:?(?:\*\*)?:?\s*\**(Pass with conditions|Pass)\b(.*)$/i;
+/** After the verdict words: nothing, or punctuation that ends them (so "Pass is not given" is not a Pass). */
+const VERDICT_TAIL_RE = /^[*_\s]*(?:[.,;:(-].*)?$/;
+const EXECUTABLE_BITS = 0o111;
+/** In the temp repository's .git/info/attributes: no filter, no line-ending, ident or encoding conversion. */
+const NO_CONVERSION_ATTRIBUTES = "* -filter -text -ident -working-tree-encoding\n";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CLOCK_SKEW_DAYS = 1;
 
@@ -93,7 +113,8 @@ const MSG = {
   updated: "updated",
   present: "present at the pinned commit - skipped",
   outdated: "installed at another commit - re-run with --upgrade to replace it",
-  modified: "installed files do not match the digest recorded at install (or none was recorded) - re-run with --upgrade to reinstall the pinned commit",
+  modified:
+    "installed files do not match the digest recorded at install (or none was recorded, or it was recorded in an older format without the executable bits) - re-run with --upgrade to reinstall the pinned commit",
   modifiedStatus: "modified",
   clash: "name clash: a folder with this name exists and was not installed by this script - left untouched",
   failed: "FAILED",
@@ -171,7 +192,8 @@ function isPastOrPresentDate(value) {
 }
 
 /** Why the review record is not acceptable for this commit, or null when it is. */
-function reviewRecordProblem(file, commit) {
+function reviewRecordProblem(manifestDir, name, commit) {
+  const file = path.join(manifestDir, REVIEWS_DIR, name);
   let stat;
   try {
     stat = fs.lstatSync(file);
@@ -179,11 +201,23 @@ function reviewRecordProblem(file, commit) {
     return "does not exist beside the manifest - a skill is listed only after its review";
   }
   if (!stat.isFile() || stat.size > MAX_REVIEW_BYTES) return "is not a regular file (or is too large)";
+  try {
+    if (fs.realpathSync(file) !== path.join(fs.realpathSync(manifestDir), REVIEWS_DIR, name)) return "is not a regular file (it is reached through a link)";
+  } catch {
+    return "cannot be read";
+  }
   let text;
   try {
     text = fs.readFileSync(file, "utf8");
   } catch {
     return "cannot be read";
+  }
+  const verdicts = text.split(/\r\n|\n|\r/).filter((line) => VERDICT_LINE_RE.test(line));
+  if (verdicts.length === 0) return "has no `Verdict: Pass` or `Verdict: Pass with conditions` line - a skill is listed only after a passing review";
+  if (verdicts.length > 1) return "has more than one verdict line - a review record states one verdict";
+  const pass = VERDICT_PASS_RE.exec(verdicts[0]);
+  if (pass === null || !VERDICT_TAIL_RE.test(pass[2])) {
+    return "has a verdict line that is not `Pass` or `Pass with conditions` - a failed or rejected skill is not listed";
   }
   if (typeof commit === "string" && SHA_RE.test(commit) && !text.includes(commit)) {
     return "does not contain the full pinned commit - the review must be of the commit that is installed";
@@ -237,10 +271,11 @@ function validateManifest(manifest, manifestDir) {
     if (!isNonEmptyString(skill.area)) errors.push(`${at}: "area" must be a non-empty string`);
     if (!isNonEmptyString(skill.license)) errors.push(`${at}: "license" must be a non-empty string`);
     if (!isPastOrPresentDate(skill.reviewed)) errors.push(`${at}: "reviewed" must be a real YYYY-MM-DD date that is not in the future`);
-    if (!isSafeRelativePath(skill.review, false)) {
-      errors.push(`${at}: "review" must be a relative path to the review record`);
+    const reviewPath = typeof skill.review === "string" ? REVIEW_PATH_RE.exec(skill.review) : null;
+    if (reviewPath === null || !isSafeRelativePath(skill.review, false)) {
+      errors.push(`${at}: "review" must be \`reviews/<name>.md\` beside the manifest (lowercase letters, digits and single . _ - separators)`);
     } else {
-      const problem = reviewRecordProblem(path.join(manifestDir, ...skill.review.split("/")), skill.commit);
+      const problem = reviewRecordProblem(manifestDir, reviewPath[1], skill.commit);
       if (problem !== null) errors.push(`${at}: review record "${skill.review}" ${problem}`);
     }
     if (!Array.isArray(skill.hosts) || skill.hosts.length === 0 || !skill.hosts.every(isNonEmptyString)) {
@@ -266,7 +301,9 @@ function readMarker(dest) {
 /**
  * sha256 over the installed tree: every entry below `dir` except the marker,
  * as sorted forward-slash relative paths, each with its kind and, for a file,
- * its bytes. Any added, removed, renamed or edited entry changes the digest.
+ * its bytes and its executable bits (taken as 0 on Windows, which has none).
+ * Any added, removed, renamed or edited entry, or a file made executable,
+ * changes the digest.
  */
 function digestTree(dir) {
   const entries = [];
@@ -280,7 +317,7 @@ function digestTree(dir) {
         entries.push({ relative, kind: "d", full });
         walk(full, relative);
       } else if (stat.isFile()) {
-        entries.push({ relative, kind: "f", full });
+        entries.push({ relative, kind: "f", full, executable: process.platform === "win32" ? 0 : stat.mode & EXECUTABLE_BITS });
       } else {
         entries.push({ relative, kind: stat.isSymbolicLink() ? "l" : "o", full });
       }
@@ -293,7 +330,7 @@ function digestTree(dir) {
     hash.update(`${entry.kind}\0${entry.relative}\0`);
     if (entry.kind === "f") {
       const bytes = fs.readFileSync(entry.full);
-      hash.update(`${bytes.length}\0`);
+      hash.update(`${bytes.length}\0${entry.executable}\0`);
       hash.update(bytes);
     } else if (entry.kind === "l") {
       hash.update(`${fs.readlinkSync(entry.full)}\0`);
@@ -346,7 +383,7 @@ function git(repo, args) {
   const cwd = repo;
   const allowedProtocols = ["-c", "protocol.allow=never", "-c", "protocol.https.allow=always"];
   if (process.env[FILE_URL_ENV] === "1") allowedProtocols.push("-c", "protocol.file.allow=always");
-  const noFilters = ["-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=", "-c", "filter.lfs.required=false"];
+  const noFilters = ["-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=", "-c", "filter.lfs.required=false", "-c", "core.autocrlf=false", "-c", "core.eol=lf"];
   const result = spawnSync(
     "git",
     [
@@ -440,6 +477,9 @@ function installSkill(skill, target, replace) {
   const retired = path.join(target, `.${skill.name}.replaced-${process.pid}`);
   try {
     git(temp, ["init", "-q"]);
+    const infoDir = path.join(temp, GIT_DIR_NAME, "info");
+    fs.mkdirSync(infoDir, { recursive: true });
+    fs.writeFileSync(path.join(infoDir, "attributes"), NO_CONVERSION_ATTRIBUTES);
     git(temp, ["fetch", "-q", "--depth", "1", "--no-tags", "--no-recurse-submodules", skill.source, skill.commit]);
     git(temp, ["checkout", "-q", "--detach", "FETCH_HEAD"]);
     const head = git(temp, ["rev-parse", "HEAD"]);
