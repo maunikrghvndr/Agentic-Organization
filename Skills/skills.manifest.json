@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "skills": [
+    {
+      "name": "security-audit",
+      "area": "security",
+      "source": "https://github.com/cloudflare/security-audit-skill",
+      "commit": "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8",
+      "path": "skills/security-audit",
+      "license": "MIT",
+      "reviewed": "2026-11-18",
+      "review": "reviews/cloudflare-security-audit-skill.md",
+      "hosts": [
+        "claude-code",
+        "other hosts: pass --target (not verified here)"
+      ],
+      "notes": "Pass with conditions. Full audit needs WSL2, a devcontainer, macOS or Linux: its validators refuse to run on native Windows (guidance mode works there). Installed by pinned git fetch, never by the upstream npx CLI. Set a budget before a full audit."
+    }
+  ]
+}
