@@ -75,6 +75,7 @@ Before recommending phase 1, verify — and record — that the plan is buildabl
 - **Deterministic:** rerunning the gate on unchanged artifacts yields the same rows; if it does not, the gate was interpretation, not a check.
 - **Re-sync:** when `analyst` adds or changes an AC after planning, re-run this gate and append or amend phases (`tasks.md` in a Spec Kit repo) before any engineer continues.
 - **No phase depends on work not yet sequenced** — dependencies flow forward only.
+- **No phase assumes an external choice that is not recorded.** A phase that depends on a new dependency, service, model, framework version or unfamiliar technique with no dated decision in `PROJECT_MEMORY.md` / `wiki/` / the task file is preceded by a `researcher` phase (`researcher.md` → Department Triggers, at the depth that section sets); a plan that assumes such a choice fails the gate. A choice recorded and inside that section's ages needs no phase.
 - **Every phase has a verifiable done-when** — an observable check, not "code compiles."
 - **Every done-when is falsifiable.** It names the exact check (a command recorded in `PROJECT_MEMORY.md`, or the full command) and the output that means failure. For a check that is not a test, the engineer records it failing before the work as an Evidence row (the RED rule, extended).
 - **Every phase names exactly one role.** A phase that needs two roles is two phases.

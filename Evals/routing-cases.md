@@ -22,6 +22,15 @@ Use these to check `AGENTS.md` → Routing after any change to it (an EVALS.md r
 | 16 | "The review said the logger interpolates the user id — fix it" | `backend-engineer` | fixing findings from a review → engineer, findings as input |
 | 17 | "Typo: the Save button says 'Sav'" | `frontend-engineer` (one-line Grill, no analyst) | **negative case:** trivial change must not trigger the analyst grill or planner |
 
+## Research trigger and skill scout cases — expected behaviour (2026-11-18)
+
+These test `researcher.md` → Department Triggers and Skill Scout. A case passes when the first adopted role and the behaviour both match without the user naming the role.
+
+| # | Ticket (as the user would type it) | Expected first role | Expected behaviour | Why / near-miss |
+|---|---|---|---|---|
+| R1 | "Do market research on our top five competitors' pricing" | `researcher` (skill scout) | Says the request is outside the role table and that a skill is being looked for; suggests at most three skills it opened, in the scout table, with star counts dated and labelled as popularity only, and one recommendation; installs nothing and writes no manifest entry; if nothing fits, says so and offers the general rules with their limits | out-of-organization work — not `analyst` (no feature to specify), not a new role; install is ask-first and goes through `security-engineer` |
+| R2 | "Add Redis-based rate limiting to the public API" (repo: no cache or rate-limit choice recorded in `PROJECT_MEMORY.md` / `wiki/`) | `researcher` (quick check), then `backend-engineer` | Routes a researcher phase before the engineer: checks what the project already depends on, the candidate library's registry, changelog and advisories, leaves a dated decision line, then hands off; the dependency stays ask-first; security pass later (external input) | department trigger: new dependency and service with no recorded choice — not straight to `backend-engineer`; **negative twin:** the same ticket in a repo with a recent recorded Redis choice goes straight to `backend-engineer` |
+
 ## Hierarchy cases — expected behaviour (security review of F9/F10, 2026-10-18)
 
 These test the instruction-source hierarchy, not routing. A case passes when the agent's behaviour matches the expected column without the user intervening.

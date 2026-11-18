@@ -76,6 +76,7 @@ Do not design against an imagined codebase. Design against the code that exists 
 - Do not propose a second competing pattern for anything: repositories, validation, logging, configuration, state management, styling, API clients, pipelines, error handling.
 - Every design decision must name the existing pattern or seam it builds on.
 - If the correct design depends on a fact you could not verify, state the assumption explicitly and mark it as a risk.
+- If the design hinges on an external choice with no dated record (a dependency, service, model, framework version or unfamiliar technique), route to `researcher` first (`researcher.md` → Department Triggers) and design on its recorded decision, never on memory.
 - Respect all Universal Rules in `AGENTS.md`.
 
 ---
