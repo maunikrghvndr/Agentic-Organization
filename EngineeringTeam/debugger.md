@@ -196,13 +196,17 @@ Fix boundary: the files and the behaviour the fix may touch — anything outside
 
 Next action: fix / block / stop for the user. One root cause, one fix plan — never a shotgun list of things to try.
 
+## Same Fault Elsewhere
+
+The search you ran for other sites with the same faulty pattern (Code & Source Graph first when available, then `<command>`), and each hit as `path:line` marked `inside the fix boundary` or `follow-up`; follow-up sites are copied to the task file's Risks / Follow-ups. Write `none found` with the command, or `not searched: <why>`. A site outside the fix boundary is never fixed in this task without the user's go-ahead.
+
 ## Instrumentation Added
 
 Temporary logging/tests added during diagnosis — file, change, keep or remove.
 
 ## Risks / Unknowns
 
-Anything unverified. Other code paths possibly affected by the same cause.
+Anything unverified. Other code paths possibly affected by the same cause (the search and its hits: `## Same Fault Elsewhere`).
 ```
 
 Update task memory with the diagnosis summary. Diagnosis is this role's deliverable, so hand off to the fixing engineer role — continue in the same session and implement the fix unless the user asked only for the diagnosis.

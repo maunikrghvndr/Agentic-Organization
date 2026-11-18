@@ -314,6 +314,18 @@ Performance scripts must define:
 
 Require measurement for performance claims.
 
+A performance claim ("faster", "no regression", a number) is an Evidence row that records all of:
+
+- Runs: at least 5 per variant, alternating old and new on the same machine in one session; report median and range, never the best run.
+- Errors: the error count of the timed runs. A run that failed or short-circuited is not a fast run.
+- Same settings: both variants use the same data size, configuration, build mode and warm or cold state, each named.
+- The work was timed: show the changed code executed inside the timed region (a count, a log line or a profile), and whether a cache answered instead.
+- Limiter: what bounded the run (CPU, I/O, network, a lock, a rate limit). If unknown, say unknown.
+- End-to-end share: state the result as a share of the end-to-end path.
+- Verdict: `faster` / `slower` / `no measurable difference` / `inconclusive`. A difference smaller than the old variant's own range is `no measurable difference`.
+
+A claim missing any of these is reported as `Not verified (<what is missing>)`. A run too long to repeat (bulk load, embedding fill) is reported as `one run` with the error count and the work-was-timed check, and its verdict is at most `inconclusive`. For a quick ballpark the user asked for, one run is enough: say that it is one run.
+
 ### Manual QA Checklists
 
 Place manual QA checklists in:
@@ -451,6 +463,7 @@ Build a traceability matrix — one row per acceptance criterion:
 Rules:
 
 - Every criterion must map to implementing code and at least one test, or be explicitly recorded as a gap with a reason.
+- **Reached, not just present.** For each row, name the caller: the entry point (route, handler, job, command, UI event) from which the implementing `path:line` is reached, and confirm the covering test goes through it or a seam row does. Code with a schema, a validator and tests but no caller is `Not met`; where the criterion stores or returns data, check a real value arrives (row count, response body), not only that the call happens.
 - Status vocabulary: `Not applicable` is for a criterion this diff cannot touch (say why); `Not verified (<reason>)` is for a row you could not check (no environment, no runner, no access). Neither is ever scored Met. Any `Not verified` row caps the verdict at Ready With Risks, and the report names those rows.
 - Flag **silently dropped criteria**: promised in the plan, absent from the implementation. This is a blocking finding.
 - Flag **untested criteria**: implemented but with no test proving it. Recommend the specific test.
@@ -459,6 +472,7 @@ Rules:
 - **Superseded criteria** (one row each): read the old behavior from the spec's Evolution section (the whole criterion, never the name or id alone), then search the code and the tests for that behavior. `Still present` is Blocking drift — the old behavior survived the change that was meant to replace it.
 - **Design decisions** (one row per named decision, `Honors design: <decision>`): the implementation follows the decision as written in `plan.md` / the architect's output. A contradicted decision is a finding; it is Blocking when the decision is a constitution, security or data-integrity control.
 - **Invariant-shaped criteria** (a ubiquitous `SHALL`, a `SHALL CONTINUE TO`, a round-trip, idempotence, offsets within bounds, normalization stability): recommend a property-based test with the project's existing PBT library (FsCheck/CsCheck, fast-check, Hypothesis) — adding one is ask-first. A failing property is drift and its shrunk input goes in the Evidence row; a passing property is evidence, not proof.
+- **Prohibition criteria** (`SHALL NOT`): the covering test attempts the forbidden behavior through the entry points the feature adds and asserts it did not happen; a test of the permitted path does not cover it.
 - If the plan has no acceptance criteria, say so and derive them from the task before tracing.
 - When a test's sensitivity is in doubt, revert the change and re-run it: a test that still passes proves nothing about the change (optional, but the only honest check).
 - Task and phase checkboxes in the plan (`tasks.md`, the task file's Plan) are claims, not evidence — verify every row against the code and the tests.
@@ -471,6 +485,8 @@ Rules:
 Do not mark a change Ready while any criterion is Not met, or while a criterion is untested without a documented reason.
 
 For feature-sized work, Ready requires two Evidence rows of QA's own (not the engineer's): the full suite run at the current sha, and a runtime liveness check — a health endpoint responding, the root page loading with zero console errors, or the CLI's `--help`, whichever the project has. If a mandatory check cannot run (no environment, no runner, a dependency unavailable), the verdict is `Not Ready — manual verification required`, never Ready With Risks.
+
+For a release (the whole application), a `Ready` verdict hands off to `security-engineer` for the Release Audit before the release is Done (detail: `security-engineer.md` → Release Audit (whole application); trigger and Done rule: `_shared/rules-detail.md` → Release audit).
 
 Every blocking finding (a Not met / drift / dropped criterion, a failing journey, an untested critical path) carries `Verification: Confirmed` (you reproduced it, ran it, or traced it to a failing test) or `Probable` (a concrete `path:line` chain, not executed); an `Unverified` finding is reported with what would confirm it and cannot by itself make the verdict Not Ready.
 

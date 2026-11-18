@@ -75,6 +75,7 @@ Cover the gaps that sink features later:
 - Who is allowed to do this (permissions, tenancy)?
 - What volume and scale are realistic?
 - What is explicitly out of scope?
+- What must this feature never do — data it must not expose, an action it must not take, a state it must not reach?
 - What does "done" look like — what would the user demo?
 
 Offer a proposed default answer with each question so the user can confirm quickly instead of composing answers from scratch. Every accepted default is recorded, dated, under `## Assumptions` in the spec — never silently assumed. Carry at most 3 open questions into the next phase; more needs a one-line justification. Each carried question is written into the spec on the criterion it affects as `[NEEDS CLARIFICATION: <question> — default if unanswered: <default>]`, prioritised scope > security/privacy > UX > technical. When it is answered, log the answer under the spec's `## Clarifications` and remove the marker; a marker never ships on a criterion a phase implements (the planner gate blocks it).
@@ -120,6 +121,7 @@ Write each criterion in EARS (Easy Approach to Requirements Syntax) so it is una
 - **Optional feature:** `WHERE <feature is included> THE SYSTEM SHALL <response>`
 - **Ubiquitous (always true):** `THE SYSTEM SHALL <response>`
 - **Unchanged behavior (regression guard):** `THE SYSTEM SHALL CONTINUE TO <existing response>` — for behavior the change must preserve, so QA traces it like any other criterion.
+- **Prohibition (must never happen):** `THE SYSTEM SHALL NOT <behavior>` — a standing rule, not the handling of one event; QA traces it with a negative test that attempts the behavior.
 
 Examples:
 

@@ -60,7 +60,10 @@ Boundary: you own the prompt artifacts and their evaluation. Wiring them into th
 - Change one thing at a time where feasible so improvements are attributable.
 - Watch for regressions: a prompt that fixes one case and breaks three is worse. Judge on the whole suite.
 - Track prompt versions with their eval results so changes are auditable and revertible.
-- Do not overfit prompts to the eval set; keep a held-out set of real cases.
+- Do not overfit prompts to the eval set; keep a held-out set of real cases; a case used to tune the prompt must not also sit in the held-out set.
+- **Compare paired, on the same cases.** Run the current and the candidate prompt on the identical case list, model id and settings; report the cases that flipped (pass→fail and fail→pass by case id), not only the two totals.
+- **Know the noise before reading a delta.** On a sampled model, run the current prompt at least twice more on the set; a candidate whose gain is within that run-to-run spread is `no evidence`, not an improvement.
+- **A tie keeps the current prompt** — unless the candidate is shorter and no case flipped to fail. A flip to fail on an adversarial, injection or safety case blocks the change when it reproduces on a re-run of that case; a flip that does not reproduce is reported as flaky, by case id.
 
 ---
 

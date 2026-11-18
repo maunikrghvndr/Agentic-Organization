@@ -35,6 +35,7 @@ Every finding: file/path, problem, why it matters, suggested fix direction.
 - Did the change improve the target without regressing the suite?
 - Is the eval set representative and does it include adversarial/edge cases? Was a newly found failure mode added as a case?
 - Are results reproducible enough to trust (given nondeterminism, are properties tested rather than exact strings)?
+- Eval-runner properties (Non-blocking): Does each case run at least 3 times, and is a provider error, refusal or rate limit scored as invalid rather than graded? Are the model id, judge model id and harness version recorded with the results? Does the suite include a must-not-fire case with asserted tool arguments? Does the eval set include cases the context cannot answer?
 
 Block changes to prompts, models, retrieval, or NLP that ship without an evaluation framework or without eval evidence.
 
@@ -43,6 +44,7 @@ Block changes to prompts, models, retrieval, or NLP that ship without an evaluat
 ## LLM Application Review (`ai-engineer`)
 
 - Output validation: is structured output validated against a schema before use? Is model output treated as untrusted (no unsanitized use in SQL/shell/paths/code/downstream)?
+- Model stage over deterministic checks: can the model clear, drop or downgrade a deterministic finding? It must only annotate. Is a model failure or skip reported as such rather than read as "no objection"? Blocking when the checks are a security or safety control.
 - Agents/tools: minimum tools and permissions? each tool call authorized? high-impact actions guarded? bounded steps and budgets (no runaway loops)?
 - Cost/latency: token budgets, timeouts, bounded retries, caching where stable?
 - Failure: graceful fallback on model failure/timeout/guardrail trip — never a crash or a fabricated result presented as real?
@@ -53,6 +55,7 @@ Block changes to prompts, models, retrieval, or NLP that ship without an evaluat
 ## Prompt Review (`prompt-engineer`)
 
 - Measured against an eval set (before/after)? Not overfit to it?
+- Compared on the same cases with the flipped case ids listed? Gain larger than the current prompt's own run-to-run spread? (Blocking only for a reproduced safety or injection flip; otherwise Non-blocking.)
 - Prompts versioned and in the managed location, not buried as hardcoded inline strings?
 - Prompt CONTENT generic: no real data (any value from a real record) and no hardcoded case-specific data (one document's values, counts, run-history anecdotes, single-case rules); examples invented and checked absent from the real data? Blocking if violated.
 - Injection-resistant design (untrusted content not treated as instructions)? No secrets/PII in prompts or examples? No system-prompt leakage?

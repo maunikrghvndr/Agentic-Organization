@@ -76,6 +76,7 @@ Before recommending phase 1, verify — and record — that the plan is buildabl
 - **Re-sync:** when `analyst` adds or changes an AC after planning, re-run this gate and append or amend phases (`tasks.md` in a Spec Kit repo) before any engineer continues.
 - **No phase depends on work not yet sequenced** — dependencies flow forward only.
 - **Every phase has a verifiable done-when** — an observable check, not "code compiles."
+- **Every done-when is falsifiable.** It names the exact check (a command recorded in `PROJECT_MEMORY.md`, or the full command) and the output that means failure. For a check that is not a test, the engineer records it failing before the work as an Evidence row (the RED rule, extended).
 - **Every phase names exactly one role.** A phase that needs two roles is two phases.
 - **Handoffs are complete** — the next session has the files, spec ids, and prior decisions it needs.
 - **Reviewer / QA / security phases exist** where the change warrants them.
@@ -107,6 +108,7 @@ If the gate fails, output the specific gap and the role that needs to fix it. Do
 - Include review phases for non-trivial implementation phases.
 - Include a QA phase (traceability and convergence) for every feature-sized change, and for smaller changes when regression-prone, security-sensitive, or multi-area.
 - Include a security phase when the change touches auth, tenancy, file handling, external input, payments, or sensitive data.
+- A release plan (the whole application) ends with a `security-engineer` Release Audit phase after QA (`security-engineer.md` → Release Audit (whole application); trigger and Done rule: `_shared/rules-detail.md` → Release audit).
 - Keep the number of phases as small as the work allows. Do not create ceremony.
 - A phase that runs unattended (CI, headless, scheduled) holds at most two of untrusted input, access to secrets/private data, and any state change or external communication (Rule of Two — `_shared/rules-detail.md`); split it or put a human gate in the plan, and name the token scope that enforces it.
 
@@ -178,19 +180,20 @@ Return the plan in this exact structure:
 - No contradictions unresolved: yes / list.
 - Every phase has one role and a done-when: yes.
 - Handoffs complete: yes.
+- Every path a design decision or phase cites as existing resolves on disk, recorded as an Evidence row (command and exit code): yes / list — an unresolved path is GAP — HIGH. A path the plan creates is marked `(new)` and is not a gap.
 - Verification phases included where warranted: yes.
 
 ## Phases
 
 ### T01 — `<role>`  (append `[P]` only if Owns is disjoint from every other `[P]` phase and Depends on is none)
-- Owns: `<exact paths>`
+- Owns: `<exact paths>` — mark each `(new)` or `(delete)`; unmarked = existing, modified
 - Depends on: T<nn> or none
 - Base: <sha>  (`[P]` worktree phases only — the parent commit the branch `task/<task-file>/<T-id>` is cut from; omit otherwise)
 - Boundaries: <files not to touch; ask-first items>
 - Read first: `path:line` + `wiki/...`
 - Satisfies: `AC-n`, `AC-m`
 - Honors design: <named decisions>
-- Done-when: <verifiable check> — verified by <self-check / project test command / CI / independent review>
+- Done-when: <verifiable check> — verified by <self-check / project test command / CI / independent review> — fails when: <output>
 - Next: `<role>`
 
 ### T02 — `<role>`

@@ -78,10 +78,15 @@ Traditional unit tests cannot verify non-deterministic, model-driven behavior. S
 
 The framework must include:
 
-- **An eval set** — representative cases plus edge and adversarial cases (prompt-injection, malformed/empty input, failure paths), covering the behaviors the component must get right and the ways it can go wrong.
+- **An eval set** — representative cases plus edge and adversarial cases (prompt-injection, malformed/empty input, failure paths), covering the behaviors the component must get right and the ways it can go wrong. Where the component answers from retrieved or stored context, include cases the context cannot answer, and report the false-supported rate (answered without evidence) beside the false-abstention rate.
 - **Explicit pass criteria / metrics**, defined up front: task success, output correctness and schema/format, tool-call correctness, groundedness / hallucination rate, safety and guardrail behavior, and cost/latency where they matter.
 - **A repeatable runner** — runnable on demand and in regression, scored deterministically where possible (assertions, schema checks, reference comparisons) and with an LLM-judge on a fixed rubric only where human-like judgment is genuinely required.
+- **A judge that cannot score has not scored.** An LLM-judge reply that is unparseable, out of range or empty is a failed measurement for that case (`NOT MEASURABLE`), never a 0 and never a pass; report the count with the result.
 - **Recorded results against a baseline**, so every change reports before/after and a regression blocks.
+- **Fail closed.** A run that ended on a provider error, refusal or rate limit is invalid and is never graded on partial output; a timeout or step cap of the component under test is a fail.
+- **Repeated trials.** Each case runs at least 3 times; report the pass rate per case. A before/after difference smaller than the run-to-run spread is "no evidence".
+- **Pinned and recorded.** Model id, judge model id and harness version are written into every result; a model or judge change is never mixed with a component change.
+- **Must-not-fire cases and asserted tool arguments**, for components that call tools; for an agent with file access, it cannot read the cases, checks or reference outputs.
 
 Document it: where the eval set and runner live, how to run them, what "pass" means, and how to add cases. Treat the eval set as a **living asset** — when a new failure mode appears, add the failing case first, then fix (regression eval). Reuse the project's existing eval harness/framework; never build a second one. If the project has no eval harness yet, creating the first one is part of the task, not optional.
 

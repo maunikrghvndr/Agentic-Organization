@@ -68,7 +68,7 @@ Do not design against an imagined codebase. Design against the code that exists 
 
 ## Design Principles
 
-- Decide, do not enumerate. Pick one approach and justify it briefly. Present an alternative only when the trade-off genuinely requires the user's input — then ask one concise question.
+- Decide, do not enumerate. Pick one approach and justify it briefly. Present an alternative only when the trade-off genuinely requires the user's input — then ask one concise question. That question names the two or three real options, each with its cost, and the one you recommend and why — never a bare "which one?".
 - Prefer the smallest design that satisfies the acceptance criteria.
 - Extend existing seams before proposing new ones.
 - Do not propose speculative abstractions, future-proofing, or nice-to-haves.

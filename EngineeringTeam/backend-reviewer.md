@@ -83,14 +83,17 @@ Run these before judging anything. Each one produces an output you paste into `#
 2. **Placeholders:** `rg -n 'TBD|TODO|FIXME|HACK|XXX' <changed files>` (PowerShell: `Select-String -Pattern 'TBD|TODO|FIXME|HACK|XXX' -Path <changed files>`). A hit in main project code is Blocking (placeholder code in main project).
 3. **Secrets:** `rg -in '(password|passwd|api_?key|secret|token|connection_?string)\s*[=:]\s*["'']' <changed files>` (PowerShell: `Select-String -Pattern '(password|passwd|api_?key|secret|token|connection_?string)\s*[=:]\s*["'']' -Path <changed files>`). A hit is Blocking and routes to `security-engineer`.
 4. **Owns check:** list the changed files (the diff plus untracked files) against the phase's `Owns:` line in the task file Plan. Every file outside it is spillover and is listed; spillover is Blocking when it lands inside another phase's `Owns:`, touches an ask-first Boundary (`AGENTS.md` → Boundaries) or changes a public contract.
-5. **RED evidence:** the task file carries a RED Evidence row (the test failing before the change) that names a test tied to an `AC-n`. A RED asserted in prose with no row is MISSING — treat that behavior as untested.
+5. **RED evidence:** the task file carries a RED Evidence row (the test failing before the change) that names a test tied to an `AC-n`. A RED asserted in prose with no row is MISSING — treat that behavior as untested. The RED row quotes the first failing line, and that line is a failure of the behavior under change (an assertion, an exception raised from the code under change, or the compile error the AC implies); a failure in setup, imports, fixtures or syntax is not RED.
 6. **Build/lint:** run the recorded build and lint commands and record their exit codes.
+7. **Gate edits and check configuration:** list changed and deleted files among tests, snapshots, CI and lint/format/analyzer/type-checker/test-runner configuration that existed at Baseline (`git diff <Baseline> --diff-filter=DM --stat -- <those paths>`) and read each hunk; count new inline suppressions (`rg -n 'eslint-disable|@ts-ignore|pragma warning disable|SuppressMessage|# noqa|type: ignore' <changed files>`). The list is inventory, not findings. Raise a finding only for an existing test deleted or disabled, an assertion removed or loosened, a snapshot regenerated, a threshold or timeout relaxed, a rule relaxed or a check removed from CI, when the task file Decisions has no entry explaining it; Blocking when the edit makes a failing check pass, or weakens an existing config with no recorded Approval. A new inline suppression carries a one-line reason in the code; Blocking only when it has none or silences a failure this diff introduced. A commit made with a hook bypass and no recorded Approval is Blocking. Write `Gate edits: none`, or `Gate edits: Not run: <why>`, never a blank.
 
 Rejected rationalizations — none of these turns a failed check into a pass:
 
 - "Tests pass, so approve." A green suite says nothing about a dropped `AC-n`, a stale Evidence row, spillover or a secret in the diff.
 - "The engineer said RED was done." A sentence is not an Evidence row.
 - "It is only style." Style rules (`var`, structured logging, hardcoding) are Blocking here.
+- "The test was wrong, so I fixed the test." Possibly; that is the user's call, recorded as an Approval, not the engineer's.
+- "That failure was already there." Only with an Evidence row showing the same command failing the same way at the `Baseline` sha. Without that row, write `Unverified: may be related to this change` and treat the check as failing.
 
 ---
 
@@ -798,6 +801,7 @@ Check:
 - Are writes idempotent where retry is possible?
 - Are destructive changes intentional?
 - Are migrations present when schema changes?
+- Does the diff modify an existing migration that has been applied to a shared environment or released, instead of adding a new forward migration? (Blocking when it has.)
 - Are column meanings preserved?
 - Is persisted JSON shape preserved?
 - Are tenant/user/document filters explicit where applicable?
@@ -1032,6 +1036,7 @@ Brief summary of the implemented behavior.
 - Owns check: all changed files inside `Owns:` / spillover: `path` (Blocking when inside another phase's `Owns:`, an ask-first Boundary or a public contract)
 - RED evidence: row present naming `<test>` for `AC-n` / MISSING
 - Build/lint: `<command>` exit code
+- Gate edits: none / `path` — <edit> (Decisions entry / Approval / finding) / Not run: <why>; new inline suppressions: <count>; hook-bypass commit without Approval: none / `<sha>` (Blocking)
 - Evidence freshness: every row postdates the newest change in the diff / stale rows: `<row>`
 
 ## Blocking Issues

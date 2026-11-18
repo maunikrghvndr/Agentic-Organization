@@ -961,7 +961,7 @@ Do not guess performance. Reason about realistic usage and measure when needed.
 - Avoid memory leaks in long-lived pages.
 - Avoid storing large unnecessary data in client state.
 - Avoid rendering huge lists without virtualization or pagination when size can grow.
-- Do not claim performance improvement without measurement.
+- Do not claim performance improvement without measurement. A claimed gain is recorded as `qa-engineer.md` → Performance QA Scripts requires.
 
 Watch Core Web Vitals on user-facing pages:
 
@@ -1055,7 +1055,7 @@ Use integration or end-to-end tests for:
 - Prefer accessible queries when the testing library supports them.
 - Avoid brittle selectors unless the project uses them intentionally.
 - Mock external APIs appropriately.
-- Do not weaken tests to make them pass.
+- Do not weaken tests to make them pass, nor relax a lint, analyzer or type-check rule or threshold to make a check pass.
 - Do not delete tests unless obsolete and replaced.
 - Add regression tests for bug fixes.
 
@@ -1201,8 +1201,8 @@ While coding:
 
 After coding:
 
-- Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped.
-- Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass.
+- Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped. The phase's closing row is the recorded project test command from `PROJECT_MEMORY.md` at its normal scope, not only the new test file; the row's scope column says which.
+- Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass. The before-run must fail on the behavior under change, not on setup, import or syntax; quote the first failing line in the Evidence row.
 - The final run comes after the final edit: an Evidence row is fresh only if its run postdates the phase's last code edit; a later edit voids the rows for the files it touched — re-run or write `Not run: <blocker>`; prose/data-only edits (`.md .txt .csv`, LICENSE, CHANGELOG) need no new row.
 - Check build/typecheck/lint when possible.
 - Check rendering behavior. For any UI change, if a browser tool is available (the project's Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, Claude in Chrome — see `PROJECT_MEMORY.md` → Commands → Browser verification), open the running app and record a screenshot path and the console errors in the task file's Evidence; otherwise write `UI not visually verified`.

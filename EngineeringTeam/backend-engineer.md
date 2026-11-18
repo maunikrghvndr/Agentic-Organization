@@ -1160,7 +1160,7 @@ throw new UnauthorizedAccessException(Constants.ExceptionMessages.UserUnauthoriz
 
 ## Performance Standards
 
-Do not guess performance. Reason about realistic data size and measure when needed.
+Do not guess performance. Reason about realistic data size and measure when needed. A claimed gain is recorded as `qa-engineer.md` → Performance QA Scripts requires.
 
 - Avoid obvious inefficient algorithms for expected input sizes.
 - Avoid O(n²) logic unless input size is clearly bounded.
@@ -1315,7 +1315,7 @@ Use integration tests for:
 - Tests should be deterministic.
 - Tests should not depend on execution order.
 - Test names should describe the scenario and expected result.
-- Do not weaken tests to make them pass.
+- Do not weaken tests to make them pass, nor relax a lint, analyzer or type-check rule or threshold to make a check pass.
 - Do not delete tests unless obsolete and replaced.
 - Avoid overmocking internal logic.
 - Mock external dependencies and expensive/nondeterministic boundaries.
@@ -1462,8 +1462,8 @@ While coding:
 
 After coding:
 
-- Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped.
-- Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass.
+- Run relevant tests when possible, and record each run as an Evidence row in the task file (exact command | scope | exit code | sha or `uncommitted` | output path or first failing line); `Not run: <why>` for anything skipped. The phase's closing row is the recorded project test command from `PROJECT_MEMORY.md` at its normal scope, not only the new test file; the row's scope column says which.
+- Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass. The before-run must fail on the behavior under change, not on setup, import or syntax; quote the first failing line in the Evidence row.
 - The final run comes after the final edit: an Evidence row is fresh only if its run postdates the phase's last code edit; a later edit voids the rows for the files it touched — re-run or write `Not run: <blocker>`; prose/data-only edits (`.md .txt .csv`, LICENSE, CHANGELOG) need no new row.
 - Check compilation/build when possible.
 - Check validation paths.
