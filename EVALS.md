@@ -35,10 +35,21 @@ An eval row without these fields is an anecdote, not a result:
 - **Trace metrics, never self-report (added 2026-10-19, Hermes):** per trial `num_turns`, `duration_ms`, `total_cost_usd` from `claude -p --output-format json` (Codex: `exec --json` events; Cursor: n/a), tool-error and retry counts from the transcript, and the pre-registered check run as a command with its exit code. A verdict quoting the agent's own "tests passed" is an anecdote.
 - **Mechanical success check first:** a marker, an on-disk artifact or a test/lint exit code wherever one can be defined; a judged pass/fail only when no mechanical check exists, and then labelled `judged`.
 - **Trap tasks:** build each task so it contains the exact failure the section under test exists to prevent (a helper to reuse, a message to externalise, a secret in a fixture, an AC that is easy to drop), so pass/fail is observable in the diff. Draw traps only from the library's recorded real failures (`Evals/trap-tasks.md`), never invented toys — they must still be real, representative tasks.
+- **Invalid and indeterminate trials (added 2026-11-18):** a trial that ended on a provider error, a refusal, a rate or usage limit or an interrupt is `invalid`; one whose capture, tool or environment broke is `indeterminate`. Neither is graded on what it produced or counted for either arm; re-run it. A row with fewer than 3 valid trials in either arm is `exploratory`.
+- **Cap every trial:** the same turn and budget cap on both arms, recorded in the row's note. A trial that hits the cap is re-run once with the cap raised for both arms; a second hit is a fail, recorded `capped` (an arm that still hits the raised cap is a result — the section under test may be what prevents the loop — never a perpetual re-run).
+- **Isolate both arms identically:** no host per-machine memory, no user-level instruction files, no other skills, plugins or hooks, and no installed `Rules/`, `Hooks/` or `Agents/` overlay in either arm. Deliver the arm the same way in both arms and record it (`native` / `appended`). An isolated run measures the `AGENTS.md`-only contract and cannot evaluate an overlay. Record `isolation: yes/none` and what was excluded; `none`, or a result that depends on who ran it, makes the row `exploratory`.
+- **Keep the answer key out of reach:** the check, the trap list and the other arm's output are not in the task prompt or the task repo, and the arm's copy of the library excludes `Evals/` and `EVALS.md` (`Evals/trap-tasks.md` stays where it is in the library; it is left out of the copy a trial reads, and no trial is pointed at `Evals/`). A transcript that shows a read of `Evals/` or of the check script invalidates the trial. A failure seen in arm B is an eval result, never a Retro lesson or a new trap; a failure in arm A is a legitimate trap source.
+- **A check arm B cannot pass by construction is never counted** in the verdict.
+- **Validate the grader first:** a reference solution must pass and a naive solution must fail the pre-registered check.
+- **Judged checks:** the rubric is concrete PASS and FAIL conditions written before the run; `judge: <model id>` is recorded; the grader sees outputs under anonymous ids with arm, paths and variant names removed (for a solo operator, a second fresh session).
+- **Ceiling and stop rule, written before the first trial:** the maximum spend and the condition that ends the run early (ceiling reached, arm A fails its own check, a trap not tripped). A run that passes its ceiling stops and is logged `stopped: ceiling`, with whatever it has, never extended.
+- **Write partial results to disk after every trial.**
+- **Departures:** anything done differently from what was written down beforehand, listed in the row. No departures is written `departures: none`.
+- **Library revision:** every row records `library@<sha>` beside the task repo commit.
 
 Row format (replaces the shorter one below for new rows):
 
-`- [YYYY-MM-DD] <what was tested> — host/model/effort: … — repo@commit — tasks: n — trials: A pass^3 / B pass^3 — turns A→B — tool errors A→B — verdict: KEEP/TRIM/CUT/no evidence — cost A→B (source) — note.`
+`- [YYYY-MM-DD] <what was tested> — host/model/effort: … — repo@commit — library@sha — isolation: … — tasks: n — trials: A pass^3 / B pass^3 — valid trials A/B — judge: <id or none> — turns A→B — tool errors A→B — verdict: KEEP/TRIM/CUT/no evidence — cost A→B (source) — ceiling/spent — departures — note.`
 
 ## The first three A/Bs, in this order
 
@@ -48,6 +59,10 @@ Row format (replaces the shorter one below for new rows):
 
 Plus one negative routing case from `Evals/routing-cases.md` (#17: a trivial fix must not trigger the analyst grill), recorded on the same host/model.
 
+Queued after these, not run (added 2026-11-18):
+
+4. **Release audit: Engine A (Cloudflare skill) vs Engine B (library procedure) on the seeded application.** Trap #9 of `Evals/trap-tasks.md`; same seeded application and commit, same profile and the same turn and budget cap for both engines; success check = trap #9's pass rule applied to each engine's `## Release Audit` record, with planted defects found, decoys `Confirmed` and ledger rows per engine in the note. The engine is the one variable, so Engine A's skill (pinned commit, after its third-party review) is the only skill present in its arm and none in Engine B's. An engine comparison, not a trim: the row records which engine met the pass rule on every valid trial, and no KEEP/TRIM/CUT follows from it. Not run; neither engine has a measured detection rate.
+
 ## Honesty rules
 
 - Same task, same model; change exactly one variable.
@@ -55,6 +70,16 @@ Plus one negative routing case from `Evals/routing-cases.md` (#17: a trivial fix
 - One eval is weak evidence — agree across 2–3 tasks before acting.
 - Record failures and surprises, not just confirmations.
 - A `TRIM`/`CUT` verdict authorizes removal (with the cross-role coverage rule still applying); a `KEEP` verdict is the evidence to leave it and stop second-guessing it.
+- A role or rule change tuned against a task is not given a verdict on that task: the verdict tasks are ones the change was not iterated on; otherwise the row is logged `exploratory`.
+
+## Evaluating a gate (added 2026-11-18, ECC GateGuard trials)
+
+A gate is anything that stops or redirects the agent on every task. Applies to gates proposed after 2026-11; existing gates are candidates, not violations.
+
+- Report turns and cost for `gate` versus `off` in every row: a gate with no confirmed benefit and a measured cost is not shipped as a default.
+- Add a `placebo` arm (the same interruptions with generic content) when the gate interrupts the agent.
+- If the task repo already contains what the gate forces the agent to look up, every arm passes.
+- Reference datapoint (not ours): ECC's first-touch fact-forcing gate, 96 pre-registered trials, 52% versus 38%, exact McNemar p = 0.210 (not confirmed), about +37% turns and +40% cost; its 72-session pilot scored 18/18 in every arm at about +45% turns and +28% tokens (`docs/gateguard/question-effectiveness.md` at `3f14a10`, read 2026-11-18, not re-run).
 
 ## Optional appendix — `claude plugin eval` (Claude Code only)
 
