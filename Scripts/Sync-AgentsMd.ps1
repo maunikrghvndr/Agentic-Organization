@@ -27,7 +27,9 @@
 #   workflow; per-repo customization is not supported here.
 # - Only descends one level under RepoRoot (standard "repos folder" layout).
 # - -WithCloudHook commits an executable hook into each target repo's .claude/: it runs for
-#   every developer and every -p/cloud session after one trust dialog. Protect .claude/** with
+#   every developer after one trust dialog, and for every -p/SDK session with no dialog at all
+#   (headless runs treat the folder as trusted; the vendor page does not state trust behaviour
+#   for cloud sessions). Protect .claude/** with
 #   CODEOWNERS/branch protection and review every change to it as code.
 # - Warns (never blocks) when the source is over 32,768 bytes - Codex's default
 #   project_doc_max_bytes - naming the sections past the cap, and per target repo

@@ -32,7 +32,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const LIBRARY_URL = "https://github.com/maunikrghvndr/Agentic-Organization";
-// Pinned ref: move it deliberately (a tag is preferable once the library is tagged). The resolved sha is
+// Tracks `main` (not pinned): move it deliberately (a tag is preferable once the library is tagged). The resolved sha is
 // printed so the task file's Evidence can record which library revision the session obeyed.
 const LIBRARY_REF = "main";
 const LIBRARY_DIR_NAME = "Agentic-Organization";

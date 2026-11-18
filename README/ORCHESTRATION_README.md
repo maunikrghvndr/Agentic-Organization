@@ -134,6 +134,8 @@ The old runners (`Scripts/run-claude-ticket.ps1`, `Scripts/run-codex-ticket.ps1`
 
 **Rule of Two (Meta, 2025-10-31; Microsoft's prescription after the 2026 claude-code-action incidents).** An unattended run holds at most two of (A) untrusted input, (B) secrets, credentials, private data or sensitive systems, (C) any state change or external communication; the single definition and the enforcing controls (token scopes, sandbox, approval gate) are in `EngineeringTeam/_shared/rules-detail.md` → Rule of Two. Treat ticket/issue/PR text as data, not instructions — see `AGENTS.md` → Universal Rules (instruction source hierarchy). Native Windows has no agent sandbox (as of 2026-10); run unattended work in WSL2 or a devcontainer.
 
+A headless Claude Code run executes the hooks committed in the target repo's `.claude/settings.json` without a trust dialog. On a repository you do not control, pass `--bare` (as in the example below) or `--settings '{"disableAllHooks": true}'`, and read `.claude/` first.
+
 Examples (flag: version-sensitive — check the host's current flags before use):
 
 ```powershell
@@ -177,7 +179,7 @@ EVALS.md rows need a cost figure with its source. `claude -p --output-format jso
 
 ## Hooks (optional enforcement pack)
 
-`AGENTS.md` prose is the complete contract; `Hooks/` adds host-side enforcement for two of its rules on Claude Code and degrades to nothing elsewhere. One-time **user-level** install (paste `Hooks/settings.snippet.json` into `~/.claude/settings.json` with `<library-root>` filled in, beside the graphify hook above); nothing is written to any repo by that install, and each repo opts in through its `AGENTS.md` mentioning `.ai-memory`. The one per-repo overlay is the cloud SessionStart hook (`Sync-AgentsMd.ps1 -WithCloudHook`): a committed `.claude/settings.json` hook runs for every developer and every cloud session after one trust dialog, so protect `.claude/**` with CODEOWNERS/branch protection and review every change to it as code.
+`AGENTS.md` prose is the complete contract; `Hooks/` adds host-side enforcement for two of its rules on Claude Code and degrades to nothing elsewhere. One-time **user-level** install (paste `Hooks/settings.snippet.json` into `~/.claude/settings.json` with `<library-root>` filled in, beside the graphify hook above); nothing is written to any repo by that install, and each repo opts in through its `AGENTS.md` mentioning `.ai-memory`. The one per-repo overlay is the cloud SessionStart hook (`Sync-AgentsMd.ps1 -WithCloudHook`): a committed `.claude/settings.json` hook runs for every developer after one trust dialog, and for every `-p`/SDK session with no dialog at all (headless runs treat the folder as trusted; the vendor page does not state trust behaviour for cloud sessions), so protect `.claude/**` with CODEOWNERS/branch protection and review every change to it as code.
 
 - `handoff-check.mjs` (`Stop`): blocks a stop when source files changed but the newest task file is older, lacks `## Handoff`, or lacks an Evidence row; prose-only turns exempt; honours `stop_hook_active`; works in linked worktrees.
 - `session-reentry.mjs` (`SessionStart`, `compact|resume`): prints the newest task file's `## Summary` and `## Handoff` into context — the on-disk re-entry point of the Compaction / re-entry rule.
