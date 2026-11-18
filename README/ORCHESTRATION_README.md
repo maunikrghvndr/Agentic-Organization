@@ -53,7 +53,8 @@ Agentic-Organization/
 
   EngineeringTeam/         24 role files in department folders — the catalog (role, folder, use-for) is the AGENTS.md role table:
     Research/              researcher (department triggers; skill scout)
-    Product/               analyst, architect, planner
+    Product/               analyst, planner
+    Architecture/          architect (system design; area design checks for backend, frontend, data, ML, AI, DevOps)
     Backend/               backend-engineer, backend-reviewer
     Frontend/              frontend-engineer, frontend-reviewer
     DevOps/                devops-engineer, devops-reviewer

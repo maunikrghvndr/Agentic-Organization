@@ -422,6 +422,14 @@ Evidence (sha `e4a8d68`):
 - Limit: copies of `AGENTS.md` made before this change do not contain step 5, so they cannot refresh themselves; each needs the new file dropped in once.
 - Security record for the self-setup rule (`security-engineer`, fresh context, on `df40e2a..20e3948`): **Needs Changes** — B1 overlay scripts not anchored to the resolved library (a repo's same-named script could be run); B2 the Trust bullet exempted a refresh from the security pass. Both fixed with the reviewer's wording, plus N1 (only an explicit yes counts), N2 (repo-only lines listed before a refresh), N3 ("Interactive sessions only" in `AGENTS.md`), N4 (dry run first; no force or upgrade without a separate yes), N5 (the memory record is not consent). The two reworded bullets have not been re-reviewed in a fresh context (reviewer asked for it). Residual, stated by the reviewer: the comparison finds honest staleness only; a tampered copy can omit step 5, so PR review of `AGENTS.md` diffs remains the control.
 
+### 2026-11-18 — CI fix; architect gets its own folder and area design checks
+
+- CI: `Lint-RepoMemory.ps1` chose the "newest" task file by write time, which is identical for every file on a fresh checkout, so CI flagged an old research file (R7) while local runs passed. Now ordered by last commit time; CI checkout fetches full history (`953c50a`). CI `lint-library` green on that sha. Reproduced on a shallow fresh clone (fails) and a full fresh clone (passes).
+- Proposed library lesson (not yet approved): a check that passes on the author's machine has not been seen to pass until it is run on a fresh clone the way CI runs it.
+- Maunik, 2026-11-18: "I don't see any architects do we not need them"; then, to the two options offered (own folder; specialist depth in the same file): "1) why do you ask ? Because if needed or not I don't understand depends upon the task 2) yes these are my own rules right". Read as: do both without asking; the role runs when the task needs it.
+- `architect` moved (history kept) to `EngineeringTeam/Architecture/`; new section `## Area Design Checks` (backend, frontend, data, ML, AI/LLM/RAG, DevOps), read only for the areas a task touches, with the owner's standards as design inputs. One role, no per-department architects. `AGENTS.md` row, workflow map and README updated; `AGENTS.md` 32,763 B.
+- Not independently security-reviewed yet (role-file change).
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

@@ -43,7 +43,7 @@ export const meta = {
 }
 
 const MAX_ROUNDS = 3
-const ROLE_FOLDER = {'researcher': 'Research', 'analyst': 'Product', 'architect': 'Product', 'planner': 'Product', 'backend-engineer': 'Backend', 'backend-reviewer': 'Backend', 'frontend-engineer': 'Frontend', 'frontend-reviewer': 'Frontend', 'devops-engineer': 'DevOps', 'devops-reviewer': 'DevOps', 'data-engineer': 'Data', 'data-scientist': 'Data', 'data-reviewer': 'Data', 'ml-engineer': 'ML', 'mlops-engineer': 'ML', 'ml-reviewer': 'ML', 'ai-engineer': 'AI', 'prompt-engineer': 'AI', 'rag-engineer': 'AI', 'nlp-engineer': 'AI', 'ai-reviewer': 'AI', 'qa-engineer': 'Quality', 'debugger': 'Quality', 'security-engineer': 'Quality'}
+const ROLE_FOLDER = {'researcher': 'Research', 'analyst': 'Product', 'architect': 'Architecture', 'planner': 'Product', 'backend-engineer': 'Backend', 'backend-reviewer': 'Backend', 'frontend-engineer': 'Frontend', 'frontend-reviewer': 'Frontend', 'devops-engineer': 'DevOps', 'devops-reviewer': 'DevOps', 'data-engineer': 'Data', 'data-scientist': 'Data', 'data-reviewer': 'Data', 'ml-engineer': 'ML', 'mlops-engineer': 'ML', 'ml-reviewer': 'ML', 'ai-engineer': 'AI', 'prompt-engineer': 'AI', 'rag-engineer': 'AI', 'nlp-engineer': 'AI', 'ai-reviewer': 'AI', 'qa-engineer': 'Quality', 'debugger': 'Quality', 'security-engineer': 'Quality'}
 const rolePath = role => {
   if (!Object.hasOwn(ROLE_FOLDER, role)) throw new Error(`review-loop: unknown role ${role}`)
   return `EngineeringTeam/${ROLE_FOLDER[role]}/${role}.md`

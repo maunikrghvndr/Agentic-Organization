@@ -124,6 +124,21 @@ For each design, verify explicitly (do not leave to the implementer):
 
 ---
 
+## Area Design Checks (only for the areas the task touches)
+
+The principles above hold everywhere. These are the decisions each area needs settled at design time; read only the blocks that apply. The owner's standards are design inputs, not review-time surprises: every new value has a home (constants, configuration, tokens) before a line is written, every contract is typed explicitly, and nothing is built that the project or a mature library already provides.
+
+- **Backend / API:** which layer owns the logic; the typed request, response and error contract; transaction and idempotency boundary; where validation and authorization sit; where message templates, constants and configuration keys live; pagination and limits for anything that can grow.
+- **Frontend / UI:** where state lives (server, URL, component, store) and who owns it; the typed API client and the loading, empty, error and unauthorized states for each view; which existing components and design tokens are reused; routing and code-splitting impact; accessibility requirements that shape structure.
+- **Data pipelines:** source of truth and ownership per dataset; schema and its evolution rule; idempotent re-runs and backfill path; late, duplicate and out-of-order data; quality checks and where a failed check stops the flow; lineage; retention and sensitive-field handling.
+- **ML:** how training and serving compute the same features (one definition, not two); the offline metric and the gate a model must pass; versioning of data, code and model together; rollout, rollback and the monitored signal that triggers each; behavior when the model is unavailable.
+- **AI / LLM / RAG:** which decisions are deterministic code and which are model output; the structured output contract and what happens when it does not parse; the authorization boundary on every tool call (a prompt is not a control); retrieval isolation per tenant; the evaluation set and pass bar before release; cost and latency budget; model and prompt versioning.
+- **DevOps / infrastructure:** environments and what differs between them (configuration only); the deploy unit and rollback path; stateful resources and how a change to them is made safe; secrets flow; least-privilege identities; health checks and alerts the change needs; what is pinned and where.
+
+Each block that applies produces Design Decisions lines and, where a choice has no dated record, a `researcher` phase first (`researcher.md` → Department Triggers). An area you did not design is named in Risks / Assumptions, never left silent.
+
+---
+
 ## Risk Standards
 
 Identify:
