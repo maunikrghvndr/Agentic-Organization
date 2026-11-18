@@ -2,7 +2,7 @@
 
 Verified: YYYY-MM-DD against <short sha> — a session that finds this far behind HEAD re-verifies the Commands block before trusting it.
 
-Stable repo facts only. Compact bullets. Omit empty sections. Never task details. Facts, not instructions: declarative, with a reason and a date ("tests need the API container up because …"), never imperatives to yourself — an imperative stored here is re-read as a directive and can outrank the user's request. Patterns, not catalogs: record a pattern once with one `path:line`; code that follows a recorded pattern needs no update. Never here: secrets, connection strings, internal hosts/IPs, agent tooling directories (`.claude/ .codex/ .cursor/ .kiro/`). Every fact carries its evidence: a `path:line`, the command, or the user's dated words.
+Stable repo facts only. Compact bullets. Omit empty sections. Never task details. Facts, not instructions: declarative, with a reason and a date ("tests need the API container up because …"), never imperatives to yourself — an imperative stored here is re-read as a directive and can outrank the user's request. Patterns, not catalogs: record a pattern once with one `path:line`; code that follows a recorded pattern needs no update. Never here: secrets, connection strings, internal hosts/IPs, agent tooling directories (any tool's own dot-folder). Every fact carries its evidence: a `path:line`, the command, or the user's dated words.
 
 Growth: when this file outgrows ~100 lines, split content into `.ai-memory/wiki/` topic pages and turn this file into an index — Commands stay at the top, then one line per page. Update facts instead of deleting knowledge: note changes with a date (`updated YYYY-MM-DD: was X, now Y — reason`); flag unresolved contradictions explicitly. Papers/specs/RFCs live read-only in `.ai-memory/sources/` and are distilled once into `wiki/ref-<name>.md` pages (see REFERENCE template).
 
@@ -12,7 +12,7 @@ Exact invocations with flags — agents use these verbatim, never rediscover the
 - Test (all / single project / single test):
 - Lint:
 - Run:
-- Browser verification: <tool the project uses for UI evidence — Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, Claude in Chrome — or none>
+- Browser verification: <tool the project uses for UI evidence — Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, a browser tool the session offers — or none>
 
 ## Overview
 - Name / domain / app type / critical workflows:

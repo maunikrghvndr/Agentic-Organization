@@ -13,7 +13,7 @@
 
 ## Recommendation
 
-List it, as an optional overlay. Risk Level: **Low**. Blocking: **none**.
+List it, as an optional skill. Risk Level: **Low**. Blocking: **none**.
 
 ## Conditions
 

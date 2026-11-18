@@ -67,7 +67,7 @@ Prefer the project’s current patterns over generic best practices unless the e
 
 Do not start coding until you understand where the change belongs.
 
-When a UI or design skill from the library's curated list (`Skills/skills.manifest.json`) is installed on the host, use it for visual and interaction work alongside this role's rules; the role is complete without any skill installed, and an installed skill never overrides `AGENTS.md`, the constitution or this file (added 2026-11-18).
+When a UI or design skill from the library's curated list (`Skills/skills.manifest.json`) is present under the library's `Skills/installed/<name>/`, read its `SKILL.md` by path, like a role file, and use it for visual and interaction work alongside this role's rules; the role is complete without any skill installed, and an installed skill never overrides `AGENTS.md`, the constitution or this file (added 2026-11-18).
 
 ---
 
@@ -1207,7 +1207,7 @@ After coding:
 - Show a new or changed test failing before the change and passing after; state that no existing test was modified to pass. The before-run must fail on the behavior under change, not on setup, import or syntax; quote the first failing line in the Evidence row.
 - The final run comes after the final edit: an Evidence row is fresh only if its run postdates the phase's last code edit; a later edit voids the rows for the files it touched — re-run or write `Not run: <blocker>`; prose/data-only edits (`.md .txt .csv`, LICENSE, CHANGELOG) need no new row.
 - Check build/typecheck/lint when possible.
-- Check rendering behavior. For any UI change, if a browser tool is available (the project's Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, Claude in Chrome — see `PROJECT_MEMORY.md` → Commands → Browser verification), open the running app and record a screenshot path and the console errors in the task file's Evidence; otherwise write `UI not visually verified`.
+- Check rendering behavior. For any UI change, if a browser tool is available (the project's Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, a browser tool the session offers — see `PROJECT_MEMORY.md` → Commands → Browser verification), open the running app and record a screenshot path and the console errors in the task file's Evidence; otherwise write `UI not visually verified`.
 - Check loading, empty, error, and success states.
 - Check form validation paths.
 - Check API failure paths.

@@ -10,44 +10,20 @@
 #   .\Sync-AgentsMd.ps1 -DryRun                      # preview only, write nothing
 #   .\Sync-AgentsMd.ps1 -RepoRoot D:\work            # different parent folder
 #   .\Sync-AgentsMd.ps1 -Source <path or URL>        # override source AGENTS.md
-#   .\Sync-AgentsMd.ps1 -WithRules                   # also copy Rules/*.md verbatim into <repo>\.claude\rules\
-#   .\Sync-AgentsMd.ps1 -WithCloudHook               # also register Hooks/session-start-library.mjs in <repo>\.claude\settings.json
 #
 # Notes:
-# - -WithRules and -WithCloudHook are optional overlays (off by default); AGENTS.md is the
-#   complete contract without them. Rules are copied byte-for-byte and skipped when they
-#   already match. -WithCloudHook copies the hook to <repo>\.claude\hooks\ (cloud sessions
-#   clone only the repo, so the hook must live there) and writes .claude\settings.json
-#   holding only that SessionStart registration; when a .claude\settings.json already
-#   exists it is never merged - the snippet is printed for a manual merge instead.
-#   The target repo must commit .claude\ (rules\, hooks\, settings.json) for cloud
-#   sessions to see any of it; a repo that gitignores .claude\ gets no overlay there.
 # - Overwrites customized AGENTS.md files in target repos. By design, this
 #   library treats AGENTS.md as a single source of truth per Maunik's
 #   workflow; per-repo customization is not supported here.
 # - Only descends one level under RepoRoot (standard "repos folder" layout).
-# - -WithCloudHook commits an executable hook into each target repo's .claude/: it runs for
-#   every developer after one trust dialog, and for every -p/SDK session with no dialog at all
-#   (headless runs treat the folder as trusted; the vendor page does not state trust behaviour
-#   for cloud sessions). Protect .claude/** with
-#   CODEOWNERS/branch protection and review every change to it as code.
-# - Warns (never blocks) when the source is over 32,768 bytes - Codex's default
-#   project_doc_max_bytes - naming the sections past the cap, and per target repo
-#   when a CLAUDE.md / .claude/CLAUDE.md / CLAUDE.local.md exists there, because
-#   Claude Code then ignores AGENTS.md unless the user-level
-#   claude-md-and-agents-md setting is on.
-#   The same three files are also tested in RepoRoot and every folder above it (the host
-#   counts the working directory and any directory above it); <home>\.claude\CLAUDE.md is
-#   skipped because the user-level file does not count, while a CLAUDE.md directly in the
-#   home folder does. Checked against code.claude.com/docs/en/memory on 2026-11-18.
+# - Warns (never blocks) when the source is over 32,768 bytes - the library's own size
+#   limit for AGENTS.md - naming the sections past the limit.
 
 [CmdletBinding()]
 param(
     [string]$RepoRoot = "$env:USERPROFILE\source\repos",
     [string]$Source   = (Join-Path $PSScriptRoot "..\AGENTS.md"),
-    [switch]$DryRun,
-    [switch]$WithRules,
-    [switch]$WithCloudHook
+    [switch]$DryRun
 )
 
 $ErrorActionPreference = "Stop"
@@ -65,17 +41,17 @@ if ($Source -match '^https?://') {
     $sourceLabel = $Source
 }
 
-# Size check against the Codex default cap (32 KiB); name what would be truncated.
-$CodexCapBytes = 32768
+# Size check against the library's own limit for AGENTS.md (32 KiB); name the sections past it.
+$AgentsMaxBytes = 32768
 $sourceWarnings = New-Object System.Collections.Generic.List[string]
-if ($sourceBytes.Length -gt $CodexCapBytes) {
+if ($sourceBytes.Length -gt $AgentsMaxBytes) {
     $sourceText = [Text.Encoding]::UTF8.GetString($sourceBytes)
-    $headText   = [Text.Encoding]::UTF8.GetString($sourceBytes, 0, $CodexCapBytes)
+    $headText   = [Text.Encoding]::UTF8.GetString($sourceBytes, 0, $AgentsMaxBytes)
     $allHeadings = [regex]::Matches($sourceText, '(?m)^## .+$') | ForEach-Object { $_.Value }
     $keptHeadings = [regex]::Matches($headText, '(?m)^## .+$') | ForEach-Object { $_.Value }
-    $pastCap = @($allHeadings | Where-Object { $keptHeadings -notcontains $_ })
+    $pastLimit = @($allHeadings | Where-Object { $keptHeadings -notcontains $_ })
     $lastKept = if ($keptHeadings.Count -gt 0) { $keptHeadings[-1] } else { '(none)' }
-    $sourceWarnings.Add("Source is $($sourceBytes.Length) bytes, over Codex's default $CodexCapBytes-byte cap. Truncated mid-section: '$lastKept'. Sections entirely past the cap: $(if ($pastCap.Count) { $pastCap -join ', ' } else { '(none)' }).")
+    $sourceWarnings.Add("Source is $($sourceBytes.Length) bytes, over the library's $AgentsMaxBytes-byte limit. Section crossing the limit: '$lastKept'. Sections entirely past the limit: $(if ($pastLimit.Count) { $pastLimit -join ', ' } else { '(none)' }).")
 }
 
 if (-not (Test-Path $RepoRoot)) { throw "RepoRoot not found: $RepoRoot" }
@@ -90,65 +66,6 @@ $sourceHash = [BitConverter]::ToString(
     (New-Object Security.Cryptography.SHA256Managed).ComputeHash($sourceBytes)
 ).Replace("-","")
 
-function Get-Sha256([byte[]]$Bytes) {
-    [BitConverter]::ToString((New-Object Security.Cryptography.SHA256Managed).ComputeHash($Bytes)).Replace("-","")
-}
-
-# Writes $Bytes to $Target unless it already holds them; returns created / updated / unchanged.
-function Sync-File([string]$Target, [byte[]]$Bytes, [string]$Hash) {
-    if (Test-Path $Target) {
-        if ((Get-Sha256 ([IO.File]::ReadAllBytes($Target))) -eq $Hash) { return "unchanged" }
-        if (-not $DryRun) { [IO.File]::WriteAllBytes($Target, $Bytes) }
-        return "updated"
-    }
-    if (-not $DryRun) {
-        $dir = Split-Path $Target -Parent
-        if (-not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir | Out-Null }
-        [IO.File]::WriteAllBytes($Target, $Bytes)
-    }
-    return "created"
-}
-
-# Optional overlays, read once. Rules/*.md are copied verbatim; the cloud hook is copied
-# into the repo and registered in .claude\settings.json (shell form, quoted placeholder,
-# per https://code.claude.com/docs/en/hooks as of 2026-10-19).
-$rules = @()
-if ($WithRules) {
-    $rulesDir = Join-Path $PSScriptRoot "..\Rules"
-    if (-not (Test-Path $rulesDir)) { throw "Rules folder not found: $rulesDir" }
-    $rules = @(Get-ChildItem $rulesDir -Filter "*.md" -File | ForEach-Object {
-        $bytes = [IO.File]::ReadAllBytes($_.FullName)
-        [pscustomobject]@{ Name = $_.Name; Bytes = $bytes; Hash = (Get-Sha256 $bytes) }
-    })
-    if ($rules.Count -eq 0) { throw "No *.md rules found in: $rulesDir" }
-}
-$hookBytes = $null
-if ($WithCloudHook) {
-    $hookSource = Join-Path $PSScriptRoot "..\Hooks\session-start-library.mjs"
-    if (-not (Test-Path $hookSource)) { throw "Cloud hook not found: $hookSource" }
-    $hookBytes = [IO.File]::ReadAllBytes($hookSource)
-    $hookHash  = Get-Sha256 $hookBytes
-    $HookRelPath = '.claude/hooks/session-start-library.mjs'
-    $hookSettingsJson = @'
-{
-  "hooks": {
-    "SessionStart": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/session-start-library.mjs\"",
-            "timeout": 120
-          }
-        ]
-      }
-    ]
-  }
-}
-'@ -replace "`r`n", "`n"
-    $hookSettingsBytes = [Text.Encoding]::UTF8.GetBytes($hookSettingsJson + "`n")
-}
-
 $repos = Get-ChildItem $RepoRoot -Directory | Where-Object {
     (Test-Path (Join-Path $_.FullName ".git")) -and
     ($LibraryRoot -eq $null -or $_.FullName -ne $LibraryRoot)
@@ -157,59 +74,8 @@ $repos = Get-ChildItem $RepoRoot -Directory | Where-Object {
 $created   = New-Object System.Collections.Generic.List[string]
 $updated   = New-Object System.Collections.Generic.List[string]
 $unchanged = New-Object System.Collections.Generic.List[string]
-$shadowed  = New-Object System.Collections.Generic.List[string]
-$ClaudeShadowFiles = @('CLAUDE.md', 'CLAUDE.local.md', (Join-Path '.claude' 'CLAUDE.md'))
-# A CLAUDE.md above the repos shadows AGENTS.md in every repo under it. <home>\.claude\CLAUDE.md is the
-# user-level file: it loads alongside AGENTS.md and does not count, so it is skipped.
-$homeDir = if ($env:USERPROFILE) { $env:USERPROFILE } else { $HOME }
-$userLevelClaudeMd = if ($homeDir) { Join-Path $homeDir.TrimEnd('\', '/') (Join-Path '.claude' 'CLAUDE.md') } else { $null }
-$ancestorShadows = New-Object System.Collections.Generic.List[string]
-$ancestorDir = $RepoRoot
-while ($ancestorDir) {
-    foreach ($shadowName in $ClaudeShadowFiles) {
-        $candidate = Join-Path $ancestorDir $shadowName
-        if ($userLevelClaudeMd -and ($candidate -eq $userLevelClaudeMd)) { continue }
-        if (Test-Path -LiteralPath $candidate -PathType Leaf) { $ancestorShadows.Add($candidate) }
-    }
-    $ancestorDir = Split-Path $ancestorDir -Parent
-}
-$rulesCreated   = New-Object System.Collections.Generic.List[string]
-$rulesUpdated   = New-Object System.Collections.Generic.List[string]
-$rulesUnchanged = New-Object System.Collections.Generic.List[string]
-$hookFileChanged = New-Object System.Collections.Generic.List[string]
-$hookWritten     = New-Object System.Collections.Generic.List[string]
-$hookRegistered  = New-Object System.Collections.Generic.List[string]
-$hookManual      = New-Object System.Collections.Generic.List[string]
-
 foreach ($repo in $repos) {
     $target = Join-Path $repo.FullName "AGENTS.md"
-
-    $present = @($ClaudeShadowFiles | Where-Object { Test-Path (Join-Path $repo.FullName $_) })
-    if ($present.Count -gt 0) { $shadowed.Add("$($repo.Name): $($present -join ', ')") }
-
-    foreach ($rule in $rules) {
-        $ruleTarget = Join-Path $repo.FullName (Join-Path '.claude' (Join-Path 'rules' $rule.Name))
-        switch (Sync-File $ruleTarget $rule.Bytes $rule.Hash) {
-            "created"   { $rulesCreated.Add("$($repo.Name)/$($rule.Name)") }
-            "updated"   { $rulesUpdated.Add("$($repo.Name)/$($rule.Name)") }
-            "unchanged" { $rulesUnchanged.Add("$($repo.Name)/$($rule.Name)") }
-        }
-    }
-
-    if ($WithCloudHook) {
-        $hookTarget = Join-Path $repo.FullName (Join-Path '.claude' (Join-Path 'hooks' 'session-start-library.mjs'))
-        $hookState  = Sync-File $hookTarget $hookBytes $hookHash
-        if ($hookState -ne "unchanged") { $hookFileChanged.Add("$($repo.Name) ($hookState)") }
-        $settingsTarget = Join-Path $repo.FullName (Join-Path '.claude' 'settings.json')
-        if (Test-Path $settingsTarget) {
-            $existing = [IO.File]::ReadAllText($settingsTarget, [Text.Encoding]::UTF8)
-            if ($existing.Contains($HookRelPath)) { $hookRegistered.Add($repo.Name) }
-            else { $hookManual.Add($repo.Name) }
-        } else {
-            if (-not $DryRun) { [IO.File]::WriteAllBytes($settingsTarget, $hookSettingsBytes) }
-            $hookWritten.Add($repo.Name)
-        }
-    }
 
     if (Test-Path $target) {
         $targetBytes = [IO.File]::ReadAllBytes($target)
@@ -252,28 +118,10 @@ if ($unchanged.Count -gt 0) {
     Write-Host "Unchanged ($($unchanged.Count)):" -ForegroundColor DarkGray
     $unchanged | ForEach-Object { Write-Host "  = $_" }
 }
-if ($WithRules) {
-    Write-Host ""
-    Write-Host "Rules overlay (.claude/rules): created $($rulesCreated.Count), updated $($rulesUpdated.Count), unchanged $($rulesUnchanged.Count)"
-    $rulesCreated | ForEach-Object { Write-Host "  + $_" -ForegroundColor Green }
-    $rulesUpdated | ForEach-Object { Write-Host "  ~ $_" -ForegroundColor Yellow }
-}
-if ($WithCloudHook) {
-    Write-Host ""
-    Write-Host "Cloud hook: hook file created/updated $($hookFileChanged.Count); .claude/settings.json written $($hookWritten.Count), already registered $($hookRegistered.Count), manual merge $($hookManual.Count)"
-    $hookFileChanged | ForEach-Object { Write-Host "  ~ $_ $HookRelPath" -ForegroundColor Yellow }
-    $hookWritten | ForEach-Object { Write-Host "  + $_ .claude/settings.json" -ForegroundColor Green }
-    if ($hookManual.Count -gt 0) {
-        Write-Host "  ! .claude/settings.json already exists in: $($hookManual -join ', ') - not merged. Add this by hand:" -ForegroundColor Yellow
-        Write-Host $hookSettingsJson
-    }
-}
-if ($sourceWarnings.Count -gt 0 -or $shadowed.Count -gt 0 -or $ancestorShadows.Count -gt 0) {
+if ($sourceWarnings.Count -gt 0) {
     Write-Host ""
     Write-Host "Warnings:" -ForegroundColor Yellow
     $sourceWarnings | ForEach-Object { Write-Host "  ! $_" }
-    $shadowed | ForEach-Object { Write-Host "  ! $_ - Claude Code will ignore AGENTS.md here unless the user-level 'claude-md-and-agents-md' setting is on" }
-    $ancestorShadows | ForEach-Object { Write-Host "  ! $_ - sits in or above the repos folder: Claude Code will ignore AGENTS.md in every repo under it unless the user-level 'claude-md-and-agents-md' setting is on" }
 }
 if ($DryRun) {
     Write-Host ""

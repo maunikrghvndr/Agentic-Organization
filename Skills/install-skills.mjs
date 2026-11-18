@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
  * Skills/install-skills.mjs - installs every skill on the curated list
- * (Skills/skills.manifest.json) that is missing from the target skills folder.
+ * (Skills/skills.manifest.json) that is missing from the target skills folder,
+ * by default the library's own Skills/installed/ folder beside this script.
  *
- * Optional overlay: the role library works with no skill installed.
+ * Optional: the role library works with no skill installed. An installed
+ * skill is read by path, like a role file; nothing is written outside the target.
  * Node only, no dependencies, Windows/macOS/Linux. Needs `git` on PATH.
  *
  * Usage (from the library root):
@@ -13,7 +15,7 @@
  *   node Skills/install-skills.mjs --upgrade     also replace a skill installed at another commit
  *   node Skills/install-skills.mjs --with-optional  also install the skills the list marks "optional": true
  *   node Skills/install-skills.mjs --skill <name>     act only on the named listed skill, optional or not (repeatable)
- *   node Skills/install-skills.mjs --target <dir>     default: ~/.claude/skills
+ *   node Skills/install-skills.mjs --target <dir>     default: the `installed` folder beside this script
  *   node Skills/install-skills.mjs --manifest <file>  default: skills.manifest.json beside this script
  *
  * `--skill` is for on-demand use (one reviewed skill wanted for one use case):
@@ -66,7 +68,7 @@ const INSTALLED_BY = "Agentic-Organization/Skills/install-skills.mjs";
 const SKILL_FILE = "SKILL.md";
 const MANIFEST_FILE = "skills.manifest.json";
 const MANIFEST_VERSION = 1;
-const DEFAULT_TARGET_PARTS = [".claude", "skills"];
+const DEFAULT_TARGET_DIR = "installed";
 /** Set only by the test suite: lets the manifest use a local `file:` source. */
 const FILE_URL_ENV = "AGENTIC_SKILLS_TEST_ALLOW_FILE_URL";
 const GIT_TIMEOUT_MS = 120000;
@@ -624,7 +626,7 @@ function printTable(rows) {
 function main() {
   const options = parseArgs(process.argv.slice(2));
   const manifestPath = path.resolve(options.manifest ?? path.join(HERE, MANIFEST_FILE));
-  const target = path.resolve(options.target ?? path.join(os.homedir(), ...DEFAULT_TARGET_PARTS));
+  const target = path.resolve(options.target ?? path.join(HERE, DEFAULT_TARGET_DIR));
   const readOnly = options.dryRun || options.list;
 
   let manifest;

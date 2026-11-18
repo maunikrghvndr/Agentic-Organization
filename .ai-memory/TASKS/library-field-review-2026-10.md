@@ -437,6 +437,27 @@ Evidence (sha `e4a8d68`):
 - Folder rule applied: a department with one file sits at the `EngineeringTeam/` root — `architect.md` and `researcher.md` (history kept); `Architecture/` and `Research/` removed. `AGENTS.md` table shows `./` for both; lint pattern, workflow map and README updated. `AGENTS.md` 32,765 B.
 - Security record for the architect changes (`security-engineer`, fresh context, on `953c50a..7e40049`): **Approve**, Blocking: none. Non-blocking 1–3 applied to `architect.md` (a design decision never closes or re-labels another role's finding; the full ask-first list needs the user's confirmation and stops a non-interactive run; small work skips the ownership section, Routing still decides when the role loads). 4: the lint test fixture now has one root role (`./`) and the rest in a folder; no test yet for a rejected `../` row.
 
+### 2026-11-18 — library made provider-agnostic; skills install into the library's own folder
+
+- Maunik, 2026-11-18: "What fuck is agents/Claude ? This repo is agnostic"; then: "Remove them completely and get the skills into our own this is pure agnostic of provider you have completely fucked it up".
+- Removed completely: `Agents/` (reviewer subagent shims), `Settings/` (permission baseline), `Rules/` (path-scoped rules), `Workflows/` (review workflow and its test), `.claude-plugin/` (plugin manifest), `Hooks/` (hooks pack, its snippet and tests), `Scripts/Install-Overlays.ps1`, `Scripts/run-claude-ticket.ps1`, `Scripts/run-codex-ticket.ps1`, `Scripts/tests/Sync-AgentsMd.Tests.ps1` (it tested only the removed tool-specific shadow check). Kept and moved: the plain git secret gate, now `Scripts/pre-commit.gitleaks.sh`.
+- Reworded to name no AI tool or vendor: `AGENTS.md` (32,635 B, 196 lines; the Optional overlays bullet is now "Tool-neutral contract"), `rules-detail.md` (Setup covers the refresh and the skills offer only; the Optional overlays full text is replaced; the project-agent shadow clause is gone), role files, `_shared/memory.md`, `EVALS.md` (vendor appendix removed), `Evals/`, `MemoryTemplates/`, `Router/`, the README (Hooks section, Host compatibility table and vendor CLI examples removed; Structure matches disk), `Skills/README.md` and the review records (findings and conditions kept, verdict lines untouched).
+- Rules that named an enforcement which no longer exists are now plain prose rules the agent follows; nothing in the library enforces them. What still enforces: CI token scopes, the sandbox, the optional gitleaks git hook.
+- Skills: `Skills/install-skills.mjs` default target is the library's own `Skills/installed/` (beside the script), never a tool's home folder; `--target` still overrides; `Skills/installed/` is git-ignored and skipped by `Lint-Library.ps1`; an installed skill is read by path like a role file. Manifest `hosts` is `["any"]` for every skill. Test added first and seen failing (42 of 43 passed) before the change.
+- Scripts: `Sync-AgentsMd.ps1` lost `-WithRules`, `-WithCloudHook` and the shadow check (the size warning stays, as the library's own limit); `Lint-RepoMemory.ps1` lost R11; `Lint-Library.ps1` messages state the library's own limits and scan only folders that exist; CI runs both lints, the lint control tests, the release-audit validator tests and the skills installer tests.
+- Left in place on purpose: other tools' file names in `rules-detail.md` -> Agent configuration files and in the `security-engineer` scan and supply-chain checks (they recognise those files as agent configuration to review); third-party source attribution in the skills manifest, review records and Listed skills table; `.claude/` in the root `.gitignore` (existing line, kept as instructed: owner to decide).
+- Not independently security-reviewed yet (agent-configuration, installer and CI change): a `security-engineer` pass in a fresh context is still owed.
+- Lessons: none proposed.
+- Evidence (tree: working tree on `93b3f3e` before the commit of this entry):
+- `node --test "Skills/*.test.mjs"` | skills installer, 43 tests | 0 | 43 pass, 0 fail
+- `node --test Scripts/validate-release-audit.test.mjs` | release-audit validator, 65 tests | 0 | 65 pass, 0 fail
+- `node Skills/install-skills.mjs --target <new temp dir>` | real fetch of the pinned commits | 0 | 4 installed, 1 optional not installed, 0 failed
+- `node Skills/install-skills.mjs --target <same temp dir> --list` | state of the fetched skills | 0 | 4 present at the pinned commit
+- `node Skills/install-skills.mjs --dry-run` | default target, no flag | 0 | Target resolves to `<library root>/Skills/installed`; nothing written
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library lint | 0 | 0 errors, 7 W2 warnings (unchanged trim candidates)
+- `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo-memory lint | 0 | Clean
+- `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint positive controls | 0 | 45 passed, 0 failed
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

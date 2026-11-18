@@ -16,15 +16,14 @@
 #       "[YYYY-MM-DD...]" date tag
 #   E6  hidden text (zero-width, bidi overrides/isolates, tag characters, soft hyphen, variation
 #       selectors, fillers) in AGENTS.md, EngineeringTeam/**, LESSONS.md, LESSONS/**, MemoryTemplates/**,
-#       README/**, Evals/**, EVALS.md, Agents/**, Rules/**, Settings/**, Workflows/**, Scripts/**, Hooks/**,
-#       .github/**, .claude-plugin/** (every file installed into ~/.claude or a repo's .claude)
+#       README/**, Evals/**, EVALS.md, Scripts/**, .github/**
 # Warnings (exit 0):
-#   E7  AGENTS.md over 32,768 bytes (Codex default cap) — relocate a section verbatim to _shared/, never trim
-#   W1  AGENTS.md over 200 lines (Anthropic guidance)
+#   E7  AGENTS.md over 32,768 bytes (the library's own limit) — relocate a section verbatim to _shared/, never trim
+#   W1  AGENTS.md over 200 lines (the library's own limit)
 #   W2  >= 8 identical consecutive lines shared by two role files (trim candidates; feeds EVALS.md)
 #   W3  hardcoded `wiki/spec-` outside AGENTS.md (the branched Spec Kit / wiki phrase should be used)
-#   W4  a role file (EngineeringTeam/<Folder>/*.md) of 1,800 lines or more - Claude Code's Read tool returns 2,000 lines
-#       by default (a Claude Code default, not a cross-host fact); relocate a section verbatim to _shared/, never compress
+#   W4  a role file (EngineeringTeam/<Folder>/*.md) of 1,800 lines or more (the library's own limit, so a
+#       role file is read whole in one pass); relocate a section verbatim to _shared/, never compress
 #
 # Zero runtime tokens: this never runs an agent. PowerShell 5.1+ / 7+.
 
@@ -48,7 +47,8 @@ $agentsLines = $agentsText -split "`n"
 $roleFiles = @(Get-ChildItem (Join-Path $LibraryRoot "EngineeringTeam") -Recurse -Filter "*.md" -File | Where-Object { (Rel $_.FullName) -notmatch '[\\/]_shared[\\/]' })
 $mdFiles = @(Get-ChildItem $LibraryRoot -Recurse -Filter "*.md" -File | Where-Object {
     $rel = Rel $_.FullName
-    $rel -notmatch '^(_archive|\.git|graphify-out|\.ai-memory)[\\/]' -and $rel -notmatch '[\\/]_archive[\\/]'
+    $rel -notmatch '^(_archive|\.git|graphify-out|\.ai-memory)[\\/]' -and $rel -notmatch '[\\/]_archive[\\/]' -and
+    $rel -notmatch '^Skills[\\/]installed[\\/]'   # fetched third-party skills are not library text
 })
 
 # ---- E1: AGENTS.md -> <Heading> references ----------------------------------------------------
@@ -142,7 +142,7 @@ foreach ($f in $lessonFiles) {
 
 # ---- E6: hidden text in instruction files ----------------------------------------------------------
 $hiddenPattern = [regex]'[\u00AD\u034F\u061C\u115F\u1160\u180E\u200B-\u200F\u2028\u2029\u202A-\u202E\u2060-\u2064\u2066-\u2069\u3164\uFE00-\uFE0F\uFEFF\uFFA0\uFFF9-\uFFFB]|\uDB40[\uDC00-\uDC7F]|\uDB40[\uDD00-\uDDEF]'
-$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates|README|Evals|Agents|Rules)([\\/]|\.md$)|^EVALS\.md$' }) + @(Get-ChildItem (Join-Path $LibraryRoot "Scripts"), (Join-Path $LibraryRoot "Hooks"), (Join-Path $LibraryRoot "Settings"), (Join-Path $LibraryRoot "Workflows"), (Join-Path $LibraryRoot ".github"), (Join-Path $LibraryRoot ".claude-plugin") -File -Recurse -ErrorAction SilentlyContinue)
+$instructionFiles = @(Get-Item $agentsPath) + @($mdFiles | Where-Object { (Rel $_.FullName) -match '^(EngineeringTeam|LESSONS|MemoryTemplates|README|Evals)([\\/]|\.md$)|^EVALS\.md$' }) + @(Get-ChildItem (Join-Path $LibraryRoot "Scripts"), (Join-Path $LibraryRoot ".github") -File -Recurse -ErrorAction SilentlyContinue)
 foreach ($f in $instructionFiles) {
     $n = 0
     foreach ($line in ((Read-Utf8 $f.FullName) -split "`n")) {
@@ -154,8 +154,8 @@ foreach ($f in $instructionFiles) {
 
 # ---- W1: AGENTS.md size -------------------------------------------------------------------------
 $agentsBytes = (Get-Item $agentsPath).Length
-if ($agentsBytes -gt 32768) { $errors.Add("E7 AGENTS.md is $agentsBytes bytes (> 32,768 Codex default cap) - relocate a section verbatim to EngineeringTeam/_shared/, never trim") }
-if ($agentsLines.Count -gt 200) { $warnings.Add("W1 AGENTS.md is $($agentsLines.Count) lines (> 200 guidance)") }
+if ($agentsBytes -gt 32768) { $errors.Add("E7 AGENTS.md is $agentsBytes bytes (> 32,768, the library's own limit) - relocate a section verbatim to EngineeringTeam/_shared/, never trim") }
+if ($agentsLines.Count -gt 200) { $warnings.Add("W1 AGENTS.md is $($agentsLines.Count) lines (> 200, the library's own limit)") }
 
 # ---- W2: >= 8 identical consecutive lines shared by two role files --------------------------------
 $window = 8
@@ -200,7 +200,7 @@ foreach ($f in $mdFiles) {
 $RoleFileLineWarn = 1800
 foreach ($f in $roleFiles) {
     $roleLineCount = @([IO.File]::ReadAllLines($f.FullName)).Count
-    if ($roleLineCount -ge $RoleFileLineWarn) { $warnings.Add("W4 $(Rel $f.FullName) is $roleLineCount lines (>= $RoleFileLineWarn; Claude Code's Read tool returns 2,000 lines by default - a Claude Code default, not a cross-host fact) - relocate a section verbatim to EngineeringTeam/_shared/, never compress") }
+    if ($roleLineCount -ge $RoleFileLineWarn) { $warnings.Add("W4 $(Rel $f.FullName) is $roleLineCount lines (>= $RoleFileLineWarn, the library's own limit) - relocate a section verbatim to EngineeringTeam/_shared/, never compress") }
 }
 
 # ---- report --------------------------------------------------------------------------------------

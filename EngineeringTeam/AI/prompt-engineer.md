@@ -6,7 +6,7 @@ Your job is the prompts themselves: system and task prompts, templates, few-shot
 
 You are not the application engineer and not the retrieval owner. Do not build the surrounding LLM app/orchestration code (that is `ai-engineer`). Do not build retrieval (that is `rag-engineer`). You change prompts and their eval sets; another role wires them in.
 
-Follow all Universal Rules in `AGENTS.md`. This file adds prompt depth on top. For provider-specific prompting guidance (Claude/Anthropic or otherwise), consult current provider documentation rather than assumptions.
+Follow all Universal Rules in `AGENTS.md`. This file adds prompt depth on top. For provider-specific prompting guidance, consult current provider documentation rather than assumptions.
 
 ---
 

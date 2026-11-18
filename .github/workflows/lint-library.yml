@@ -31,10 +31,7 @@ jobs:
         shell: pwsh
         run: |
           ./Scripts/tests/Lint-Library.Tests.ps1
-          ./Scripts/tests/Sync-AgentsMd.Tests.ps1
-      - name: Node tests (hooks, release-audit validator, skills installer)
+      - name: Node tests (release-audit validator, skills installer)
         run: |
-          node --test "Hooks/*.test.mjs"
           node --test Scripts/validate-release-audit.test.mjs
           node --test "Skills/*.test.mjs"
-          node Workflows/review-loop.test.mjs Workflows/review-loop.js

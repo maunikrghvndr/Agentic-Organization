@@ -12,7 +12,7 @@
 
 ## Recommendation
 
-List it, as an optional overlay, under the conditions below. Risk Level: **Low** for installing the files; **Medium** for running a full audit (many sub-agents, writes a report of vulnerabilities to the home folder, may ask to run target code in a sandbox). Blocking: **none**.
+List it, as an optional skill, under the conditions below. Risk Level: **Low** for installing the files; **Medium** for running a full audit (many sub-agents, writes a report of vulnerabilities to the home folder, may ask to run target code in a sandbox). Blocking: **none**.
 
 ## Conditions
 
@@ -35,7 +35,7 @@ List it, as an optional overlay, under the conditions below. Risk Level: **Low**
 | F5 | (b) description versus behaviour | Informational | The description matches the body. The skill is itself a set of instructions to the agent (that is what a skill is); none of them tells the agent to read or send anything outside the audit, to hide anything from the user, to change settings, or to skip a confirmation. It asks one clarifying question when the mode is unclear, and requires an incomplete run to be reported as incomplete. | `skills/security-audit/SKILL.md:3,12-17,134,179` |
 | F6 | safety claims in the bundle | Informational | The skill states strong execution-safety rules (sandbox with no network, empty environment, read-only target, no live probing). These are prose addressed to the model, not an enforced control, and are not counted as evidence of safety here. On a host with no OS sandbox the skill's own rule is to not execute target code and to record `needs_validation`. | `skills/security-audit/SKILL.md:31-42`; `HUNTING.md:71-80` |
 
-Checked, nothing found: instructions to fetch the skill's real content from a URL; pipe-to-shell or package-manager install steps inside the installed folder; changes to host settings, hooks, MCP entries, permission modes or `AGENTS.md`/`CLAUDE.md`; a permission bypass or a self-spawned headless agent session (sub-agents are started through the host's own delegation tool); capture or upload of prompts, transcripts or environment; hidden or bidirectional control characters and HTML comments in any file; symlinks, submodules, git hooks, CI workflows, `package.json` or lifecycle scripts in the repository (22 files, all regular; the two validators are the only executable-mode files); network or process use in the validators; license problems.
+Checked, nothing found: instructions to fetch the skill's real content from a URL; pipe-to-shell or package-manager install steps inside the installed folder; changes to host settings, hooks, MCP entries, permission modes or agent instruction files; a permission bypass or a self-spawned headless agent session (sub-agents are started through the host's own delegation tool); capture or upload of prompts, transcripts or environment; hidden or bidirectional control characters and HTML comments in any file; symlinks, submodules, git hooks, CI workflows, `package.json` or lifecycle scripts in the repository (22 files, all regular; the two validators are the only executable-mode files); network or process use in the validators; license problems.
 
 ## Tests Needed
 
@@ -46,5 +46,5 @@ Checked, nothing found: instructions to fetch the skill's real content from a UR
 ## Final Notes
 
 - Maintainer: Cloudflare, Inc.; contact address in the upstream README. Reputation was not used to lower any finding.
-- The whole-application release audit in this library uses this skill as engine A when it is installed and the host can run it, and the library's own prose procedure as engine B otherwise; the library works with the skill absent.
+- The whole-application release audit in this library uses this skill as engine A when it is present and unmodified under the library's `Skills/installed/` and its validators can be run, and the library's own prose procedure as engine B otherwise; the library works with the skill absent.
 - Installing this skill is a dependency decision (ask-first). The owner approved the skills list and installer on 2026-11-18; this record is the security pass for this one entry at this one commit.

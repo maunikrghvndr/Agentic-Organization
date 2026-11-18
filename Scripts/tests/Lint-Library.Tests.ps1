@@ -3,7 +3,7 @@
 # Positive controls for the two lints (plain PowerShell, no Pester, no dependency):
 #   .\Scripts\tests\Lint-Library.Tests.ps1        # exit 0 = every control fired, exit 1 = at least one did not
 #
-# For each ERROR rule of Lint-Library.ps1 (E1-E7) and Lint-RepoMemory.ps1 (R1-R11) a throwaway fixture with one
+# For each ERROR rule of Lint-Library.ps1 (E1-E7) and Lint-RepoMemory.ps1 (R1-R10) a throwaway fixture with one
 # planted violation asserts that the rule id appears in the lint output; one clean fixture per lint asserts that
 # no error is reported. A lint that has only been seen to pass has not been seen to work.
 # Warnings: only the ones changed on 2026-11-18 are covered (RW1, RW6, W4 threshold); the rest can wait.
@@ -133,8 +133,7 @@ $repoPlants = @(
     @{ Id = 'R7';  Plant = { param($root) Write-Fixture $root ".ai-memory/TASKS/task-a.md" ("# Task`n`n## Plan`n- [ ] T01 build it - Owns: src/a`n`n## Evidence`n- ``run-tests`` | unit | 0 | abc1234`n`n## Handoff`n- Next role: qa-engineer`n") } },
     @{ Id = 'R8';  Plant = { param($root) Add-ToFixture $root ".ai-memory/TASKS/task-a.md" ("- [ ] T02 a phase with no owner`n") } },
     @{ Id = 'R9';  Plant = { param($root) Add-ToFixture $root ".ai-memory/wiki/spec-feature.md" ("- ``AC-2`` the system validates uploads.`n") } },
-    @{ Id = 'R10'; Plant = { param($root) Write-Fixture $root ".ai-memory/TASKS/_archive/2026-01-01-old.md" ("# Old`n`n- [ ] T01 never finished - Owns: src/b`n") } },
-    @{ Id = 'R11'; Plant = { param($root) Write-Fixture $root ".claude/agents/reviewer.md" ("---`nname: backend-reviewer`n---`n") } }
+    @{ Id = 'R10'; Plant = { param($root) Write-Fixture $root ".ai-memory/TASKS/_archive/2026-01-01-old.md" ("# Old`n`n- [ ] T01 never finished - Owns: src/b`n") } }
 )
 foreach ($plant in $repoPlants) {
     $root = New-RepoFixture ("repo-" + $plant.Id)

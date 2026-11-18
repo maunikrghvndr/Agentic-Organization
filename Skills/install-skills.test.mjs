@@ -847,3 +847,19 @@ test("--skill: with --upgrade only the named skill is replaced", (t) => {
   assert.match(fs.readFileSync(path.join(sandbox.target, "demo", "SKILL.md"), "utf8"), /description: v2/);
   assert.match(fs.readFileSync(path.join(sandbox.target, "other", "SKILL.md"), "utf8"), /description: v1/, "the skill that was not named stays as it was");
 });
+
+test("default target: with no --target the skills go to the library's own Skills/installed folder, whatever the home folder is", (t) => {
+  const sandbox = makeSandbox(t);
+  const home = path.join(sandbox.root, "home");
+  fs.mkdirSync(home);
+  const manifest = path.join(sandbox.manifestDir, "skills.manifest.json");
+  fs.writeFileSync(manifest, JSON.stringify({ version: 1, skills: [entry(sandbox)] }, null, 2));
+  const result = spawnSync(process.execPath, [INSTALLER, "--manifest", manifest, "--dry-run"], {
+    encoding: "utf8",
+    env: { ...GIT_ENV, [FILE_URL_ENV]: "1", HOME: home, USERPROFILE: home },
+  });
+  assert.equal(result.status, 0, result.stderr + result.stdout);
+  const expected = path.join(HERE, "installed");
+  assert.ok(result.stdout.includes(`Target:   ${expected}\n`), result.stdout);
+  assert.deepEqual(fs.readdirSync(home), [], "nothing is written under the home folder");
+});
