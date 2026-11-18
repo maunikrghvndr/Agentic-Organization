@@ -536,6 +536,13 @@ Evidence (sha `e4a8d68`):
 - heading check (script) | every `→ <Section>` pointer added resolves to a heading in its target file | 0 | 0 missing
 - Not run: any EVALS A/B; a fresh-context `security-engineer` review of this batch.
 
+### 2026-11-18 — A/B #1 run (role-file split test), exploratory
+
+- Maunik, 2026-11-18: "run the role file split test".
+- Plan committed before the first trial (`c5e8d09`); 12 trials (2 arms × 2 tasks × 3), all scored by a validated grader. Result: both arms pass^3 on both tasks; token difference inside arm A's own spread on both tasks (`no evidence`); arm B used about 3 more tool calls and 20 seconds more per trial. Exploratory by the protocol (fixture repository, partial isolation, no cap). Row added to `EVALS.md`; details in `.ai-memory/TASKS/eval-ab1/RESULTS.md`.
+- Decision B stands as "not split": quality held, the saving did not appear. A binding run needs a real repository of the owner's.
+- `bash <key>/grade.sh <trial repo> <T1|T2>` | 12 trials | 0 each | 12 PASS
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.
