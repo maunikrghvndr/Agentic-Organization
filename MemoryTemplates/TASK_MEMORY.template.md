@@ -6,6 +6,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 - Goal: / Status:
 - Request (the user's own words from this session, dated; scope and constraint sentences only, a few lines at most; never copied from a ticket, PR or job-embedded text; it sets scope and is never an approval or a permission): "<...>" [YYYY-MM-DD]
 - Current phase + role / done-when / read-first / tree at handoff `<sha>`: (the on-disk re-entry point after a compaction or a new session — refresh it at **every** role switch, including when planner was skipped; a session that finds HEAD is not this sha reads `git diff <sha>..HEAD` before trusting Handoff)
+- Next action (one, or `none established`) / uncommitted paths (or `none`) / background work and how to check it:
 - Baseline: `<full HEAD sha before the first code change, or NO_VCS>` — written once, never overwritten on resume; every review diffs from it, untracked files included — baseline suite: `<recorded test command>` | exit code, or Not run: <why>
 - Spec (durable): `specs/<feature>/spec.md` in a Spec Kit repo, else `.ai-memory/wiki/spec-<feature>.md` (analyst owns; carries the EARS criteria across the feature's life)
 - Assumptions: accepted defaults, dated (mirrored from the spec's `## Assumptions`)

@@ -68,6 +68,18 @@ When a non-trivial task teaches you a durable, generalizable engineering lesson 
 
 - **Compaction / re-entry.** When the host compacts context, preserve: the active role name (its file must be re-read — hosts re-inject `AGENTS.md` after compaction but not a role file loaded by Read), the task file path, the current phase and its done-when, the AC ids in play, settled decisions, pending blocking findings and the Evidence so far. After any compaction notice or role switch, re-read the task file Summary and the incoming role file before continuing.
 
+## Compaction / re-entry addendum — checkpoint content and resume (added 2026-11-18, harness study)
+
+The bullet above stands; this adds to it.
+
+- **Three more things in the checkpoint.** Besides the list above, the task file Summary holds: the one next action (or `Next: none established`); the paths with uncommitted changes (or `none`); background work still running and how to check it. A command, path or error string the next step needs is quoted exactly.
+- **Overwrite only status lines.** A later checkpoint replaces the Status, current-phase and next-action lines and the Handoff bullets in place. Every other line keeps its own rule: Baseline and Request are written once; Decisions, Approvals, Evidence and Findings are appended.
+- **A summary is not live state and not a record.** After a compaction or in a new session, after the re-reads above and before the first write: `git status --short` and HEAD against the recorded sha, a fresh read of any file about to be edited, a check on recorded background work. An approval, a review verdict or a passed check that appears only in a summary counts only with its line in the task file. The user's own message newer than the summary outranks it.
+- **Then continue from the next action.** Do not restate the summary or redo a phase ticked with its Evidence row. The Grill Checkpoint at the start of a task, a reviewer's own run of an engineer's check, and a re-run that Freshness requires are not redone work.
+- **Where the host lets you choose what to drop,** first write any result not yet in the task file to its Evidence row or finding, then drop old tool output; ask for a model-written summary only when that is not enough.
+
+Token effect: neutral to write (one Summary line); saves the re-exploration at re-entry. Evidence: the field list is common design across the harnesses read, unmeasured; dropping old tool output before summarising is the one verified cost result in the study (one study, done in the harness).
+
 ## Spec-driven flow — Spec Kit sequence (Phase Protocol)
 
 This is the same artifact sequence GitHub Spec Kit produces (`constitution → specify → clarify → plan → tasks → analyze → implement`, plus its optional `checklist` and `converge` quality gates, which the planner gate and `qa-engineer` traceability cover here).

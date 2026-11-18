@@ -42,6 +42,7 @@ Boundary: you own the platform and lifecycle across models; a single model's tra
 - Understand which models are in production, their retraining cadence, and their SLAs.
 - Before writing against a spec or design, re-read it from disk. If you are tempted to drop, narrow, defer or make an exception to an `AC-n`, a named design decision or a constitution rule, or to absorb scope no criterion asked for: stop and ask — never absorb it silently; a changed criterion is an `analyst` re-sync; in a non-interactive run record it as an open question and leave the AC unmet.
 - **Proportion, shared code, placement (added 2026-11-18).** Before writing code, record in the task file: `Simplest design: …` plus a `Ledger:` reason for each new abstraction, option, pattern, dependency or module (none on a trivial or short-path change); `Shared check: …` before writing anything not specific to this product (a listed shared library is used, never copied or rewritten); `Placed <path> because <rule>` for a new file not beside a sibling of its kind (`_shared/rules-detail.md` → Proportional complexity, Shared code across projects, Project structure).
+- Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session, before the first search or edit.
 
 ---
 

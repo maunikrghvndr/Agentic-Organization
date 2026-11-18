@@ -491,6 +491,26 @@ Evidence (sha `e4a8d68`):
 - Order of authority reversed in `rules-detail.md` → Project structure: (1) the pattern of the organization the repository belongs to (written standard, else the structure established in the repository, else the organization's other repositories of the same stack), continued as it is; (2) otherwise the owner's own patterns in `STRUCTURE.md`; (3) nearest sibling. Following the organization's pattern is not a deviation; introducing a second pattern beside the existing one is Blocking. Engineer and reviewer lines, the project-memory template (`Structure source:`) and the README updated.
 - `STRUCTURE.md` retitled as the owner's own patterns and seeded with the folder structure the library already had and the first pass missed: the QA/test layout in `qa-engineer.md` (unit, integration, frontend test locations; the default `tests/` tree). Still undefined in the library: source folder trees per stack, naming, repository root layout.
 
+### 2026-11-18 — inner work loop: lookups, edits, compaction checkpoint, side contexts
+
+- Maunik, 2026-11-18: "Yeah for the harness whatever is possible without machinery let's implement that".
+- Maunik, 2026-11-18: "Research and keep it bulletproof".
+- Maunik, 2026-11-18 (criteria for what is adopted): "Shouldnot waste tokens better memory management and all".
+- Study: `.ai-memory/TASKS/harness-study/` — three research notes (`01-*.md`), proposals (`02-proposals.md`), skeptic verdicts and final text (`03-skeptic.md`). The skeptic's final text was landed verbatim; nothing in it was reworded.
+- Landed: A1 (Looking things up), A2 (Editing), A4 (Compaction / re-entry addendum), A5 (Side contexts) and A6 (Check before you rely), each as amended by the skeptic; A3 (check after edit) only as an optional line in Editing; notes N1 (Narration), N4 (Own diff), N6 (Stuck). N2 (claim scope) and N3 (honest tests) deferred: token-neutral and unmeasured, text held ready in `03-skeptic.md`. N5 (order of text) and N7 (not-assumed list) rejected.
+- Where: new `EngineeringTeam/_shared/work-loop.md` (47 lines, 8,032 bytes); one pointer line at the end of Required First Step in 11 engineer roles and a narrower variant in `debugger` (`researcher`, the reviewers, `qa-engineer`, `security-engineer`, `analyst`, `architect`, `planner` carry none, reasons in `03-skeptic.md`); addendum section in `_shared/rules-detail.md` under Compaction / re-entry; one bullet in `_shared/memory.md` after Re-sync; one Summary line in `MemoryTemplates/TASK_MEMORY.template.md`; README Structure line and one Key Rules bullet; `EVALS.md` queued A/Bs 5-10 and one Results log row (owner decision, no A/B run). Existing wording untouched; additions only. `AGENTS.md`, `LESSONS.md`, `LESSONS/**` not edited. `Scripts/Lint-Library.ps1` unchanged: the hidden-text scan already reads every file under `EngineeringTeam/`, and role discovery excludes `_shared`.
+- Token cost: about 2,000 tokens on demand (one whole-file read per session for a role that edits; about 1,150 for `debugger`) plus one pointer line of about 41 tokens held in 12 role files. Stated break-even: one whole-file read of about 200 lines avoided per session, or one avoided read-back of a file that size, or about 200 lines of command output kept out of context. Bytes divided by 4, an estimate.
+- Basis: the habits rest on outside evidence (mostly design text, a few studies, labelled in the file) and the owner's decision, not on a failure observed in his projects. Whether the text changes behaviour on a given host is unmeasured; where the host's own prompt already states the habits the saving is zero and the cost remains (`EVALS.md` A/B #6).
+- Independence: the skeptic ran in a fresh context on the same model family as the proposal author (no other available); shared blind spots are not covered.
+- Not independently security-reviewed (agent-instruction files changed): a `security-engineer` pass in a fresh context is owed, as `03-skeptic.md` states.
+- Lessons: none proposed.
+- Evidence (tree: working tree on `3294ae4` before the commit of this entry):
+- `pwsh -NoProfile -File Scripts/Lint-Library.ps1` | library lint | 0 | 0 errors, 7 W2 warnings (output identical to the same run on `3294ae4`); a first run exited 1 on E1 for an `EVALS.md` line of this change that named a bullet as an `AGENTS.md` heading, reworded and re-run
+- `pwsh -NoProfile -File Scripts/Lint-RepoMemory.ps1 -RepoRoot .` | repo-memory lint | 0 | Clean
+- `pwsh -NoProfile -File Scripts/tests/Lint-Library.Tests.ps1` | lint positive controls | 0 | 47 passed, 0 failed
+- `git grep -n -i -E '<tool, model and vendor names>' -- EngineeringTeam/_shared/work-loop.md` | provider-agnostic check on the new file | 1 | no match
+- Not run: any EVALS A/B on these habits (queued as #5-#10).
+
 ## Handoff
 
 The next session trusts this section and does not re-explore the repo.

@@ -64,7 +64,7 @@ Agentic-Organization/
     ML/                    ml-engineer, mlops-engineer, ml-reviewer
     AI/                    ai-engineer, prompt-engineer, rag-engineer, nlp-engineer, ai-reviewer
     Quality/               qa-engineer, debugger, security-engineer
-    _shared/               on-demand detail relocated verbatim from AGENTS.md: graph.md (graph procedure), memory.md (Repo Memory detail), rules-detail.md (long-form rules)
+    _shared/               on-demand detail relocated verbatim from AGENTS.md: graph.md (graph procedure), memory.md (Repo Memory detail), rules-detail.md (long-form rules); plus work-loop.md (inner work loop habits, added 2026-11-18, read on demand)
 
   Evals/
     routing-cases.md       one-line tickets with the expected role (incl. near-misses and the negative trivial case) + hierarchy cases; results go in EVALS.md
@@ -154,6 +154,7 @@ The library is spec-first for features and interoperates with GitHub Spec Kit ra
 - **Graph accelerator:** the Graphify git hook (above) keeps the graph fresh on every commit, and `AGENTS.md` drives the agent to *query* it instead of grepping — it builds the graph only when no hook maintains it. Code extraction uses `--code-only` (local tree-sitter AST, no API calls); ingesting documents/PDFs needs an LLM backend and is gated on the user's approval. The graph lands under `.ai-memory/` (gitignored, regenerable) alongside the rest of what the agent consults. It checks for the tool, asks once to install if missing, and falls back to normal file reading if the tool is absent or declined — never a hard dependency, so the drop-in stays one file.
 - **Proportional complexity:** before code, one task-file line `Simplest design: …`; every new abstraction, option, pattern, dependency or module needs a `Ledger:` reason tied to an AC or decision, and a trivial change adds none. A missing reason is a Blocking review finding (`_shared/rules-detail.md` → Proportional complexity).
 - **Shared code and structure:** code that is not product-specific is checked against `SHARED_LIBRARIES.md` before it is written (never copied between repositories; extraction is its own ask-first task), and a file goes where `STRUCTURE.md`, then the repository's recorded structure, then its siblings say (`_shared/rules-detail.md` → Shared code across projects, Project structure).
+- **Inner work loop:** the habits for lookups, edits, the compaction checkpoint and side contexts live in `_shared/work-loop.md` (the checkpoint in `_shared/rules-detail.md` → Compaction / re-entry addendum), read on demand through one pointer line in the engineer roles and `debugger`; nothing is added to the always-loaded `AGENTS.md`.
 
 ## Headless / CI use
 

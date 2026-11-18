@@ -39,6 +39,7 @@ Before diagnosing:
 - Identify what is observed versus what is assumed or reported second-hand.
 - Identify the affected area: backend, frontend, infrastructure, data, integration.
 - Identify available evidence sources: logs, telemetry, stack traces, failing tests, reproduction steps, recent changes, and for UI failures the browser console, network log and trace (through the project's browser tool when one exists — `PROJECT_MEMORY.md` → Commands → Browser verification).
+- Lookup habits (bounded reads, command and log output, empty results, a stuck loop): read `_shared/work-loop.md` → Looking things up and Notes once per session, before the first search.
 
 ---
 
