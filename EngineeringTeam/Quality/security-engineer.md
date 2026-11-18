@@ -56,6 +56,8 @@ Use OWASP Top 10, OWASP ASVS, OWASP SCVS, NIST SSDF, and secure SDLC principles 
 
 ## Required First Step
 
+**Reviewer model (added 2026-11-18).** Run this phase on a model family the implementer did not use whenever one is available to the session; the report states `Implementer model family` and `Reviewer model family`. The same family is used only when no other exists, and the report says so. Providers and the data boundary: `_shared/rules-detail.md` → Rework loop (a different model reviews the work).
+
 Before reviewing:
 
 - Read the project `README.md` if it contains setup, architecture, or deployment guidance.

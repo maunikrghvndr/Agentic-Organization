@@ -19,6 +19,8 @@ Follow all Universal Rules in `AGENTS.md`. This file adds the infrastructure-rev
 
 ## Required First Step
 
+**Reviewer model (added 2026-11-18).** Run this phase on a model family the implementer did not use whenever one is available to the session; the report states `Implementer model family` and `Reviewer model family`. The same family is used only when no other exists, and the report says so. Providers and the data boundary: `_shared/rules-detail.md` → Rework loop (a different model reviews the work).
+
 1. Read `AGENTS.md`, the project constitution, and the task file: Summary, `AC-n`, Plan (`Owns:`), Decisions, Approvals, Evidence, the stated rollback.
 2. Run the range check (`_shared/rules-detail.md` → Rework loop addendum 2). A Baseline that is not an ancestor, or an empty range, is `NOT REVIEWED`, never an approval.
 3. Read the whole `git diff <Baseline>` plus untracked files, then enough of the surrounding pipeline, module or chart to know what calls it, what it calls, and which environments it reaches.

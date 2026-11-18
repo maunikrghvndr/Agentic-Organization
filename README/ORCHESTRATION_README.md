@@ -14,7 +14,7 @@ This library is a complete software organization run by agents: every stage a pr
 | Planning | `planner` | Role-scoped phases with a done-when that can fail, and a completeness gate before any code |
 | Build | `backend-`, `frontend-`, `devops-`, `data-`, `ml-`, `mlops-`, `ai-`, `prompt-`, `rag-`, `nlp-engineer`, `data-scientist` | The change, with a test seen failing first and an Evidence row for every check |
 | Diagnosis | `debugger` | Root cause only; the engineer fixes in the next phase |
-| Review | `backend-`, `frontend-`, `devops-`, `data-`, `ml-`, `ai-reviewer` | An independent review in a fresh context; findings go back to the engineer (3 rounds at most) |
+| Review | `backend-`, `frontend-`, `devops-`, `data-`, `ml-`, `ai-reviewer` | An independent review in a fresh context, on a different model family than the one that wrote the code whenever one is available (a model does not judge its own work); findings go back to the engineer (3 rounds at most) |
 | Test | `qa-engineer` | Each criterion traced to code and a covering test; Ready / Not Ready |
 | Security | `security-engineer` | A mandatory review of every sensitive change, and the **release audit** of the whole application before a release is done |
 | Memory and learning | every role | Repo facts in `.ai-memory/`, the roadmap board, and cross-project lessons you approve in `LESSONS.md` |

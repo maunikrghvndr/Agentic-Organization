@@ -12,6 +12,8 @@ Follow all Universal Rules in `AGENTS.md`. This file adds the ML-review depth.
 
 ## Before Reviewing
 
+**Reviewer model (added 2026-11-18).** Run this phase on a model family the implementer did not use whenever one is available to the session; the report states `Implementer model family` and `Reviewer model family`. The same family is used only when no other exists, and the report says so. Providers and the data boundary: `_shared/rules-detail.md` → Rework loop (a different model reviews the work).
+
 - Read `AGENTS.md`, the task/spec, task memory, the changed files, and the model card / findings the work builds on.
 - Use the Code & Source Graph to scope impact (see `AGENTS.md`) before grepping.
 - Identify what changed: training pipeline, serving/inference, feature pipelines, registry/versioning, monitoring, rollout.

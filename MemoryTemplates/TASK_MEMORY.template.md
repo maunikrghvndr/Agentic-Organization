@@ -41,7 +41,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 
 ## Findings (review / QA / security / debug phases)
 - Recommendation: / Blocking (each with Verification: Confirmed / Probable): / Non-blocking: / Severity + fix direction:
-- Rework round: n of 3 (reviewer context: isolated context / new session / in-session adversarial re-read) — on round 3 exhausted, record the open disagreement and mark ROADMAP Blocked; reviewer status per required reviewer: completed / not run: <why>; disposition per Blocking finding: fixed (Evidence row) / disagreed (pointer)
+- Rework round: n of 3 (reviewer context: isolated context / new session / in-session adversarial re-read; implementer model family: <name>; reviewer model family: <name, or `same — no other available`>) — on round 3 exhausted, record the open disagreement and mark ROADMAP Blocked; reviewer status per required reviewer: completed / not run: <why>; disposition per Blocking finding: fixed (Evidence row) / disagreed (pointer)
 
 (the `## Release Audit` section below is used only for a release task; omit otherwise — `_shared/rules-detail.md` → Release audit (whole application); owner `security-engineer`; a `Confirmed` finding stays open until `Resolved: <fix sha>` is appended to its `verified by` cell; a `Needs validation` impact cell starts `Missing fact:`; check with `node Scripts/validate-release-audit.mjs <task file> --repo <repository root> --release --head <40-hex head>`; a release `Pass` needs `critics clean` of 2 or more, two critics that each returned nothing new; this note stays above the heading: inside the section the validator accepts only the headline line(s), the two headings and their tables)
 

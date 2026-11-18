@@ -29,7 +29,7 @@ Compact and binding. Omit sections that do not apply. Every line is a rule someo
 - Branching, PR, release, and deployment rules that are binding for agents and humans alike.
 - Delivery default: `branch + PR` / `direct commit` / `uncommitted diff` — in every case the agent never pushes, merges or opens a PR without the user's go-ahead.
 - Spec persistence: `living spec` (default — the spec is amended as the feature evolves; nothing reconciles spec/design/plan automatically: QA appends convergence rows, analyst amends criteria, planner re-syncs) or `flow-forward` per area.
-- Cross-model review: `not allowed` (default) / `allowed with <vendor>` — sending a diff, spec or plan to another vendor's model is ask-first per repository; never for regulated or client-confidential code (`_shared/rules-detail.md`).
+- Reviewer providers: `<list of providers this repository may send code to for review>` — a review runs on a different model family than the implementer whenever one is available inside this list; adding a provider is ask-first; regulated or client-confidential code never goes to a provider not listed (`_shared/rules-detail.md` → Rework loop, a different model reviews the work).
 - Optional complexity ratchet: `<metric> (e.g. cyclomatic complexity, file length, nesting) — baseline <value> — may only shrink — waiver: <syntax, who approves>`.
 
 ## Rules By Artifact (optional)
