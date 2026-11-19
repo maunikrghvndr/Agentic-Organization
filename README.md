@@ -30,6 +30,7 @@ You never have to name a role. The full list is the table in [`AGENTS.md`](AGENT
 - **The author does not review its own work.** Reviews run in a fresh context, on a different model family when one is available.
 - **You stay in control.** The agent asks before adding a dependency, changing a schema, deleting anything or pushing, and it never merges.
 - **It is observable.** Data is traceable end to end, system metrics (CPU, memory, GPU) are required, and only the main step transitions are logged so telemetry stays small. Every model call is traced; its inputs, output and reasoning are recorded only in stores you approve.
+- **It explains itself plainly.** Reports use simple language, with examples and diagrams from your real application, never made-up data unless the real data is unavailable.
 - **It remembers.** Project facts and progress are kept in `.ai-memory/` inside your repository.
 
 ## Optional

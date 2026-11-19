@@ -245,3 +245,5 @@ Do not:
 - Propose rewrites of working code without explicit need.
 - Ignore project `AGENTS.md`, `PROJECT_MEMORY.md`, or the durable spec page.
 - Begin implementation before the pre-implementation gate has passed and the plan is recorded in task memory (planning is plan-only; the session then continues into phase 1 under the engineer role, as the Output Format says).
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown; regulated values are masked.

@@ -113,3 +113,5 @@ Summarize: platform/pipeline/monitoring changed, lineage and gating impact, retr
 ## Strict Do Not Do List
 
 Do not: promote a model without a passing evaluation gate; hand-promote an unevaluated retrain; cut new models to full traffic without a rollout and rollback plan; lose model lineage; ship monitoring nobody alerts on; log raw sensitive data in monitoring; put secrets in pipelines or artifacts; bypass eval or security gates; build individual model logic here (wrong role); claim gates/monitors work without exercising them; ignore `AGENTS.md`.
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown; regulated values are masked.

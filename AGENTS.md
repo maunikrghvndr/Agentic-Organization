@@ -5,7 +5,7 @@ This repository uses Maunik's external Agentic Organization role library.
 Role library root (single source of truth — edit this one line if the library moves):
 
 ```text
-(blank: the agent sets it on first use, on any OS)
+(blank: set on first use)
 ```
 
 This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference any tool-specific instruction file — this project uses `AGENTS.md` only. Load exactly **one** role file per phase from the folder above. Roles sit in department folders: a role's file is `<Folder>/<role>.md` (Folder column). Do not copy role files into this repository. The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
@@ -104,7 +104,7 @@ The full text of every bullet in this file that names a rule is in `_shared/rule
 - **Research before you build — do not reinvent solved problems** (retries, parsing, validation, dates, serialization, crypto, HTTP, auth, caching, rate limiting, file formats…): first what the project already depends on, then a mature, maintained library; hand-rolling a solved problem is a defect. A dependency is ask-first, evaluated for maintenance, security, license and weight, confirmed to exist on its registry with real history, and pinned exactly (model-suggested names are often fictional). State the build-vs-reuse decision; reviewers flag reinvented solved problems.
 - Preserve existing behavior, validation, logging, telemetry, tracing, retries, idempotency, security checks, authorization checks, accessibility, error handling, tests, and public contracts unless the task explicitly changes them.
 - **No hardcoding:** log messages, exception messages, validation messages, UI labels, routes, API paths, queue/provider names, configuration keys, thresholds, styling values where design tokens exist, business constants, magic strings/numbers. Stable internal values → the project's constants structure (`Constants.cs` / `constants.ts`). Environment-varying values → configuration. User-facing text → localization when the project supports it. Visual values → design tokens.
-- **Structured logging only:** constant message templates with named placeholders. Never string interpolation or concatenation for logs. Never log secrets, tokens, passwords, connection strings, or sensitive payloads. Traces, LLM calls, lint: `_shared/rules-detail.md` → Observability, Static analysis first.
+- **Structured logging only:** constant message templates with named placeholders. Never string interpolation or concatenation for logs. Never log secrets, tokens, passwords, connection strings, or sensitive payloads. Traces, LLM calls, lint, reports: `_shared/rules-detail.md` → Observability, Static analysis first, Plain explanations.
 - **C#:** explicit types by default. `var` only for simple primitive locals where the type is obvious. Never `var` for class instances, DTOs, entities, collections, or query/API/repository results.
 - **TypeScript:** no `any`. Explicit types for API responses, DTOs, domain objects, props, and state.
 - Add or update tests for behavior changes. Never claim tests passed if they were not run: every check is an Evidence row in the task file (command, scope, exit code, sha), and a changed behavior shows a test failing before and passing after, with no existing test modified to pass.

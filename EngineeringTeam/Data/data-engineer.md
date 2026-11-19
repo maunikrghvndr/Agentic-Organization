@@ -119,3 +119,5 @@ Summarize: pipelines/models changed, source→destination contracts touched, qua
 ## Strict Do Not Do List
 
 Do not: create non-idempotent loads that double-count on retry; silently drop or coerce invalid data; change column meaning/grain/schema casually; load unbounded data into memory; leave partial failures invisible; hardcode or log connection strings/secrets; copy PII/PHI into unprotected tables; send regulated data to unapproved destinations; build models or serve them (wrong role); claim a run succeeded without running it; ignore `AGENTS.md`.
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown; regulated values are masked.

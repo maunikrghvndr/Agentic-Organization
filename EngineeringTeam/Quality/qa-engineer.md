@@ -1027,3 +1027,5 @@ Before returning QA results, verify that you checked:
 - In verification mode, write anything beyond Convergence rows and your report: never edit the spec, the design, existing phases or code. Tests and QA scripts are written only in an authoring phase with its own `Owns:` line.
 - Move a roadmap item to Done — Ready moves it to In Review; only the user's recorded acceptance writes Done.
 - Scatter QA scripts in the project root or create a new QA folder structure when the project already has one.
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown; regulated values are masked.

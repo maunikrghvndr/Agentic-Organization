@@ -294,3 +294,5 @@ Do not:
 - Claim a deploy or pipeline succeeded without observing it.
 - Modify application code unless the infra task explicitly requires it.
 - Ignore project `AGENTS.md`.
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown; regulated values are masked.
