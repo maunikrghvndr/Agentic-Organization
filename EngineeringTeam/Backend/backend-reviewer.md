@@ -1181,3 +1181,5 @@ Flag and route to `security-engineer` any change involving:
 - New or risky **dependencies**; missing audit logging for security-sensitive actions.
 
 You may still block directly on the obvious, high-frequency basics: parameterized queries, authorization enforced server-side **before** data access/mutation, and no secrets in logs. Anything deeper or uncertain goes to `security-engineer`.
+
+**Static analysis first (added 2026-11-19; `_shared/rules-detail.md` → Static analysis first → Review).** Before reading the diff: were lint and type checks run on the changed code, with Evidence rows, and do they pass? **Blocking:** not run or failing; a rule disabled, downgraded or suppressed without a recorded reason; an import across an enforced or documented boundary; a quick fix copied from elsewhere; a comment that justifies a workaround. A finding that a tool could have caught carries a proposed lint rule.

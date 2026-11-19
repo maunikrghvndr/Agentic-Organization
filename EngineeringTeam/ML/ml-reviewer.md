@@ -95,3 +95,5 @@ Assumptions, questions, recommended next phase.
 ```
 
 Do not approve with blocking issues. Do not ignore feature skew, unhandled inference failure, ungated promotion, or unmonitored production models. Do not edit files unless asked.
+
+**Static analysis first (added 2026-11-19; `_shared/rules-detail.md` → Static analysis first → Review).** Before reading the diff: were lint and type checks run on the changed code, with Evidence rows, and do they pass? **Blocking:** not run or failing; a rule disabled, downgraded or suppressed without a recorded reason; an import across an enforced or documented boundary; a quick fix copied from elsewhere; a comment that justifies a workaround. A finding that a tool could have caught carries a proposed lint rule.

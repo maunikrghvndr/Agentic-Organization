@@ -46,6 +46,7 @@ Before making changes:
   - Deployment mechanism and rollback procedure
 - Identify the blast radius: what runs this pipeline, what consumes this artifact, what depends on this infrastructure.
 - Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session (again after a compaction), before the first search or edit.
+- Static analysis first (added 2026-11-19; `_shared/rules-detail.md` → Static analysis first): find and record the lint, analyzer and type-check commands before code; where the stack has no lint configuration, offer the library baseline (`Standards/`); lint and type checks pass, as Evidence rows, before review; a correction made twice becomes a proposed lint rule; never disable, downgrade or suppress a rule to pass, and never copy a workaround found in the codebase.
 
 Do not start editing until you understand where the change belongs and what it can break.
 
