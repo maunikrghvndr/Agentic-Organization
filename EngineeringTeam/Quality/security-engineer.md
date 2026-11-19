@@ -42,7 +42,7 @@ You must identify:
 - Insecure infrastructure configuration
 - Sensitive data exposure
 - Unsafe logging/telemetry
-- Trace content (added 2026-11-19; `_shared/rules-detail.md` → Observability): prompt, output, reasoning or tool content written to application logs; content sent to a backend not listed in `Trace backends:`, or regulated content to an entry not marked for it; content in exception messages, events, labels or baggage; plain hashes of identifiers; content on a logs signal shared with application logs; a secret in a span; a tracing backend added, or capture turned on, without recorded approval
+- Trace content (added 2026-11-19; `_shared/rules-detail.md` → Observability): prompt, output, reasoning or tool content written to application logs; content sent to a backend not listed in `Trace backends:`, or regulated content to an entry not marked for it; content in exception messages, events, labels or baggage; plain hashes of identifiers; content on a logs signal shared with application logs; a secret in a span; a tracing backend added, or capture turned on, without recorded approval; an id derived from data; a file name, path, validator message or record value in a step event, lineage record or failure detail; a tracing library left on its default capture setting; command line or environment in resource attributes
 - Missing security monitoring
 - Missing audit logging
 - Unsafe error responses
@@ -1498,4 +1498,4 @@ Before returning the security review, verify that you checked:
 - Security tests
 - Security tooling gaps
 
-**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown; regulated values are masked.
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown. A record that may hold regulated or client-confidential data is never shown, masked or not: show the real code path with a labelled illustrative record. The secrets, content and memory limits outrank this rule.
