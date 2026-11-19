@@ -1,5 +1,7 @@
 # Agentic Organization Role Library
 
+> This is the full guide. For the two-minute version, read the [quick start](../README.md).
+
 A portable, provider-agnostic role library for coding agents: it depends on no AI tool or vendor. Drop `AGENTS.md` into any repo; the agent routes each task to one specialized role and follows that role's discipline.
 
 ## From idea to release: the whole team, as agents
@@ -54,6 +56,7 @@ Nothing manual. `AGENTS.md` points at this library by absolute path (the fenced 
 
 ```text
 Agentic-Organization/
+  README.md                the short quick start (this file is the full guide)
   AGENTS.md                master copy of the drop-in file (router + universal rules)
   LESSONS.md               shared, cross-project self-learned engineering takeaways: rules, index, cross-cutting lessons (read by all repos)
   LESSONS/                 area files the index maps to roles: backend.md, frontend.md, data-ml-ai.md, tooling-agent-workflow.md
