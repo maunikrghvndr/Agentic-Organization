@@ -1,0 +1,45 @@
+# Library lint on every push and pull request. Zero agent tokens: this only runs the two PowerShell lints and the library's own tests.
+# This file is agent configuration (reviewed as code; security pass before merge). Keep permissions read-only.
+name: lint-library
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0 # the repo-memory lint orders task files by commit time
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22
+      - name: Lint the library
+        shell: pwsh
+        run: ./Scripts/Lint-Library.ps1
+      - name: Lint the library's own repo memory
+        shell: pwsh
+        run: ./Scripts/Lint-RepoMemory.ps1 -RepoRoot .
+      - name: Lint positive controls
+        shell: pwsh
+        run: |
+          ./Scripts/tests/Lint-Library.Tests.ps1
+      - name: Node tests (release-audit validator, skills installer)
+        shell: bash
+        run: |
+          node --test Scripts/validate-release-audit.test.mjs
+          node --test "Skills/*.test.mjs"
+      - name: No fetched skill content is committed
+        shell: bash
+        run: test -z "$(git ls-files Skills/installed)"

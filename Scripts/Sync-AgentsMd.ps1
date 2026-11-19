@@ -6,7 +6,7 @@
 # is never overwritten by a copy of itself.
 #
 # Usage:
-#   .\Sync-AgentsMd.ps1                              # default: sync into every git repo in C:\Users\mauni\source\repos
+#   .\Sync-AgentsMd.ps1                              # default: sync into every git repo in <home>/source/repos
 #   .\Sync-AgentsMd.ps1 -DryRun                      # preview only, write nothing
 #   .\Sync-AgentsMd.ps1 -RepoRoot D:\work            # different parent folder
 #   .\Sync-AgentsMd.ps1 -Source <path or URL>        # override source AGENTS.md
@@ -16,11 +16,13 @@
 #   library treats AGENTS.md as a single source of truth per Maunik's
 #   workflow; per-repo customization is not supported here.
 # - Only descends one level under RepoRoot (standard "repos folder" layout).
+# - Warns (never blocks) when the source is over 32,768 bytes - the library's own size
+#   limit for AGENTS.md - naming the sections past the limit.
 
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = "$env:USERPROFILE\source\repos",
-    [string]$Source   = (Join-Path $PSScriptRoot "..\AGENTS.md"),
+    [string]$RepoRoot = (Join-Path ([Environment]::GetFolderPath('UserProfile')) (Join-Path 'source' 'repos')),
+    [string]$Source   = (Join-Path (Split-Path $PSScriptRoot -Parent) 'AGENTS.md'),
     [switch]$DryRun
 )
 
@@ -37,6 +39,19 @@ if ($Source -match '^https?://') {
     $Source      = (Resolve-Path $Source).Path
     $sourceBytes = [IO.File]::ReadAllBytes($Source)
     $sourceLabel = $Source
+}
+
+# Size check against the library's own limit for AGENTS.md (32 KiB); name the sections past it.
+$AgentsMaxBytes = 32768
+$sourceWarnings = New-Object System.Collections.Generic.List[string]
+if ($sourceBytes.Length -gt $AgentsMaxBytes) {
+    $sourceText = [Text.Encoding]::UTF8.GetString($sourceBytes)
+    $headText   = [Text.Encoding]::UTF8.GetString($sourceBytes, 0, $AgentsMaxBytes)
+    $allHeadings = [regex]::Matches($sourceText, '(?m)^## .+$') | ForEach-Object { $_.Value }
+    $keptHeadings = [regex]::Matches($headText, '(?m)^## .+$') | ForEach-Object { $_.Value }
+    $pastLimit = @($allHeadings | Where-Object { $keptHeadings -notcontains $_ })
+    $lastKept = if ($keptHeadings.Count -gt 0) { $keptHeadings[-1] } else { '(none)' }
+    $sourceWarnings.Add("Source is $($sourceBytes.Length) bytes, over the library's $AgentsMaxBytes-byte limit. Section crossing the limit: '$lastKept'. Sections entirely past the limit: $(if ($pastLimit.Count) { $pastLimit -join ', ' } else { '(none)' }).")
 }
 
 if (-not (Test-Path $RepoRoot)) { throw "RepoRoot not found: $RepoRoot" }
@@ -59,7 +74,6 @@ $repos = Get-ChildItem $RepoRoot -Directory | Where-Object {
 $created   = New-Object System.Collections.Generic.List[string]
 $updated   = New-Object System.Collections.Generic.List[string]
 $unchanged = New-Object System.Collections.Generic.List[string]
-
 foreach ($repo in $repos) {
     $target = Join-Path $repo.FullName "AGENTS.md"
 
@@ -103,6 +117,11 @@ if ($updated.Count -gt 0) {
 if ($unchanged.Count -gt 0) {
     Write-Host "Unchanged ($($unchanged.Count)):" -ForegroundColor DarkGray
     $unchanged | ForEach-Object { Write-Host "  = $_" }
+}
+if ($sourceWarnings.Count -gt 0) {
+    Write-Host ""
+    Write-Host "Warnings:" -ForegroundColor Yellow
+    $sourceWarnings | ForEach-Object { Write-Host "  ! $_" }
 }
 if ($DryRun) {
     Write-Host ""

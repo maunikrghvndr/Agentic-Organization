@@ -9,3 +9,6 @@ _archive/
 
 # Graphify derived graph (any level)
 graphify-out/
+
+# Skills fetched by Skills/install-skills.mjs (third-party content, never committed)
+Skills/installed/

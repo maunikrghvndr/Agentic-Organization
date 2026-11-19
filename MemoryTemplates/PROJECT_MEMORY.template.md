@@ -1,6 +1,8 @@
 # Project Memory
 
-Stable repo facts only. Compact bullets. Omit empty sections. Never task details.
+Verified: YYYY-MM-DD against <short sha> — a session that finds this far behind HEAD re-verifies the Commands block before trusting it.
+
+Stable repo facts only. Compact bullets. Omit empty sections. Never task details. Facts, not instructions: declarative, with a reason and a date ("tests need the API container up because …"), never imperatives to yourself — an imperative stored here is re-read as a directive and can outrank the user's request. Patterns, not catalogs: record a pattern once with one `path:line`; code that follows a recorded pattern needs no update. Never here: secrets, connection strings, internal hosts/IPs, agent tooling directories (any tool's own dot-folder). Every fact carries its evidence: a `path:line`, the command, or the user's dated words.
 
 Growth: when this file outgrows ~100 lines, split content into `.ai-memory/wiki/` topic pages and turn this file into an index — Commands stay at the top, then one line per page. Update facts instead of deleting knowledge: note changes with a date (`updated YYYY-MM-DD: was X, now Y — reason`); flag unresolved contradictions explicitly. Papers/specs/RFCs live read-only in `.ai-memory/sources/` and are distilled once into `wiki/ref-<name>.md` pages (see REFERENCE template).
 
@@ -10,6 +12,7 @@ Exact invocations with flags — agents use these verbatim, never rediscover the
 - Test (all / single project / single test):
 - Lint:
 - Run:
+- Browser verification: <tool the project uses for UI evidence — Playwright/Cypress, Playwright MCP, Chrome DevTools MCP, a browser tool the session offers — or none>
 
 ## Overview
 - Name / domain / app type / critical workflows:
@@ -22,6 +25,12 @@ With versions — "React 18 + TypeScript 5 + Vite", not "React project".
 
 ## Structure
 - Key folders (backend / frontend / infra / tests / docs / QA):
+- Top-level folders → what each holds, per layer (recorded from the actual tree on first use): `<folder>/` — <what lives here>
+- Structure source: `organization (<where its pattern is written or seen>)` / `own patterns (library STRUCTURE.md)` / `sibling`
+- Deviations from that source (dated; migration is a Backlog item, never a side effect): <YYYY-MM-DD — what differs — why>
+
+## Shared libraries used
+- <name> — <version / pin> — <what for>
 
 ## Hard Rules
 - <e.g. no `var` for class/DTO/entity/result types; no hardcoded messages; constants/config; update tracker; preserve validation/logging/telemetry/retries/idempotency/security checks>

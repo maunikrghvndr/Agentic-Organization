@@ -1,0 +1,2 @@
+# Same bytes on every operating system: the size limits, the lints and the tests read files as LF.
+* text=auto eol=lf
