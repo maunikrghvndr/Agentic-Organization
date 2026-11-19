@@ -1,5 +1,6 @@
 // Baseline lint rules for TypeScript (ESLint flat config with typescript-eslint).
-// Copied into a repository on the owner's yes; the repository's own config wins where it is stricter.
+// Offered only where the repository has no ESLint configuration in any location; never merged over one.
+// This file is code that runs at lint time: read it before running it, and keep it free of anything but rules.
 // Each rule is here because it catches a mistake a reviewer would otherwise have to find by reading.
 import tseslint from "typescript-eslint";
 

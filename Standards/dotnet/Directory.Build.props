@@ -1,9 +1,11 @@
-<!-- Baseline build properties that make the analyzer rules in .editorconfig fail the build. Merged on the owner's yes. -->
+<!-- Baseline build properties that make the analyzer rules in .editorconfig fail the build. Offered only where the repository has none. -->
 <Project>
   <PropertyGroup>
     <Nullable>enable</Nullable>
-    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!-- Pinned so a new SDK does not add failing rules by itself; raise it deliberately. -->
+    <AnalysisLevel>9.0-recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>CA2000;CA1502</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>

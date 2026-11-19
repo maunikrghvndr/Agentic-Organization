@@ -1,4 +1,4 @@
-# Baseline lint rules for Python (Ruff). Copied into a repository on the owner's yes; the repository's own config wins where it is stricter.
+# Baseline lint rules for Python (Ruff). Offered only where the repository has no Ruff configuration in any location (pyproject.toml included); never merged over one.
 # Each rule family is here because it catches a mistake a reviewer would otherwise have to find by reading.
 
 [lint]

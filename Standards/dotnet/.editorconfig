@@ -1,5 +1,5 @@
 # Baseline analyzer rules for C# (.NET SDK analyzers; no extra package needed).
-# Merged into a repository's .editorconfig on the owner's yes; the repository's own settings win where they are stricter.
+# Offered only where the repository has no analyzer configuration in any location; never merged over one.
 # Enforced at build time only with the properties in Directory.Build.props beside this file.
 
 [*.cs]
@@ -11,19 +11,28 @@ csharp_style_var_elsewhere = false:error
 dotnet_diagnostic.IDE0008.severity = error
 
 # Structured logging: constant message templates with named placeholders.
-dotnet_diagnostic.CA2254.severity = error   # the template is not built by interpolation or concatenation
-dotnet_diagnostic.CA2017.severity = error   # placeholders and arguments match in number
-dotnet_diagnostic.CA2253.severity = error   # placeholders are named, not numbered
-dotnet_diagnostic.CA1727.severity = error   # placeholder names are PascalCase
+# the template is not built by interpolation or concatenation
+dotnet_diagnostic.CA2254.severity = error
+# placeholders and arguments match in number
+dotnet_diagnostic.CA2017.severity = error
+# placeholders are named, not numbered
+dotnet_diagnostic.CA2253.severity = error
+# placeholder names are PascalCase
+dotnet_diagnostic.CA1727.severity = error
 
 # Async and cancellation.
-dotnet_diagnostic.CA2016.severity = error   # forward the CancellationToken
-dotnet_diagnostic.CA2012.severity = error   # ValueTask used correctly
-dotnet_diagnostic.CA1849.severity = error   # no blocking call where an async one exists
+# forward the CancellationToken
+dotnet_diagnostic.CA2016.severity = error
+# ValueTask used correctly
+dotnet_diagnostic.CA2012.severity = error
+# no blocking call where an async one exists
+dotnet_diagnostic.CA1849.severity = error
 
 # Errors and resources.
-dotnet_diagnostic.CA1031.severity = error   # no catch-all without a reason
-dotnet_diagnostic.CA2000.severity = warning # dispose what you create (reports some false positives: fix or justify)
+# no catch-all without a reason
+dotnet_diagnostic.CA1031.severity = error
+# dispose what you create (reports some false positives, so it stays a warning: see WarningsNotAsErrors)
+dotnet_diagnostic.CA2000.severity = warning
 
 # Nullability.
 dotnet_diagnostic.CS8600.severity = error
@@ -32,9 +41,13 @@ dotnet_diagnostic.CS8603.severity = error
 dotnet_diagnostic.CS8604.severity = error
 
 # Security.
-dotnet_diagnostic.CA2100.severity = error   # SQL built from input
-dotnet_diagnostic.CA5350.severity = error   # weak cryptography
-dotnet_diagnostic.CA5351.severity = error   # broken cryptography
+# SQL built from input
+dotnet_diagnostic.CA2100.severity = error
+# weak cryptography
+dotnet_diagnostic.CA5350.severity = error
+# broken cryptography
+dotnet_diagnostic.CA5351.severity = error
 
 # Needless complexity.
-dotnet_diagnostic.CA1502.severity = warning # excessive cyclomatic complexity
+# excessive cyclomatic complexity (a warning: see WarningsNotAsErrors)
+dotnet_diagnostic.CA1502.severity = warning
