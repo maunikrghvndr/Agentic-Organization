@@ -40,6 +40,7 @@ Every finding: file/path, problem, why it matters, suggested fix direction.
 - **Serving safety:** inference input validated? model loaded once and reused (not per request)? latency, batch, concurrency, memory bounded?
 - **Failure handling:** model-load failure, timeout, bad input degrade to a defined fallback — not a crash or a fabricated prediction?
 - **Versioning/observability:** served model version pinned and observable? inference telemetry present without logging raw sensitive input?
+- Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability): do training and serving report CPU, memory and GPU utilization and memory tied to the run id or model version? Is each main step transition one event with the same id? Any per-item logging, unbounded metric label, or exporter that can block or grow without limit is Blocking.
 - **Promotion gate:** does the training pipeline evaluate against a metric and baseline before a model can ship?
 - **Evaluation framework present (mandatory):** does the model ship with a documented evaluation framework — held-out eval, business-tied metric, baseline comparison, segment/error analysis, and a gated repeatable runner? A model without one is a **blocking finding**, the equivalent of shipping code with no tests.
 
