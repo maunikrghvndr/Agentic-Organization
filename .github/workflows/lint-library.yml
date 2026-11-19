@@ -11,7 +11,11 @@ permissions:
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -32,8 +36,10 @@ jobs:
         run: |
           ./Scripts/tests/Lint-Library.Tests.ps1
       - name: Node tests (release-audit validator, skills installer)
+        shell: bash
         run: |
           node --test Scripts/validate-release-audit.test.mjs
           node --test "Skills/*.test.mjs"
       - name: No fetched skill content is committed
+        shell: bash
         run: test -z "$(git ls-files Skills/installed)"

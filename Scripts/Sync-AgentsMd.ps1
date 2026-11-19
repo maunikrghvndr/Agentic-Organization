@@ -6,7 +6,7 @@
 # is never overwritten by a copy of itself.
 #
 # Usage:
-#   .\Sync-AgentsMd.ps1                              # default: sync into every git repo in C:\Users\mauni\source\repos
+#   .\Sync-AgentsMd.ps1                              # default: sync into every git repo in <home>/source/repos
 #   .\Sync-AgentsMd.ps1 -DryRun                      # preview only, write nothing
 #   .\Sync-AgentsMd.ps1 -RepoRoot D:\work            # different parent folder
 #   .\Sync-AgentsMd.ps1 -Source <path or URL>        # override source AGENTS.md
@@ -21,8 +21,8 @@
 
 [CmdletBinding()]
 param(
-    [string]$RepoRoot = "$env:USERPROFILE\source\repos",
-    [string]$Source   = (Join-Path $PSScriptRoot "..\AGENTS.md"),
+    [string]$RepoRoot = (Join-Path ([Environment]::GetFolderPath('UserProfile')) (Join-Path 'source' 'repos')),
+    [string]$Source   = (Join-Path (Split-Path $PSScriptRoot -Parent) 'AGENTS.md'),
     [switch]$DryRun
 )
 

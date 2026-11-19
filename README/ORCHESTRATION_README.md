@@ -42,6 +42,14 @@ Nothing manual. `AGENTS.md` points at this library by absolute path (the fenced 
 
 **Your only step is dropping `AGENTS.md` into a repo root.** The agent does the rest, asking first each time: it finds or clones the library; if the repo's copy of `AGENTS.md` has fallen behind the library's master (for example after roles moved into department folders) it offers to refresh the copy; and once per machine it offers to fetch the optional curated skills into the library's own `Skills/installed/` folder, running only the steps you accept. The installer is what the agent runs for you; you can also run it yourself. Unattended runs never change anything: they report what is stale and continue. Detail: `EngineeringTeam/_shared/rules-detail.md` → Setup.
 
+## Works on any operating system
+
+- The rules and role files are plain markdown; nothing in them depends on an operating system or a tool.
+- The role-library path line in `AGENTS.md` ships blank. On first use in a repository the agent finds the library on that machine (or asks to clone it), then asks permission to write the path in that machine's own form.
+- The scripts are PowerShell 7 (`pwsh`) and Node, both of which run on Windows, macOS and Linux. The one shell script, `Scripts/pre-commit.gitleaks.sh`, needs Git Bash on Windows (it ships with Git for Windows).
+- The CI workflow runs the lints and tests on Linux, Windows and macOS on every push, and `.gitattributes` keeps line endings as LF on every checkout so the size limits and the tests see the same bytes everywhere.
+- One limit that is not the library's: the optional Cloudflare `security-audit` skill's own validators do not run on native Windows, so the release audit uses the library's own procedure there (see Release audit below).
+
 ## Structure
 
 ```text
@@ -110,7 +118,7 @@ Rather than dropping `AGENTS.md` into each repo by hand, use the sync script:
 # preview what would change (safe, no writes)
 .\Scripts\Sync-AgentsMd.ps1 -DryRun
 
-# copy or refresh AGENTS.md into every git repo under C:\Users\mauni\source\repos
+# copy or refresh AGENTS.md into every git repo under your repos folder (default: <home>/source/repos)
 .\Scripts\Sync-AgentsMd.ps1
 ```
 

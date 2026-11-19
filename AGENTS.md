@@ -5,14 +5,14 @@ This repository uses Maunik's external Agentic Organization role library.
 Role library root (single source of truth — edit this one line if the library moves):
 
 ```text
-C:\Users\mauni\source\repos\Agentic-Organization\EngineeringTeam\
+(blank: the agent sets it on first use, on any OS)
 ```
 
 This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference any tool-specific instruction file — this project uses `AGENTS.md` only. Load exactly **one** role file per phase from the folder above. Roles sit in department folders: a role's file is `<Folder>/<role>.md` (Folder column). Do not copy role files into this repository. The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
 
 **Role library resolution (the agent runs this before loading any role — the user never edits the path by hand):**
 
-1. Try the path above: can you read `EngineeringTeam/Product/planner.md` there? If yes, proceed.
+1. Try the path above (blank: step 2): can you read `EngineeringTeam/Product/planner.md` there? If yes, proceed.
 2. If not (new machine, moved library, fresh clone), check a few likely locations quickly — the user's home and usual repo folders — for an `EngineeringTeam/` folder containing the role files. If found, ask the user to confirm, then update the path line above to match.
 3. If it is still not found, ask the user for permission to clone it from `https://github.com/maunikrghvndr/Agentic-Organization` to a standard location, then set the path line to the cloned `EngineeringTeam/` folder. In a non-interactive session (cloud/CI, unattended) clone it to a sibling folder without asking and say so.
 4. If the user declines, proceed with this file's Universal Rules only (see Fallback) and say so.
