@@ -23,6 +23,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 - Changed: `path` — what/why
 
 ## Decisions
+- Will change: <files or behaviours> / Will not change: <what stays as it is> (`_shared/rules-detail.md` → Proportional complexity; a gap noticed outside it is one Backlog line, never built here)
 - Simplest design: <what> — new files: n, new abstractions: n (`_shared/rules-detail.md` → Proportional complexity; a trivial change with no task file states it in the Grill Checkpoint restatement)
 - Ledger: <item> — <reason tied to AC-n or a recorded decision> (one line per item on that section's list; none = none added)
 - Shared check: used <library> / none exists — local behind <seam> / candidate proposed
