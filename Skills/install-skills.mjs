@@ -72,6 +72,7 @@ const DEFAULT_TARGET_DIR = "installed";
 /** Set only by the test suite: lets the manifest use a local `file:` source. */
 const FILE_URL_ENV = "AGENTIC_SKILLS_TEST_ALLOW_FILE_URL";
 const GIT_TIMEOUT_MS = 120000;
+const GIT_MAX_OUTPUT_BYTES = 64 * 1024 * 1024; // a large skill folder lists many paths
 const SHORT_SHA = 12;
 const GIT_ENV_PREFIX = "GIT_";
 const GIT_DIR_NAME = ".git";
@@ -465,7 +466,7 @@ function withEmptyDir(run) {
 function git(repo, cwd, args) {
   const allowedProtocols = ["-c", "protocol.allow=never", "-c", "protocol.https.allow=always"];
   if (process.env[FILE_URL_ENV] === "1") allowedProtocols.push("-c", "protocol.file.allow=always");
-  const noFilters = ["-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=", "-c", "filter.lfs.required=false", "-c", "core.autocrlf=false", "-c", "core.eol=lf"];
+  const noFilters = ["-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=", "-c", "filter.lfs.required=false", "-c", "core.autocrlf=false", "-c", "core.eol=lf", "-c", "core.symlinks=false"];
   const result = spawnSync(
     "git",
     [
@@ -489,6 +490,7 @@ function git(repo, cwd, args) {
       shell: false,
       windowsHide: true,
       timeout: GIT_TIMEOUT_MS,
+      maxBuffer: GIT_MAX_OUTPUT_BYTES,
       env: gitEnv(),
     },
   );
@@ -513,12 +515,15 @@ function hasGitSegment(root, candidate) {
 
 /**
  * Copies a directory tree with no code execution. Regular files and
- * directories only; a symlink is followed only when it resolves to a regular
- * file inside the skill folder, and is otherwise refused. Nothing is ever
- * copied from a `.git` folder: an entry of that name is skipped, and a symlink
- * that resolves into one is refused.
+ * directories only. Git checks the commit out with core.symlinks=false, so a
+ * symlink in the commit is never a link on disk on any operating system: it is
+ * a small file holding the link's target, and `links` (from the commit's tree)
+ * says which files those are. Such a link is followed only when its target is
+ * a regular file inside the skill folder, and is otherwise refused. Nothing is
+ * ever copied from a `.git` folder: an entry of that name is skipped, and a
+ * link that resolves into one is refused.
  */
-function copyTree(skillRoot, from, to) {
+function copyTree(repoRoot, links, skillRoot, from, to) {
   fs.mkdirSync(to);
   for (const entry of fs.readdirSync(from)) {
     const source = path.join(from, entry);
@@ -527,24 +532,40 @@ function copyTree(skillRoot, from, to) {
     if (entry === MARKER_FILE) throw new Error(`the skill ships its own ${MARKER_FILE} (${relative}) - refused`);
     const stat = fs.lstatSync(source);
     if (stat.isDirectory()) {
-      copyTree(skillRoot, source, path.join(to, entry));
-    } else if (stat.isFile()) {
-      fs.copyFileSync(source, path.join(to, entry), fs.constants.COPYFILE_EXCL);
-    } else if (stat.isSymbolicLink()) {
-      let resolved;
+      copyTree(repoRoot, links, skillRoot, source, path.join(to, entry));
+    } else if (stat.isFile() && links.has(repoPath(repoRoot, source))) {
+      const resolved = path.resolve(from, fs.readFileSync(source, "utf8"));
+      if (!isInside(skillRoot, resolved)) throw new Error(`symlink ${relative} points outside the skill folder - refused`);
+      if (hasGitSegment(skillRoot, resolved)) throw new Error(`symlink ${relative} resolves into ${GIT_DIR_NAME} - refused`);
+      let targetStat;
       try {
-        resolved = fs.realpathSync(source);
+        targetStat = fs.lstatSync(resolved);
       } catch {
         throw new Error(`symlink ${relative} does not resolve - refused`);
       }
-      if (!isInside(skillRoot, resolved)) throw new Error(`symlink ${relative} points outside the skill folder - refused`);
-      if (hasGitSegment(skillRoot, resolved)) throw new Error(`symlink ${relative} resolves into ${GIT_DIR_NAME} - refused`);
-      if (!fs.lstatSync(resolved).isFile()) throw new Error(`symlink ${relative} does not point to a regular file - refused`);
+      if (!targetStat.isFile() || links.has(repoPath(repoRoot, resolved))) throw new Error(`symlink ${relative} does not point to a regular file - refused`);
       fs.copyFileSync(resolved, path.join(to, entry), fs.constants.COPYFILE_EXCL);
+    } else if (stat.isFile()) {
+      fs.copyFileSync(source, path.join(to, entry), fs.constants.COPYFILE_EXCL);
     } else {
       throw new Error(`${relative} is not a regular file or directory - refused`);
     }
   }
+}
+
+/** A path inside the checkout, spelled the way the commit's tree spells it. */
+function repoPath(repoRoot, file) {
+  return path.relative(repoRoot, file).split(path.sep).join("/");
+}
+
+/** The paths the pinned commit records as symlinks (tree mode 120000). */
+function symlinkPaths(repo, cwd, skillPath) {
+  const links = new Set();
+  for (const record of git(repo, cwd, ["ls-tree", "-r", "-z", "--full-tree", "HEAD", "--", skillPath]).split("\0")) {
+    const tab = record.indexOf("\t");
+    if (tab !== -1 && record.startsWith("120000 ")) links.add(record.slice(tab + 1));
+  }
+  return links;
 }
 
 function removeDir(dir) {
@@ -586,7 +607,7 @@ function installSkill(skill, target, replace) {
     }
 
     removeDir(staging);
-    copyTree(skillRoot, skillRoot, staging);
+    copyTree(tempReal, symlinkPaths(temp, emptyCwd, skill.path), skillRoot, skillRoot, staging);
     const marker = {
       installedBy: INSTALLED_BY,
       name: skill.name,

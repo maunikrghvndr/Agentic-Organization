@@ -304,6 +304,26 @@ test("a symlink to a file inside the skill folder is copied as a plain file", (t
   assert.equal(fs.readFileSync(alias, "utf8"), "notes\n");
 });
 
+test("a symlink to another symlink is refused", (t) => {
+  let linked = true;
+  const sandbox = makeSandbox(t, (work) => {
+    try {
+      fs.symlinkSync("extra/notes.md", path.join(work, "skills", "demo", "alias.md"));
+      fs.symlinkSync("alias.md", path.join(work, "skills", "demo", "chain.md"));
+    } catch {
+      linked = false;
+    }
+  });
+  if (!linked) {
+    t.skip("this platform or account cannot create symlinks");
+    return;
+  }
+  const result = run(sandbox, [entry(sandbox)]);
+  assert.equal(result.status, 1, result.stderr + result.stdout);
+  assert.match(result.stdout, /does not point to a regular file - refused/);
+  assert.deepEqual(fs.readdirSync(sandbox.target), []);
+});
+
 test("a path with no SKILL.md fails", (t) => {
   const sandbox = makeSandbox(t);
   const result = run(sandbox, [entry(sandbox, { path: "skills/demo/extra" })]);
