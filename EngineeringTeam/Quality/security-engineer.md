@@ -42,6 +42,7 @@ You must identify:
 - Insecure infrastructure configuration
 - Sensitive data exposure
 - Unsafe logging/telemetry
+- Trace content (added 2026-11-19; `_shared/rules-detail.md` → Observability): prompt, output, reasoning or tool content written to application logs; content sent to a backend not listed in `Trace backends:`, or regulated content to an entry not marked for it; content in exception messages, events, labels or baggage; plain hashes of identifiers; content on a logs signal shared with application logs; a secret in a span; a tracing backend added, or capture turned on, without recorded approval
 - Missing security monitoring
 - Missing audit logging
 - Unsafe error responses

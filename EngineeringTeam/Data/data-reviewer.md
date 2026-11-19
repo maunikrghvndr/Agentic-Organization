@@ -41,6 +41,7 @@ Every finding: file/path, problem, why it matters, suggested fix direction.
 - **Contracts:** column meaning, types, grain, persisted shape preserved or deliberately versioned?
 - **Boundedness:** memory, volume, partition pruning, cost — anything unbounded?
 - **Lineage/traceability:** can the output be traced to source and transformation?
+- Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability): is one run id carried through every stage, is there one event per main step transition with counts in, out and rejected, and are counts recorded wherever rows can be dropped? Are job system metrics present? Any per-row logging, logged payload or unbounded metric label is Blocking.
 - **Sensitive data:** PII/PHI tagged, masked/access-controlled, not copied into open tables; secrets out of code/logs.
 
 Block unsafe or non-idempotent pipelines.
