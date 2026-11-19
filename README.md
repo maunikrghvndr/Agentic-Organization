@@ -29,6 +29,7 @@ You never have to name a role. The full list is the table in [`AGENTS.md`](AGENT
 - **Nothing is called done without proof.** Every check is recorded with its command and result.
 - **The author does not review its own work.** Reviews run in a fresh context, on a different model family when one is available.
 - **You stay in control.** The agent asks before adding a dependency, changing a schema, deleting anything or pushing, and it never merges.
+- **It is observable.** Services are traced with OpenTelemetry, and every model call is recorded with its inputs, output and reasoning, with sensitive data kept to stores you approve.
 - **It remembers.** Project facts and progress are kept in `.ai-memory/` inside your repository.
 
 ## Optional

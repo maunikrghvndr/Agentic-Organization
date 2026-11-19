@@ -228,6 +228,7 @@ Check:
 - Were existing tests deleted?
 - Were validators deleted?
 - Were logging/telemetry calls deleted?
+- Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability → Review): do logs carry trace and span ids, is trace context propagated across every boundary the change touches, and does each new entry point, outbound call and model call have a span? Is there a second telemetry pattern beside the existing one, or a hardcoded endpoint or span name?
 - Were security checks deleted?
 - Were retry/idempotency protections deleted?
 - Were configuration keys deleted?

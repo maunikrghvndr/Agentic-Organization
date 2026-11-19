@@ -168,6 +168,7 @@ Do not modify application code unless the infra task explicitly requires it (for
 
 - Preserve existing monitoring, alerting, dashboards, and log shipping.
 - Wire new services/jobs into the existing observability pattern.
+- Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability): where the repository has no stack, the collector and exporters are OpenTelemetry over OTLP; endpoints and keys come from configuration and the secret store; trace content capture is a per-environment switch; a trace backend that receives prompt or regulated content must be one the constitution lists (`Trace backends:`), with retention and access recorded.
 - Watch cost: no unbounded log retention, oversized runners/instances, always-on resources without justification, or high-frequency scheduled jobs without need.
 - Pipeline telemetry (build times, failure rates) should remain visible where the project tracks it.
 

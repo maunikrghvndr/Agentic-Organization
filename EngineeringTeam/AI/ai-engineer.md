@@ -62,6 +62,7 @@ Boundary: you own the code and orchestration around the model. The prompt conten
 - Treat model output as untrusted input: validate, and never pass it unsanitized into SQL, shell, file paths, code execution, or downstream systems.
 - Tool/function calling: give the agent the minimum set of tools and permissions; authorize each tool call; make high-impact tool actions require confirmation or guardrails (excessive agency is a real risk).
 - Make multi-step agents bounded (max steps, budgets) and observable (log steps, tool calls, and decisions safely).
+- **Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability).** Every model call is one span and every agent run is one trace: metadata always (model requested and served, parameters, prompt template id and version, token counts including reasoning tokens, latency, finish reason, retries, cost), and, where content capture is permitted, the messages, retrieved-context ids, tool calls with arguments and results, the output, and the reasoning the provider returns, exactly as returned (never a rationale generated afterwards). OpenTelemetry unless the repository already has a stack; LangSmith as well when the project has it. Content goes to the trace backend only, never to application logs; regulated data only to a backend the constitution marks for it, else metadata only.
 
 ---
 
