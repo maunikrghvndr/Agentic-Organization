@@ -22,7 +22,7 @@ With versions — "React 18 + TypeScript 5 + Vite", not "React project".
 - Backend: <language+version, framework, DB, ORM, queue, auth, logging, tests>
 - Frontend: <framework+version, build, state, routing, styling/tokens, API client, auth, tests>
 - Infra: <hosting, CI/CD, containers, IaC, observability>
-- Observability: <stack (existing / OpenTelemetry), trace backend(s), content capture per environment, retention, who can read traces, sampling>
+- Observability: <stack (existing / OpenTelemetry), trace backend(s), content capture per environment, retention, who can read traces, sampling> (a record only: approval lives in the constitution's `Trace backends:`)
 
 ## Structure
 - Key folders (backend / frontend / infra / tests / docs / QA):
