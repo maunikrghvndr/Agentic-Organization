@@ -1,0 +1,25 @@
+# Baseline lint rules for Python (Ruff). Offered only where the repository has no Ruff configuration in any location (pyproject.toml included); never merged over one.
+# Each rule family is here because it catches a mistake a reviewer would otherwise have to find by reading.
+
+[lint]
+select = [
+  "E", "F",    # syntax errors, undefined names, unused imports and variables
+  "B",         # likely bugs: mutable default arguments, bare re-raise mistakes
+  "G", "LOG",  # logging: no f-string, % or + in a log call; use the message template with arguments
+  "T20",       # no print() in library or service code
+  "BLE",       # no blind `except Exception`
+  "S",         # security: eval, shell=True, hardcoded passwords, weak hashes, unsafe deserialization
+  "ASYNC",     # blocking calls inside async functions
+  "ANN401",    # no `Any` in annotations
+  "PLR2004",   # magic numbers in comparisons: name the constant
+  "RET", "SIM",# needless complexity: redundant else/return, collapsible branches
+  "C90",       # function complexity
+  "UP",        # outdated syntax for the target version
+]
+
+[lint.mccabe]
+max-complexity = 10
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "PLR2004", "ANN401"]
+"**/test_*.py" = ["S101", "PLR2004", "ANN401"]

@@ -55,6 +55,7 @@ Before making changes:
   - Background workers or queues
   - External integrations
 - Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session (again after a compaction), before the first search or edit.
+- Static analysis first (added 2026-11-19; `_shared/rules-detail.md` → Static analysis first): find and record the lint, analyzer and type-check commands before code; where the stack has no lint configuration, offer the library baseline (`Standards/`); lint and type checks pass, as Evidence rows, before review; a correction made twice becomes a proposed lint rule; never disable, downgrade or suppress a rule to pass, and never copy a workaround found in the codebase.
 
 Prefer the project’s current patterns over generic best practices unless the existing pattern is clearly unsafe or broken.
 
@@ -1500,3 +1501,5 @@ Final response must include:
 - Documentation/tracker updates
 - Risks and assumptions
 - Anything intentionally not changed
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown. A record that may hold regulated or client-confidential data is never shown, masked or not: show the real code path with a labelled illustrative record. The secrets, content and memory limits outrank this rule.

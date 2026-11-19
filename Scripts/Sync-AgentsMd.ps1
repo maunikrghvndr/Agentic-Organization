@@ -28,18 +28,25 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# Resolve source: allow http(s) URL as an alternative to a local path.
+# Resolve source: an https URL is allowed as an alternative to a local path (never plain http:
+# the fetched bytes become the instruction file of every repository).
 # We read bytes (not text) so we never add a BOM, and never convert line endings.
-if ($Source -match '^https?://') {
-    $sourceBytes = (Invoke-WebRequest -Uri $Source -UseBasicParsing).Content
-    if ($sourceBytes -is [string]) { $sourceBytes = [Text.Encoding]::UTF8.GetBytes($sourceBytes) }
+$SourceIsUrl = $Source -match '^[A-Za-z][A-Za-z0-9+.-]*://'
+if ($SourceIsUrl) {
+    if ($Source -notmatch '^https://') { throw "Source must be a local path or an https:// URL: $Source" }
+    $response = Invoke-WebRequest -Uri $Source -UseBasicParsing -MaximumRedirection 0
+    $sourceBytes = $response.RawContentStream.ToArray()
     $sourceLabel = $Source
 } else {
-    if (-not (Test-Path $Source)) { throw "Source AGENTS.md not found: $Source" }
-    $Source      = (Resolve-Path $Source).Path
+    if (-not (Test-Path -LiteralPath $Source -PathType Leaf)) { throw "Source AGENTS.md not found: $Source" }
+    $Source      = (Resolve-Path -LiteralPath $Source).Path
     $sourceBytes = [IO.File]::ReadAllBytes($Source)
     $sourceLabel = $Source
 }
+# Whatever was read must be the library's AGENTS.md, not an error page or another file.
+$ExpectedFirstLine = '# Project Agent Instructions'
+$sourceStart = [Text.Encoding]::UTF8.GetString($sourceBytes, 0, [Math]::Min($sourceBytes.Length, $ExpectedFirstLine.Length))
+if ($sourceStart -ne $ExpectedFirstLine) { throw "Source does not start with '$ExpectedFirstLine'; nothing was written: $sourceLabel" }
 
 # Size check against the library's own limit for AGENTS.md (32 KiB); name the sections past it.
 $AgentsMaxBytes = 32768
@@ -54,21 +61,27 @@ if ($sourceBytes.Length -gt $AgentsMaxBytes) {
     $sourceWarnings.Add("Source is $($sourceBytes.Length) bytes, over the library's $AgentsMaxBytes-byte limit. Section crossing the limit: '$lastKept'. Sections entirely past the limit: $(if ($pastLimit.Count) { $pastLimit -join ', ' } else { '(none)' }).")
 }
 
-if (-not (Test-Path $RepoRoot)) { throw "RepoRoot not found: $RepoRoot" }
-$RepoRoot = (Resolve-Path $RepoRoot).Path
+if (-not (Test-Path -LiteralPath $RepoRoot -PathType Container)) { throw "RepoRoot not found: $RepoRoot" }
+$RepoRoot = (Resolve-Path -LiteralPath $RepoRoot).Path
 
-# Skip the library repo itself if the source lives inside it
-$LibraryRoot = $null
-if (Test-Path $Source) { $LibraryRoot = Split-Path $Source -Parent | Resolve-Path | Select-Object -ExpandProperty Path }
+# Always skip the library repo itself, whatever the source is, so its master AGENTS.md is never overwritten.
+$LibraryRoot = (Resolve-Path -LiteralPath (Split-Path $PSScriptRoot -Parent)).Path
+
+# A link (symlink, junction) is never read or written through: a repository could point AGENTS.md at any file.
+function Test-IsLink([string]$Path) {
+    $item = Get-Item -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+    return ($null -ne $item) -and (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0)
+}
+$skipped = New-Object System.Collections.Generic.List[string]
 
 # Hash the source once so per-target comparison is cheap
 $sourceHash = [BitConverter]::ToString(
     (New-Object Security.Cryptography.SHA256Managed).ComputeHash($sourceBytes)
 ).Replace("-","")
 
-$repos = Get-ChildItem $RepoRoot -Directory | Where-Object {
-    (Test-Path (Join-Path $_.FullName ".git")) -and
-    ($LibraryRoot -eq $null -or $_.FullName -ne $LibraryRoot)
+$repos = Get-ChildItem -LiteralPath $RepoRoot -Directory | Where-Object {
+    (Test-Path -LiteralPath (Join-Path $_.FullName ".git")) -and
+    ($_.FullName -ne $LibraryRoot)
 }
 
 $created   = New-Object System.Collections.Generic.List[string]
@@ -77,7 +90,11 @@ $unchanged = New-Object System.Collections.Generic.List[string]
 foreach ($repo in $repos) {
     $target = Join-Path $repo.FullName "AGENTS.md"
 
-    if (Test-Path $target) {
+    if (Test-IsLink $repo.FullName) { $skipped.Add("$($repo.Name) (the repository folder is a link)"); continue }
+    if (Test-IsLink $target) { $skipped.Add("$($repo.Name) (AGENTS.md is a link)"); continue }
+    if ((Test-Path -LiteralPath $target) -and -not (Test-Path -LiteralPath $target -PathType Leaf)) { $skipped.Add("$($repo.Name) (AGENTS.md is not a file)"); continue }
+
+    if (Test-Path -LiteralPath $target) {
         $targetBytes = [IO.File]::ReadAllBytes($target)
         $targetHash = [BitConverter]::ToString(
             (New-Object Security.Cryptography.SHA256Managed).ComputeHash($targetBytes)
@@ -117,6 +134,10 @@ if ($updated.Count -gt 0) {
 if ($unchanged.Count -gt 0) {
     Write-Host "Unchanged ($($unchanged.Count)):" -ForegroundColor DarkGray
     $unchanged | ForEach-Object { Write-Host "  = $_" }
+}
+if ($skipped.Count -gt 0) {
+    Write-Host "Skipped ($($skipped.Count)):" -ForegroundColor Yellow
+    $skipped | ForEach-Object { Write-Host "  ! $_" }
 }
 if ($sourceWarnings.Count -gt 0) {
     Write-Host ""

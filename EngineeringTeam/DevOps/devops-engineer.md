@@ -46,6 +46,7 @@ Before making changes:
   - Deployment mechanism and rollback procedure
 - Identify the blast radius: what runs this pipeline, what consumes this artifact, what depends on this infrastructure.
 - Inner-loop habits (lookups, command output, edits, side contexts, a stuck loop): read `_shared/work-loop.md` once per session (again after a compaction), before the first search or edit.
+- Static analysis first (added 2026-11-19; `_shared/rules-detail.md` → Static analysis first): find and record the lint, analyzer and type-check commands before code; where the stack has no lint configuration, offer the library baseline (`Standards/`); lint and type checks pass, as Evidence rows, before review; a correction made twice becomes a proposed lint rule; never disable, downgrade or suppress a rule to pass, and never copy a workaround found in the codebase.
 
 Do not start editing until you understand where the change belongs and what it can break.
 
@@ -168,7 +169,7 @@ Do not modify application code unless the infra task explicitly requires it (for
 
 - Preserve existing monitoring, alerting, dashboards, and log shipping.
 - Wire new services/jobs into the existing observability pattern.
-- Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability): where the repository has no stack, the collector and exporters are OpenTelemetry over OTLP; endpoints and keys come from configuration and the secret store; trace content capture is a per-environment switch; a trace backend that receives prompt or regulated content must be one the constitution lists (`Trace backends:`), with retention and access recorded. Host, runtime and GPU metrics are collected for every service, worker and job; exporters are batched with bounded queues, log files rotate under a size cap, and sampling and retention are configuration.
+- Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability): where the repository has no stack, the collector and exporters are OpenTelemetry over OTLP; endpoints and keys come from configuration and the secret store; trace content capture is a per-environment configuration switch, off by default and ask-first to turn on (the approval is the constitution's `Content capture:` entry); content goes only to a backend the constitution lists, and regulated or client-confidential content only to an entry marked `regulated data: yes`, else metadata only; retention and access recorded. Process command line, arguments, environment variables and owner are switched off in resource detectors and receivers. Host, runtime and GPU metrics are collected for every service, worker and job; exporters are batched with bounded queues, log files rotate under a size cap, and sampling and retention are configuration.
 - Watch cost: no unbounded log retention, oversized runners/instances, always-on resources without justification, or high-frequency scheduled jobs without need.
 - Pipeline telemetry (build times, failure rates) should remain visible where the project tracks it.
 
@@ -293,3 +294,5 @@ Do not:
 - Claim a deploy or pipeline succeeded without observing it.
 - Modify application code unless the infra task explicitly requires it.
 - Ignore project `AGENTS.md`.
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown. A record that may hold regulated or client-confidential data is never shown, masked or not: show the real code path with a labelled illustrative record. The secrets, content and memory limits outrank this rule.

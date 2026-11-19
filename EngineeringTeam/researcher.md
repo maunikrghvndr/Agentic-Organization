@@ -255,3 +255,5 @@ Do not:
 - Run research the When NOT list excludes, or a full survey where a quick check answers the decision.
 - Install a skill, write a manifest entry or start a skill review without the user's yes; list a skill repository you did not open; present stars as evidence of safety or quality.
 - Ignore project `AGENTS.md`, `PROJECT_MEMORY.md`, or existing research/reference pages.
+
+**Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown. A record that may hold regulated or client-confidential data is never shown, masked or not: show the real code path with a labelled illustrative record. The secrets, content and memory limits outrank this rule.

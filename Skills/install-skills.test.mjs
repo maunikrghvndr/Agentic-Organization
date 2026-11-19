@@ -324,6 +324,43 @@ test("a symlink to another symlink is refused", (t) => {
   assert.deepEqual(fs.readdirSync(sandbox.target), []);
 });
 
+test("a symlink whose target is not a plain relative path is refused", (t) => {
+  for (const target of ["extra/notes.md::$DATA", "extra/notes.md.", "C:extra/notes.md", "extra/n\u200cotes.md", "extra/notes.md\n"]) {
+    let linked = true;
+    const sandbox = makeSandbox(t, (work) => {
+      try {
+        fs.symlinkSync(target, path.join(work, "skills", "demo", "odd.md"));
+      } catch {
+        linked = false;
+      }
+    });
+    if (!linked) continue;
+    const result = run(sandbox, [entry(sandbox)]);
+    assert.equal(result.status, 1, JSON.stringify(target) + result.stderr + result.stdout);
+    assert.match(result.stdout, /not a plain relative path - refused/);
+    assert.deepEqual(fs.readdirSync(sandbox.target), []);
+  }
+});
+
+test("a file name with control characters cannot break or forge a status line", (t) => {
+  let linked = true;
+  const sandbox = makeSandbox(t, (work) => {
+    try {
+      fs.symlinkSync("../../outside.txt", path.join(work, "skills", "demo", "new\nline  installed"));
+    } catch {
+      linked = false;
+    }
+  });
+  if (!linked) {
+    t.skip("this platform cannot create this file name");
+    return;
+  }
+  const result = run(sandbox, [entry(sandbox)]);
+  assert.equal(result.status, 1, result.stderr + result.stdout);
+  assert.match(result.stdout, /new\\u\{a\}line/);
+  assert.doesNotMatch(result.stdout, /^line  installed/m);
+});
+
 test("a path with no SKILL.md fails", (t) => {
   const sandbox = makeSandbox(t);
   const result = run(sandbox, [entry(sandbox, { path: "skills/demo/extra" })]);

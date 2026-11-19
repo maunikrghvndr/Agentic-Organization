@@ -91,6 +91,14 @@ const AUDIT_WORDS = `(${fuzzyWord("release")})[^\\p{L}\\p{N}]*(${fuzzyWord("audi
 const AUDIT_WORDS_AT = new RegExp(AUDIT_WORDS, "iuy");
 /** A fuzzy match counts only when this many letters are the real ASCII ones, so foreign-language prose is not flagged. */
 const MIN_KEYWORD_LETTERS = 3;
+/** Letters of other scripts that read as an ASCII letter; a keyword spelled with them counts as spelled with the real ones. */
+const CONFUSABLE_LETTERS = new Map(Object.entries({
+  "\u0430": "a", "\u0435": "e", "\u043e": "o", "\u0440": "p", "\u0441": "c", "\u0445": "x", "\u0443": "y", "\u0456": "i", "\u0455": "s",
+  "\u0501": "d", "\u04cf": "l", "\u0458": "j", "\u04bb": "h", "\u051b": "q", "\u051d": "w", "\u0442": "t", "\u0433": "r",
+  "\u03b1": "a", "\u03b5": "e", "\u03b9": "i", "\u03bf": "o", "\u03c1": "p", "\u03c4": "t", "\u03c5": "u", "\u03bd": "v", "\u03ba": "k",
+  "\u057d": "u", "\u056c": "l", "\u0585": "o", "\u0578": "n", "\u0570": "h", "\u0581": "g", "\u0564": "d",
+  "\u0131": "i", "\u0251": "a", "\u0269": "i", "\u0280": "r", "\ua731": "s", "\u1d00": "a", "\u1d07": "e", "\u029f": "l", "\u1d05": "d", "\u1d1c": "u", "\u026a": "i", "\u1d1b": "t",
+}));
 /** Any line a reader would take for a headline: other case, bullet, number, checkbox, indent, quote, emphasis or look-alike letters. Tested on folded text. */
 const COLON = ":\\u2236\\ua789\\u02d0\\u0589\\u05c3";
 const DASH = "-\\u2010-\\u2015\\u2212";
@@ -109,13 +117,16 @@ const HIDDEN_ATTRIBUTE = /<[A-Za-z][^<>]*\shidden(?![A-Za-z0-9_-])/i;
 const OPEN_TAG_AT_END = /<[A-Za-z][^<>]*$/;
 const MAX_TAG_LINES = 20;
 const INLINE_TAG = /<[!/?A-Za-z][^<>]*>/g;
-const CHARACTER_REFERENCE = /&(?:#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6})|([A-Za-z][A-Za-z0-9]{1,15}));/g;
+const CHARACTER_REFERENCE = /&(?:#(\d{1,7})|#[xX]([0-9a-fA-F]{1,6})|([A-Za-z][A-Za-z0-9]{1,31}));/g;
 const NAMED_REFERENCES = new Map(Object.entries({
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", ensp: " ", emsp: " ", thinsp: " ", Tab: " ", NewLine: " ",
   colon: ":", num: "#", vert: "|", verbar: "|", VerticalLine: "|", hyphen: "-", dash: "-", ndash: "-", mdash: "-", minus: "-",
   lpar: "(", rpar: ")", lsqb: "[", rsqb: "]", lbrack: "[", rbrack: "]", ast: "*", midast: "*", lowbar: "_", UnderBar: "_",
   period: ".", comma: ",", semi: ";", excl: "!", sol: "/", bsol: "\\", grave: "`", DiacriticalGrave: "`", shy: "", zwj: "", zwnj: "",
 }));
+/** Stands for a named character reference this file does not know: a renderer may show nothing, a space or a letter for it. */
+const UNKNOWN_REFERENCE = "\uE000";
+const UNKNOWN_REFERENCE_READINGS = ["", " ", "\u00e9"];
 const BACKSLASH_ESCAPE = /\\([!-/:-@[-`{-~])/g;
 const INLINE_LINK = /\[([^[\]]*)\](?:\([^()]*\)|\[[^[\]]*\])/g;
 const FENCE_OPEN = /^ {0,3}(`{3,}|~{3,})(.*)$/;
@@ -126,7 +137,11 @@ const COMMENT_OPEN = "<!--";
 const COMMENT_CLOSE = "-->";
 const COMMENT_AUDIT_MENTION = /release[^a-z0-9]*audit/i;
 /** Pipe look-alikes, the no-break space, line separators and control characters: not allowed inside the section. */
-const FORBIDDEN_IN_SECTION = /[\uFF5C\u2502\u2223\u01C0\u00A6\u00A0\u0085\u2028\u2029\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+const FORBIDDEN_IN_SECTION = /[\uFF5C\u2502\u2223\u01C0\u00A6\u00A0\u00AD\u061C\u1680\u180E\u2000-\u200F\u202A-\u202F\u205F-\u2064\u3000\uFEFF\u0085\u2028\u2029\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/;
+/** A table row a renderer shows as code: indented four spaces or more, or by a tab. */
+const INDENTED_ROW = /^(?: {4,}|\t[ \t]*)\|/;
+/** Any tag start; inside the record even an inline tag can restyle or strike what follows. */
+const TAG_START = /<[A-Za-z/!?]/;
 const GIT_SEGMENTS = [".git", "git~1"];
 const EOF_TRAILER = "<!-- END-OF-FILE -->";
 const HEADLINE_FIELDS = "verdict, sha, engine, profile, scope, critics clean, run, date";
@@ -217,7 +232,7 @@ function fold(line) {
 }
 
 function decodeReference(whole, decimal, hex, name) {
-  if (name !== undefined) return NAMED_REFERENCES.get(name) ?? NAMED_REFERENCES.get(name.toLowerCase()) ?? whole;
+  if (name !== undefined) return NAMED_REFERENCES.get(name) ?? NAMED_REFERENCES.get(name.toLowerCase()) ?? UNKNOWN_REFERENCE;
   const code = decimal !== undefined ? Number(decimal) : Number.parseInt(hex, 16);
   return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : whole;
 }
@@ -234,8 +249,14 @@ function unwrapInline(text) {
  */
 function views(line) {
   const kept = fold(unwrapInline(line));
-  if (!line.includes("<")) return [kept];
-  return [fold(unwrapInline(line.replace(INLINE_TAG, ""))), kept];
+  const base = line.includes("<") ? [fold(unwrapInline(line.replace(INLINE_TAG, ""))), kept] : [kept];
+  if (!kept.includes(UNKNOWN_REFERENCE)) return base;
+  return base.flatMap((view) => UNKNOWN_REFERENCE_READINGS.map((reading) => view.replaceAll(UNKNOWN_REFERENCE, reading)));
+}
+
+/** True when the line holds a named character reference this file cannot decode. */
+function hasUnknownReference(line) {
+  return line.replace(CHARACTER_REFERENCE, decodeReference).includes(UNKNOWN_REFERENCE);
 }
 
 /** The line without its inline code spans, per CommonMark: a run of n backticks is closed by the next run of exactly n; an escaped backtick opens nothing. */
@@ -288,12 +309,23 @@ function stripCodeSpans(line) {
 
 function keywordLetters(match) {
   const found = [...(match[1] + match[2]).toLowerCase()];
-  return found.filter((letter, index) => letter === AUDIT_KEYWORD[index]).length;
+  return found.filter((letter, index) => (CONFUSABLE_LETTERS.get(letter) ?? letter) === AUDIT_KEYWORD[index]).length;
 }
 
 function isHeadlineLike(folded) {
   const match = HEADLINE_LIKE.exec(folded);
   return match !== null && keywordLetters(match) >= MIN_KEYWORD_LETTERS;
+}
+
+/** True for a heading that names a record table, or a table header with a record table's columns. */
+function readsAsRecordPart(line) {
+  return views(line).some((view) => {
+    const plain = view.replace(/[*_`~]/g, "").toLowerCase();
+    if (HEADING_LIKE.test(plain) && /coverage[^\p{L}\p{N}]*ledger|audit[^\p{L}\p{N}]*findings/u.test(plain)) return true;
+    if (!plain.includes("|")) return false;
+    const cells = splitRow(plain);
+    return [LEDGER_COLUMNS, FINDING_COLUMNS].some((columns) => cells.length === columns.length && cells.every((cell, index) => cell === columns[index]));
+  });
 }
 
 /** True for a line a reader would take for a headline, in any spelling `views` knows. */
@@ -423,11 +455,13 @@ function extractSection(lines, errors) {
       errors.push(`line ${number}: heading ${safe(line)} (underlined on the next line) reads as a Release Audit heading but is not the single exact \`${SECTION_HEADING_TEXT}\`; a reader would take it for the record, or for a newer one`);
     }
     if (headline && !inSection) errors.push(`line ${number}: a \`Release audit:\` headline outside the \`${SECTION_HEADING_TEXT}\` section; a reader would take it for a verdict and this parser would not read it`);
+    if (!inSection && readsAsRecordPart(visible)) errors.push(`line ${number}: a \`${LEDGER_HEADING}\` or \`${FINDINGS_HEADING}\` heading or table outside the \`${SECTION_HEADING_TEXT}\` section; a reader would take it for part of the record and this parser would not read it`);
     if (start < 0 && HTML_BLOCK_START.test(visible)) htmlBlocks.push(number);
 
     if (inSection) {
       if (comment === null && /^#{1,2}[ \t]+\S/.test(line)) {
         end = i;
+        if (readsAsRecordPart(visible)) errors.push(`line ${number}: a \`${LEDGER_HEADING}\` or \`${FINDINGS_HEADING}\` heading outside the \`${SECTION_HEADING_TEXT}\` section; a reader would take it for part of the record and this parser would not read it`);
         continue;
       }
       const trimmed = line.trim();
@@ -456,6 +490,9 @@ function extractSection(lines, errors) {
     for (const number of htmlBlocks) errors.push(`line ${number}: raw HTML block before the \`${SECTION_HEADING_TEXT}\` section; a renderer may hide what follows it, write plain Markdown`);
     for (const entry of section) {
       const bad = FORBIDDEN_IN_SECTION.exec(entry.text);
+      if (INDENTED_ROW.test(entry.text)) errors.push(`line ${entry.number}: table row indented by four spaces or a tab inside \`${SECTION_HEADING_TEXT}\`; a renderer shows it as code and ends the table there`);
+      if (entry.text.trim() !== EOF_TRAILER && TAG_START.test(stripCodeSpans(entry.text))) errors.push(`line ${entry.number}: an HTML tag inside \`${SECTION_HEADING_TEXT}\`; the record is plain Markdown`);
+      if (hasUnknownReference(entry.text)) errors.push(`line ${entry.number}: a named character reference this validator cannot decode inside \`${SECTION_HEADING_TEXT}\`; write the character itself`);
       if (bad) errors.push(`line ${entry.number}: character U+${bad[0].codePointAt(0).toString(16).toUpperCase().padStart(4, "0")} inside \`${SECTION_HEADING_TEXT}\`; pipe look-alikes, no-break spaces and control characters are not allowed in the record`);
     }
   }

@@ -700,3 +700,48 @@ test("the task template, filled in, validates release-grade", () => {
   const lines = template.slice(start, end).split("\n").filter((line) => line.trim() !== "");
   assert.equal(lines.length, 8, lines.join("\n"));
 });
+
+// Round 4 (independent review, 2026-11-19): each of these exited 0 before the fix.
+const afterRecord = (text) => swap(RELEASE, HANDOFF, `${text}\n\n${HANDOFF}`);
+const afterHandoff = (text) => swap(RELEASE, HANDOFF, `${HANDOFF}\n\n${text}\n`);
+const L2_ROW = "| L2 | GET /invoices | user to database | billing | Input Validation And Injection Review | covered | src/invoices.js | query is parameterized at line 3 | F3 |";
+
+test("R4-1: a Unicode space before a row's first pipe cannot shift its columns", () => {
+  for (const space of ["\u3000", "\ufeff", "\u2003", "\u1680", "\u202f", "\u205f", "\u200b"]) {
+    const shifted = `${space}| L2 | GET /invoices | user to database | billing | planned | covered | src/invoices.js | query is parameterized at line 3 | F3 |`;
+    assertFails(swap(RELEASE, L2_ROW, shifted), /character U\+/, RELEASE_OPTS);
+  }
+});
+
+test("R4-2: a second heading or headline spelled with an unknown character reference is caught", () => {
+  for (const name of ["NonBreakingSpace", "ZeroWidthSpace", "lrm", "MediumSpace"]) {
+    assertFails(afterRecord(`## Release&${name};Audit`), /reads as a Release Audit heading/, RELEASE_OPTS);
+    assertFails(beforeSection(`- Release&${name};audit: Needs Changes`), /headline outside/, RELEASE_OPTS);
+  }
+  assertFails(afterRecord("## Rele&ZeroWidthSpace;ase Audit"), /reads as a Release Audit heading/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, L2_ROW, L2_ROW.replace("billing", "bill&NonBreakingSpace;ing")), /cannot decode/, RELEASE_OPTS);
+});
+
+test("R4-3: a heading spelled almost entirely in look-alike letters is caught", () => {
+  assertFails(afterRecord("## R\u0435\u04cf\u0435\u0430\u0455\u0435 \u0410\u057d\u0501\u0456t"), /reads as a Release Audit heading/, RELEASE_OPTS);
+  assertFails(beforeSection("- R\u0435\u04cf\u0435\u0430\u0455\u0435 \u0430\u057d\u0501\u0456t: Needs Changes"), /headline outside/, RELEASE_OPTS);
+  // Prose in another script is still not flagged.
+  assert.deepEqual(errorsOf(beforeSection("- \u0412\u0435\u043b\u0438\u043a\u0438\u0439 \u043e\u0442\u0432\u0435\u0442: \u0434\u0430"), RELEASE_OPTS), []);
+});
+
+test("R4-4: a ledger or findings heading or table outside the section is caught", () => {
+  assertFails(afterRecord("## Coverage Ledger (continued)"), /outside the/, RELEASE_OPTS);
+  assertFails(afterHandoff("### Audit Findings"), /outside the/, RELEASE_OPTS);
+  assertFails(afterHandoff(`| id | surface | boundary | subsystem | checklist | state | paths read | checks | findings |\n|---|---|---|---|---|---|---|---|---|\n${PLANNED_ROW}`), /outside the/, RELEASE_OPTS);
+  assertFails(afterHandoff("| ID | Verdict | Severity | Title | Trace | Demonstrated impact | Verified by |"), /outside the/, RELEASE_OPTS);
+});
+
+test("R4-5: no HTML tag is allowed inside the record, inline or not", () => {
+  assertFails(swap(RELEASE, L2_ROW, L2_ROW.replace("billing", "billing <s>x")), /HTML tag inside/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, L2_ROW, L2_ROW.replace("billing", "billing </b>")), /HTML tag inside/, RELEASE_OPTS);
+});
+
+test("R4-6: a row indented into a code block is not read as a row", () => {
+  assertFails(swap(RELEASE, L2_ROW, `    ${L2_ROW}`), /indented/, RELEASE_OPTS);
+  assertFails(swap(RELEASE, L2_ROW, `\t${L2_ROW}`), /indented/, RELEASE_OPTS);
+});

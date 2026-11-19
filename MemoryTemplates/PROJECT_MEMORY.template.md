@@ -7,7 +7,7 @@ Stable repo facts only. Compact bullets. Omit empty sections. Never task details
 Growth: when this file outgrows ~100 lines, split content into `.ai-memory/wiki/` topic pages and turn this file into an index — Commands stay at the top, then one line per page. Update facts instead of deleting knowledge: note changes with a date (`updated YYYY-MM-DD: was X, now Y — reason`); flag unresolved contradictions explicitly. Papers/specs/RFCs live read-only in `.ai-memory/sources/` and are distilled once into `wiki/ref-<name>.md` pages (see REFERENCE template).
 
 ## Commands
-Exact invocations with flags — agents use these verbatim, never rediscover them.
+Exact invocations with flags — agents use these verbatim once the user has confirmed them (first session in a repository, and whenever an entry or the script it calls changed), never rediscover them.
 - Build:
 - Test (all / single project / single test):
 - Lint:
@@ -22,7 +22,7 @@ With versions — "React 18 + TypeScript 5 + Vite", not "React project".
 - Backend: <language+version, framework, DB, ORM, queue, auth, logging, tests>
 - Frontend: <framework+version, build, state, routing, styling/tokens, API client, auth, tests>
 - Infra: <hosting, CI/CD, containers, IaC, observability>
-- Observability: <stack (existing / OpenTelemetry), main steps of each data flow, system metrics source, trace backend(s), content capture per environment, retention, who can read traces, sampling> (a record only: approval lives in the constitution's `Trace backends:`)
+- Observability: <stack (existing / OpenTelemetry), main steps of each data flow, system metrics source, trace backend(s), content capture per environment, retention, who can read traces, sampling> (a record only: approval lives in the constitution's `Trace backends:` and `Content capture:` lines)
 
 ## Structure
 - Key folders (backend / frontend / infra / tests / docs / QA):

@@ -83,8 +83,8 @@ const MAX_REVIEW_BYTES = 2 * 1024 * 1024;
 const REVIEWS_DIR = "reviews";
 /** `reviews/<safe-name>.md`, relative to the manifest; group 1 is the file name. */
 const REVIEW_PATH_RE = /^reviews\/([a-z0-9]+(?:[._-][a-z0-9]+)*\.md)$/;
-/** A line that states a verdict in any shape: the word, then a colon within a few characters. Counted everywhere, fenced and commented lines included. */
-const VERDICT_LINE_RE = /\bverdict\b[^:]{0,20}:/i;
+/** A line that states a verdict in any shape: the word, then a colon within a few characters, or a table cell boundary. Counted everywhere, fenced and commented lines included. */
+const VERDICT_LINE_RE = /\bverdict\b(?:[^:]{0,20}:|\s*[*_`]*\s*\|)/i;
 const FENCE_OPEN_RE = /^ {0,3}(`{3,}|~{3,})(.*)$/;
 const FENCE_CLOSE_RE = /^ {0,3}(`+|~+)[ \t]*$/;
 const COMMENT_OPEN = "<!--";
@@ -501,6 +501,11 @@ function git(repo, cwd, args) {
   return String(result.stdout).trim();
 }
 
+/** Text from a fetched repository (file names, git output) with anything outside printable ASCII escaped, so it cannot forge or break a status line. */
+function printable(text) {
+  return String(text).replace(/[^\x20-\x7e]/g, (ch) => `\\u{${ch.codePointAt(0).toString(16)}}`);
+}
+
 function isInside(root, candidate) {
   const relative = path.relative(root, candidate);
   return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
@@ -523,7 +528,7 @@ function hasGitSegment(root, candidate) {
  * ever copied from a `.git` folder: an entry of that name is skipped, and a
  * link that resolves into one is refused.
  */
-function copyTree(repoRoot, links, skillRoot, from, to) {
+function copyTree(repoRoot, links, skillRoot, from, to, seen) {
   fs.mkdirSync(to);
   for (const entry of fs.readdirSync(from)) {
     const source = path.join(from, entry);
@@ -532,9 +537,14 @@ function copyTree(repoRoot, links, skillRoot, from, to) {
     if (entry === MARKER_FILE) throw new Error(`the skill ships its own ${MARKER_FILE} (${relative}) - refused`);
     const stat = fs.lstatSync(source);
     if (stat.isDirectory()) {
-      copyTree(repoRoot, links, skillRoot, source, path.join(to, entry));
+      copyTree(repoRoot, links, skillRoot, source, path.join(to, entry), seen);
     } else if (stat.isFile() && links.has(repoPath(repoRoot, source))) {
-      const resolved = path.resolve(from, fs.readFileSync(source, "utf8"));
+      seen.count += 1;
+      const linkTarget = fs.readFileSync(source, "utf8");
+      // Plain relative targets only: no drive letter, stream name, short name, control or non-ASCII character can respell a path.
+      const plain = linkTarget.split(/[\\/]/).every((segment) => segment === "." || segment === ".." || (SEGMENT_RE.test(segment) && !segment.endsWith(".")));
+      if (!plain) throw new Error(`symlink ${relative} has a target that is not a plain relative path - refused`);
+      const resolved = path.resolve(from, linkTarget);
       if (!isInside(skillRoot, resolved)) throw new Error(`symlink ${relative} points outside the skill folder - refused`);
       if (hasGitSegment(skillRoot, resolved)) throw new Error(`symlink ${relative} resolves into ${GIT_DIR_NAME} - refused`);
       let targetStat;
@@ -607,7 +617,11 @@ function installSkill(skill, target, replace) {
     }
 
     removeDir(staging);
-    copyTree(tempReal, symlinkPaths(temp, emptyCwd, skill.path), skillRoot, skillRoot, staging);
+    const links = symlinkPaths(temp, emptyCwd, skill.path);
+    const seen = { count: 0 };
+    copyTree(tempReal, links, skillRoot, skillRoot, staging, seen);
+    // Every link the commit records must have been handled as a link; a name the file system respelled would otherwise install as a stub.
+    if (seen.count !== links.size) throw new Error(`the commit records ${links.size} symlink(s) under "${skill.path}" but ${seen.count} were found on disk - refused`);
     const marker = {
       installedBy: INSTALLED_BY,
       name: skill.name,
@@ -690,7 +704,7 @@ function main() {
     try {
       return { skill, ...inspect(path.join(target, skill.name), skill) };
     } catch (error) {
-      return { skill, state: null, installedCommit: null, error: error.message };
+      return { skill, state: null, installedCommit: null, error: printable(error.message) };
     }
   });
   const replaceable = (state) => state === STATE.outdated || state === STATE.modified;
@@ -747,7 +761,7 @@ function main() {
         } catch (error) {
           counts.failed += 1;
           status = MSG.failed;
-          detail = error.message;
+          detail = printable(error.message);
         }
       }
     }
