@@ -71,6 +71,7 @@ Queued from the harness study, not run (added 2026-11-18; ranked by expected tok
 8. **Full path vs short path on two tasks just above the Sizing threshold.** Arm A: full path; arm B: `analyst` one-page spec → engineer → reviewer; measure ACs met, rework rounds, total tokens. Not run.
 9. **File discovery in a side context on a small model vs in the main context.** A mid-size repository; measure total tokens across both contexts and whether the files found match. Not run.
 10. **Reviewer on the implementer's model family in a fresh context vs a different family.** Approved providers only (`rules-detail.md` → Rework loop, Data boundary). Seeded-defect diff from `Evals/trap-tasks.md`; measure defects caught and false Blocking findings. A quality question with no token saving; queued because the rule is recent, costs a second provider and has no measurement. Not run.
+11. **Engineer phase on a cheaper model in its own context vs on the strong model (added 2026-11-21).** Same planner brief, marked `Model: cheaper ok`; strong-model reviewer for both arms. Measure total cost across all contexts, review rounds, Blocking findings, and diff size against the `Will change:` line. Not run.
 
 ## Honesty rules
 
