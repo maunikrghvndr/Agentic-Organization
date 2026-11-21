@@ -123,6 +123,7 @@ Each phase in the plan carries a compact handoff block the next session can use 
 
 - Role for this phase.
 - Owns: the exact paths this phase may write.
+- Model: `strong` (default) or `cheaper ok` — only for a mechanical engineer phase with a complete brief, off the mandatory-security list, adding no ledger item (added 2026-11-21; `_shared/rules-detail.md` → Model and effort).
 - Depends on: `T<nn>` or none (earlier ids only; `[P]` only with none).
 - Base: `<sha>` — `[P]` worktree phases only: the parent's current commit the branch `task/<task-file>/<T-id>` is cut from, so `git diff <base>..<branch>` is exactly the phase's work.
 - Boundaries: files not to touch; ask-first items that apply.

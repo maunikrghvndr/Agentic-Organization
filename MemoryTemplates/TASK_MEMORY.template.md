@@ -24,6 +24,7 @@ Compact bullets. Omit empty sections. Updated by every role that works this task
 
 ## Decisions
 - Will change: <files or behaviours> / Will not change: <what stays as it is> (`_shared/rules-detail.md` → Proportional complexity; a gap noticed outside it is one Backlog line, never built here)
+- Model: <planning model> / <building model> (only for a phase run on a cheaper model; `_shared/rules-detail.md` → Model and effort)
 - Follows: <path:line of the existing code this change is modelled on> (or `nothing comparable found — searched <what>`)
 - Reuse check: repo — <found> / dependencies — <present> / libraries — <two or more compared> (only when the change writes general-purpose code)
 - Simplest design: <what> — new files: n, new abstractions: n (`_shared/rules-detail.md` → Proportional complexity; a trivial change with no task file states it in the Grill Checkpoint restatement)
