@@ -5,7 +5,7 @@ This repository uses Maunik's external Agentic Organization role library.
 Role library root (single source of truth — edit this one line if the library moves):
 
 ```text
-(blank: set on first use)
+/Users/maunik/repos/Agentic-Organization/EngineeringTeam/
 ```
 
 This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference any tool-specific instruction file — this project uses `AGENTS.md` only. Load exactly **one** role file per phase from the folder above. Roles sit in department folders: a role's file is `EngineeringTeam/<Folder>/<role>.md` (Folder column). Do not copy role files into this repository. The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.

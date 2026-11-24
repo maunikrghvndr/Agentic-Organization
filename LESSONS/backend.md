@@ -6,6 +6,7 @@ Area file of the library's `LESSONS.md` (read that file first; it holds the rule
 
 ## Lessons
 
+- Log counts and line numbers, never key names, for anything parsed from a file that can hold secrets — a value wrapped onto a second line has a tail that parses as `KEY=VALUE`, so a logged "name" can be part of a credential. [2026-11-23; approved by Maunik after a secrets-file loader security review]
 - Route-withdrawal guards must mirror the router's case and URI-decoding semantics; test mixed-case and percent-encoded aliases because raw prefix checks can pass while the framework still opens the withdrawn page. [2026-10-15]
 - Turning on log export (e.g. a logging bridge flag such as Serilog `writeToProviders`) makes every EXISTING log line external at once: audit all log sites and exception messages for sensitive payloads before flipping it, because leaks that were harmless on a local console become live the moment the exporter receives them. [2026-10-06]
 - Never let a rule's enforcement depend on how many instances of a thing are configured: "unknown value is rejected only when there are two backends" means the same violation is silent today and fatal after an unrelated scaling change, so the defect surfaces as a config change instead of at introduction. [2026-09-29]
