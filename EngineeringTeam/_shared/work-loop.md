@@ -5,7 +5,7 @@ It adds habits and removes no rule: `AGENTS.md`, the constitution and the loaded
 
 ## Looking things up
 
-- Locate before opening: the Code & Source Graph first where available (`AGENTS.md` → Code & Source Graph), else a text search. Ask for file names or a count when that is the question; for content, ask for matching lines with a few lines of context.
+- Locate before opening: check for the Code & Source Graph before the first search (`AGENTS.md` → Code & Source Graph) and query it first when it exists; a text search only when the check found none or the query returned nothing. Ask for file names or a count when that is the question; for content, ask for matching lines with a few lines of context.
 - In a file longer than about 300 lines, read the range the search pointed at, wide enough to cover the whole unit being changed or judged (function, class, configuration block). Widen when the next decision needs more.
 - Always read whole: the role file, `AGENTS.md`, the constitution, the lessons files, the spec, the task file, a memory file before editing it (`_shared/memory.md` → Edit in place), the files a Handoff lists to read first, any agent instruction or configuration file before editing it, and anything a role file says to read in full. A reviewer, QA or security role reads the diff under review and its changed files as its role file says, never by sample; a security scan runs over whole files, never over search output.
 - Keep a command's output small before it runs: narrow the command (a path, a name filter, a quiet or summary flag). Output likely to pass about 100 lines goes to a file outside the repository, and that file is searched. Do not run a command again only to see another part of the same output.
