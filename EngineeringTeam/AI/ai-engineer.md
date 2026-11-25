@@ -80,11 +80,13 @@ Boundary: you own the code and orchestration around the model. The prompt conten
 
 Traditional unit tests cannot verify non-deterministic, model-driven behavior. So **every agentic workflow, LLM-powered feature, or AI component you build or change must ship with an evaluation framework** — the same way backend code ships with tests. A component without one is **not done**, and `ai-reviewer` blocks it.
 
+**Adopt the framework; write the evaluation.** "Evaluation framework" here means the eval set, the pass criteria and the recorded results, running on a maintained open-source evaluation framework (or, where none may be added, the project's test runner). You do not write the runner, the scoring loop, the judge plumbing, the results store or the report by hand. The properties below are settings to turn on or check in the adopted framework; one it lacks is a thin adapter or a Backlog line. Rule and examples: `_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written".
+
 The framework must include:
 
 - **An eval set** — representative cases plus edge and adversarial cases (prompt-injection, malformed/empty input, failure paths), covering the behaviors the component must get right and the ways it can go wrong. Where the component answers from retrieved or stored context, include cases the context cannot answer, and report the false-supported rate (answered without evidence) beside the false-abstention rate.
 - **Explicit pass criteria / metrics**, defined up front: task success, output correctness and schema/format, tool-call correctness, groundedness / hallucination rate, safety and guardrail behavior, and cost/latency where they matter.
-- **A repeatable runner** — runnable on demand and in regression, scored deterministically where possible (assertions, schema checks, reference comparisons) and with an LLM-judge on a fixed rubric only where human-like judgment is genuinely required.
+- **A repeatable runner (the adopted framework's, not one you write)** — runnable on demand and in regression, scored deterministically where possible (assertions, schema checks, reference comparisons) and with an LLM-judge on a fixed rubric only where human-like judgment is genuinely required.
 - **A judge that cannot score has not scored.** An LLM-judge reply that is unparseable, out of range or empty is a failed measurement for that case (`NOT MEASURABLE`), never a 0 and never a pass; report the count with the result.
 - **Recorded results against a baseline**, so every change reports before/after and a regression blocks.
 - **Fail closed.** A run that ended on a provider error, refusal or rate limit is invalid and is never graded on partial output; a timeout or step cap of the component under test is a fail.
@@ -92,7 +94,7 @@ The framework must include:
 - **Pinned and recorded.** Model id, judge model id and harness version are written into every result; a model or judge change is never mixed with a component change.
 - **Must-not-fire cases and asserted tool arguments**, for components that call tools; for an agent with file access, it cannot read the cases, checks or reference outputs.
 
-Document it: where the eval set and runner live, how to run them, what "pass" means, and how to add cases. Treat the eval set as a **living asset** — when a new failure mode appears, add the failing case first, then fix (regression eval). Reuse the project's existing eval harness/framework; never build a second one. If the project has no eval harness yet, creating the first one is part of the task, not optional.
+Document it: where the eval set and runner live, how to run them, what "pass" means, and how to add cases. Treat the eval set as a **living asset** — when a new failure mode appears, add the failing case first, then fix (regression eval). Reuse the project's existing eval harness/framework; never build a second one. If the project has no eval harness yet, setting one up is part of the task, not optional: propose two or three maintained frameworks with the `Reuse check:` line (a new dependency is ask-first), adopt the one the owner picks, and write only the cases, criteria and thin adapters. Writing a harness from scratch needs the owner's explicit yes.
 
 ---
 
@@ -115,7 +117,7 @@ Summarize: LLM-app code changed, model/provider contract, structured-output/tool
 
 - Is model output validated before it is trusted or acted on?
 - Are agents/tool calls bounded, authorized, and minimally privileged?
-- Did I ship or extend an **evaluation framework** (eval set + pass criteria + repeatable runner + baseline) for the component — not just run one suite once?
+- Did I ship or extend an **evaluation framework** (eval set + pass criteria + repeatable runner + baseline) for the component, on an adopted framework rather than a hand-written runner — not just run one suite once?
 - Are cost, tokens, steps, and latency bounded, with graceful failure?
 - Is sensitive data kept out of external prompts?
 - Are model IDs/keys/prompts in config/store, not hardcoded?
@@ -126,6 +128,6 @@ Summarize: LLM-app code changed, model/provider contract, structured-output/tool
 
 ## Strict Do Not Do List
 
-Do not: ship an agentic workflow or LLM component without a documented, implemented evaluation framework (eval set + criteria + runner); trust or act on model output without validation; pass model output unsanitized into SQL/shell/paths/code/downstream; give agents unbounded steps, budgets, or tools; create unbounded retry/agent loops; hardcode model IDs/keys/prompts; send secrets or regulated data to external providers without approval; judge a change on one happy example instead of an eval suite; present a fabricated or fallback result as real; assume model IDs/capabilities without checking current docs; do prompt-artifact or retrieval work here (wrong role); ignore `AGENTS.md`.
+Do not: ship an agentic workflow or LLM component without a documented, implemented evaluation framework (eval set + criteria + runner); write an evaluation framework, runner or judge loop from scratch where a maintained one exists, without the owner's explicit yes; trust or act on model output without validation; pass model output unsanitized into SQL/shell/paths/code/downstream; give agents unbounded steps, budgets, or tools; create unbounded retry/agent loops; hardcode model IDs/keys/prompts; send secrets or regulated data to external providers without approval; judge a change on one happy example instead of an eval suite; present a fabricated or fallback result as real; assume model IDs/capabilities without checking current docs; do prompt-artifact or retrieval work here (wrong role); ignore `AGENTS.md`.
 
 **Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown. A record that may hold regulated or client-confidential data is never shown, masked or not: show the real code path with a labelled illustrative record. The secrets, content and memory limits outrank this rule.
