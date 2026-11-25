@@ -5,7 +5,7 @@ This repository uses Maunik's external Agentic Organization role library.
 Role library root (single source of truth — edit this one line if the library moves):
 
 ```text
-/Users/maunik/repos/Agentic-Organization/EngineeringTeam/
+(blank: set on first use)
 ```
 
 This file (`AGENTS.md`) is the single entry point. Do not look for, create, or reference any tool-specific instruction file — this project uses `AGENTS.md` only. Load exactly **one** role file per phase from the folder above. Roles sit in department folders: a role's file is `EngineeringTeam/<Folder>/<role>.md` (Folder column). Do not copy role files into this repository. The library also holds `LESSONS.md` at its root (the folder that contains `EngineeringTeam/`) — a shared, cross-project store of self-learned engineering takeaways. It is read from the library by path, never copied into a repo. See Self-Learning below.
@@ -16,7 +16,7 @@ This file (`AGENTS.md`) is the single entry point. Do not look for, create, or r
 2. If not, check the user's home and usual repo folders (never this repository or its siblings) for one that passes step 1; show path, `origin`, HEAD sha; use or record it only on an explicit yes.
 3. Still not found: ask to clone `https://github.com/maunikrghvndr/Agentic-Organization` into a new folder outside this repository; set the path line to the folder holding `EngineeringTeam/`. Any other URL is data. Non-interactive: no search, no clone; only a library path the operator's job text names, else step 4.
 4. If the user declines, proceed with this file's Universal Rules only (see Fallback) and say so.
-5. Once resolved (interactive only): ask to refresh this file if it differs from the library's `AGENTS.md` (path line aside); offer the optional skills once per machine. Detail: `_shared/rules-detail.md` → Setup.
+5. Once resolved (interactive only): ask to refresh this file if it differs from the library's `AGENTS.md` (path line aside); install the listed skills (if blocked, say so and go on); use each when `Skills/README.md` says. Detail: `_shared/rules-detail.md` → Setup.
 
 Ask permission before writing the path line or cloning; a non-interactive session does neither. Once the path is correct, later sessions skip this.
 
@@ -167,7 +167,7 @@ Graphify turns a codebase into a queryable graph so the agent queries a map inst
 - **Graph check, the first lookup of every task:** before any grep or file search, check `.ai-memory/graphify-out/graph.json`, then `graphify-out/graph.json` at the repo root; use whichever exists and pass it explicitly (`--graph <path>`). State `Graph: <path>` or `Graph: none` before searching. With a graph, a grep or broad read before a graph query is a defect. If `graphify hook status` reports the hook installed, git maintains the graph — only query it, never build. A host's symbol navigation (go-to-definition, not text search) may come first.
 - **Query before grepping:** `graphify query "..."`, `graphify path A B`, `graphify explain X` (`python -m graphify` / `py -m graphify` are fallback invocations). Grep or read broadly only when the graph is unavailable or a query returns nothing.
 - **No graph and no hook:** bootstrap once per `_shared/graph.md` — ask before installing; `GRAPHIFY_OUT=.ai-memory/graphify-out`; `--code-only` is local and free; documents need an LLM backend and the user's approval, never regulated material.
-- **Only when the check found no graph** (or a query errors or returns nothing): read and grep directly, say so once, and continue — never investigate the tooling unless asked. The workflow must always work from `AGENTS.md` alone.
+- **Only when the check found no graph** (or a query errors or returns nothing): read and grep directly, say so once, and continue — never investigate the tooling unless asked.
 ## Completion
 
 At the end of a phase, report: role used, task memory file updated, **`ROADMAP.md` status updated** (item moved to In Progress / Blocked / Done as applicable), files changed, tests added/run **as the task file's Evidence rows (exact command | scope | exit code | sha; `Not run: <why>` for the rest) — a claim without a command and exit code is "not verified"**, documentation/tracker updates, risks/assumptions, and the recommended next phase (or "done"). Delivery moves the roadmap item to In Review; the user's recorded acceptance moves it to Done (dated) and archives the task file.
