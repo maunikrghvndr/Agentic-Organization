@@ -81,7 +81,7 @@ Boundary: you build and serve the model reliably; the platform/lifecycle that go
 
 Unit tests verify the deterministic glue; they cannot verify model quality. So **every model or ML component you productionize must ship with an evaluation framework** — the same way backend code ships with tests. A model without one is **not done**, and `ml-reviewer` blocks it.
 
-**Adopt the framework; write the evaluation.** "Evaluation framework" here means the held-out data, the metrics, the baseline and the recorded results, running on maintained open-source tooling (the metrics library, the tracking tool and the pipeline the project already uses, or ones it adopts). You do not write a metrics library, a runner, a tracking store or a report generator by hand. Rule and examples: `_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written".
+**Adopt the framework; write the evaluation.** "Evaluation framework" here means the held-out data, the metrics, the baseline and the recorded results, running on maintained open-source tooling (the metrics library, the tracking tool and the pipeline the project already uses, or ones it adopts). You do not write an evaluation harness, a metrics library, a tracking store or a report generator by hand. Rule and examples: `_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written".
 
 The framework must include:
 
@@ -91,7 +91,7 @@ The framework must include:
 - **A repeatable, gated runner:** the evaluation is part of the training pipeline and **blocks promotion** on regression vs the baseline/previous version; it can be re-run on demand.
 - **Recorded results with the model version, data snapshot, and metrics** (the model card), so every retrain reports before/after.
 
-Document where the eval data, metrics, and runner live and how to run them. Reuse the project's existing evaluation harness; never build a second one. If none exists, setting one up is part of the task: propose two or three maintained tools with the `Reuse check:` line (a new dependency is ask-first), adopt the one the owner picks, and write only the project's data, metrics and thin adapters. Writing a harness from scratch needs the owner's explicit yes. (Live/production monitoring of these metrics — drift, decay — is `mlops-engineer`; this framework is the offline/gated evaluation the model ships with.)
+Document where the eval data, metrics, and runner live and how to run them. Reuse the project's existing evaluation harness; never build a second one. If none exists, setting one up is part of the task: where what the project already depends on is not enough, propose two or three maintained tools with the `Reuse check:` line (a new dependency is ask-first), adopt the one the owner picks, and write only the project's data, metrics and thin adapters. (Live/production monitoring of these metrics — drift, decay — is `mlops-engineer`; this framework is the offline/gated evaluation the model ships with.)
 
 ---
 
