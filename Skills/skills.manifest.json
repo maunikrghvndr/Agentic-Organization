@@ -16,6 +16,20 @@
       "notes": "Pass with conditions. Full audit needs WSL2, a devcontainer, macOS or Linux: its validators refuse to run on native Windows (guidance mode works there). Installed by pinned git fetch, never by the upstream npx CLI. Set a budget before a full audit."
     },
     {
+      "name": "ponytail",
+      "area": "engineering-discipline",
+      "source": "https://github.com/DietrichGebert/ponytail",
+      "commit": "ebd8654c2c627f721eb8f9c0d1bd4090a29f9e10",
+      "path": "skills/ponytail",
+      "license": "MIT",
+      "reviewed": "2026-11-25",
+      "review": "reviews/dietrichgebert-ponytail.md",
+      "hosts": [
+        "any"
+      ],
+      "notes": "Pass with conditions. One prose file, about 900 tokens: MIT, Copyright (c) 2026 DietrichGebert. Install the skills/ponytail folder only; never the plugin, npm package or hooks (they edit tool settings, write to the home folder and can post task rows to a webhook). AGENTS.md outranks it on tests, deletion (ask-first), preserved validation, logging and authorization, and no-workaround. Engineer phases only."
+    },
+    {
       "name": "hallmark",
       "optional": true,
       "area": "ui-design",

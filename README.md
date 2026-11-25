@@ -36,7 +36,7 @@ You never have to name a role. The full list is the table in [`AGENTS.md`](AGENT
 
 ## Optional
 
-- **Skills:** `node Skills/install-skills.mjs` installs the reviewed third-party skills on the list. See [`Skills/README.md`](Skills/README.md).
+- **Skills:** the agent installs the reviewed third-party skills on the list by itself and uses each one when it applies (`node Skills/install-skills.mjs` does the same by hand). See [`Skills/README.md`](Skills/README.md).
 - **Many repositories:** `pwsh Scripts/Sync-AgentsMd.ps1 -DryRun` previews copying `AGENTS.md` into every repository under one folder.
 
 ## More

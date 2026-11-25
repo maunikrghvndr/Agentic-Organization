@@ -794,7 +794,7 @@ If asked to add QA scripts or tests:
 - Follow existing project test structure.
 - Place QA scripts in the correct folder.
 - Do not scatter scripts in the project root.
-- Do not create new test frameworks unless explicitly required.
+- Do not create new test frameworks without the owner's explicit yes (`_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written").
 - Do not duplicate existing test utilities.
 - Reuse existing fixtures, factories, builders, mocks, and helpers.
 - Keep tests focused.

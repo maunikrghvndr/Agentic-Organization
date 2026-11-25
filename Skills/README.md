@@ -64,12 +64,17 @@ Limits, stated plainly: the digest detects a change to the installed files, not 
 
 ## Listed skills
 
-| Skill | Area | Source | Review |
-|---|---|---|---|
-| `security-audit` | security | `cloudflare/security-audit-skill` at `c1c8a8c` | `reviews/cloudflare-security-audit-skill.md` (Pass with conditions) |
-| `hallmark` | ui-design | `nutlope/hallmark` at `04977e1`, path `skills/hallmark` | `reviews/nutlope-hallmark.md` (Pass with conditions) |
-| `wrangler` | cloudflare | `cloudflare/skills` at `5108325`, path `skills/wrangler` | `reviews/cloudflare-skills.md` (Pass with conditions) |
-| `workers-best-practices` | cloudflare | `cloudflare/skills` at `5108325`, path `skills/workers-best-practices` | `reviews/cloudflare-skills.md` (Pass with conditions) |
+| Skill | Use it when | Area | Source | Review |
+|---|---|---|---|---|
+| `ponytail` | Any engineer phase, before writing code: its ladder (does this need to exist, does the repository or a dependency already do it, then the least code) is read alongside the first Universal Rule. Not in reviewer, QA, security or debugger phases. | engineering-discipline | `DietrichGebert/ponytail` at `ebd8654`, path `skills/ponytail` | `reviews/dietrichgebert-ponytail.md` (Pass with conditions) |
+| `security-audit` | The release audit of a whole application, as Engine A, where its validators can run. | security | `cloudflare/security-audit-skill` at `c1c8a8c` | `reviews/cloudflare-security-audit-skill.md` (Pass with conditions) |
+| `wrangler` | The task runs the Cloudflare `wrangler` command or edits its configuration. | cloudflare | `cloudflare/skills` at `5108325`, path `skills/wrangler` | `reviews/cloudflare-skills.md` (Pass with conditions) |
+| `workers-best-practices` | The task writes or reviews code that runs on Cloudflare Workers. | cloudflare | `cloudflare/skills` at `5108325`, path `skills/workers-best-practices` | `reviews/cloudflare-skills.md` (Pass with conditions) |
+| `hallmark` (optional, not installed by default) | A new marketing page or site built from nothing; on an existing design only when the owner names it. | ui-design | `nutlope/hallmark` at `04977e1`, path `skills/hallmark` | `reviews/nutlope-hallmark.md` (Pass with conditions) |
+
+**Routing.** The "Use it when" column is the rule: when a phase matches a row and that skill is installed, the agent reads its `SKILL.md` by path at the start of the phase and says in one line that it is in use. When no row matches, no skill is loaded. Where a skill is missing (not installed, or the install was blocked), the library's own rules cover the same ground and the work goes on without it. An installed skill ranks below `AGENTS.md`, the constitution and the role file, and the conditions in its review record apply.
+
+**Notes for `ponytail`.** Only the one file in `skills/ponytail/` is installed. Never install the upstream plugin, its npm package or its hooks: they edit a coding tool's settings, write to the home folder and can post task details to a webhook. Where the skill is looser than the library, the library wins: a test for every behaviour change (an in-code assert is not a test), deletion stays ask-first, existing validation, logging and authorization are preserved, and a marked "shortcut" does not stand in for the proper fix.
 
 One record can cover several skills from one repository at one commit when their result is the same (`reviews/cloudflare-skills.md`); a record still names one result, so a skill from the same repository that does not pass is described there without a second result line and is not listed.
 
