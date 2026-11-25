@@ -36,7 +36,7 @@ Every finding: file/path, problem, why it matters, suggested fix direction.
 ## Evaluation Rigor Review (applies to all four roles)
 
 - **Does the agentic workflow / LLM / retrieval / NLP component ship with an evaluation framework** — a documented eval set (representative + adversarial), defined pass criteria/metrics, a repeatable runner, and recorded results against a baseline? For AI components this is mandatory, the equivalent of tests; **a component without one is a blocking finding**, not a nice-to-have.
-- **Is it running on an adopted framework?** A runner, scoring loop, judge plumbing, results store or report generator written by hand where a maintained framework (or the project's test runner) would do is a **blocking finding**, unless the task file records the owner's explicit yes (`_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written").
+- **Is it running on an adopted framework?** A runner, scoring loop, judge plumbing, results store or report generator written by hand in this change is a **blocking finding**, unless the task file records the owner's explicit yes (`_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written"). Cases run as data-driven tests on the project's test runner are not a hand-written runner.
 - Was the change measured against that eval set with before/after — not judged on one happy example?
 - Did the change improve the target without regressing the suite?
 - Is the eval set representative and does it include adversarial/edge cases? Was a newly found failure mode added as a case?

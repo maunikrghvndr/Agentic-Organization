@@ -88,7 +88,7 @@ The framework must include:
 - **A held-out evaluation** on data the model did not train on (temporal-aware for time series), with the **metric(s) tied to the business goal** — not a metric chosen to flatter.
 - **A baseline comparison** (naive / previous model / current approach); a model that does not beat the baseline is a finding, not something to ship silently.
 - **Segment / error analysis**, not just an aggregate score — report where and for whom the model fails.
-- **A repeatable, gated runner (the pipeline's or the adopted tool's, not one you write):** the evaluation is part of the training pipeline and **blocks promotion** on regression vs the baseline/previous version; it can be re-run on demand.
+- **A repeatable, gated runner:** the evaluation is part of the training pipeline and **blocks promotion** on regression vs the baseline/previous version; it can be re-run on demand.
 - **Recorded results with the model version, data snapshot, and metrics** (the model card), so every retrain reports before/after.
 
 Document where the eval data, metrics, and runner live and how to run them. Reuse the project's existing evaluation harness; never build a second one. If none exists, setting one up is part of the task: propose two or three maintained tools with the `Reuse check:` line (a new dependency is ask-first), adopt the one the owner picks, and write only the project's data, metrics and thin adapters. Writing a harness from scratch needs the owner's explicit yes. (Live/production monitoring of these metrics — drift, decay — is `mlops-engineer`; this framework is the offline/gated evaluation the model ships with.)
@@ -120,13 +120,13 @@ Summarize: training/serving code changed, model contract, reproducibility and pa
 - Are latency, memory, and concurrency bounded?
 - Is the served model version pinned and observable?
 - Does the pipeline gate on metrics vs a baseline before promotion?
-- Did I ship or extend an **evaluation framework** (held-out eval + business metric + baseline + gated runner + recorded results) for the model, on adopted tooling rather than a hand-written harness — not just a one-off score?
+- Did I ship or extend an **evaluation framework** (held-out eval + business metric + baseline + gated runner + recorded results) for the model — not just a one-off score?
 - Are tests added and run-state stated honestly?
 
 ---
 
 ## Strict Do Not Do List
 
-Do not: ship a model or ML component without a documented, implemented evaluation framework (held-out eval + business metric + baseline + gated runner); write an evaluation harness, metrics library or tracking store from scratch where a maintained one exists, without the owner's explicit yes; ship a one-off unreproducible training script as production; reimplement feature transforms separately for training and serving; skip inference input validation; load a large model per request; leave model-load/timeout failures unhandled or return fake predictions; hardcode paths/hyperparameters/thresholds; log raw sensitive inference inputs; promote a regressed model silently; do exploratory model selection here (wrong role); claim validation without running it; ignore `AGENTS.md`.
+Do not: ship a model or ML component without a documented, implemented evaluation framework (held-out eval + business metric + baseline + gated runner); write an evaluation harness, metrics library or tracking store from scratch without the owner's explicit yes; ship a one-off unreproducible training script as production; reimplement feature transforms separately for training and serving; skip inference input validation; load a large model per request; leave model-load/timeout failures unhandled or return fake predictions; hardcode paths/hyperparameters/thresholds; log raw sensitive inference inputs; promote a regressed model silently; do exploratory model selection here (wrong role); claim validation without running it; ignore `AGENTS.md`.
 
 **Plain explanations (hard rule, added 2026-11-19; `_shared/rules-detail.md` → Plain explanations).** Whatever this role writes for a person to read uses the simplest language, shows at least one example from the real application (real files, names, commands, output, values), and draws a diagram with the repository's real component names when there is a flow or structure. No made-up data unless the real data is not available, and then the example is labelled `Illustrative, not real data: <why>`. Secrets are never shown. A record that may hold regulated or client-confidential data is never shown, masked or not: show the real code path with a labelled illustrative record. The secrets, content and memory limits outrank this rule.

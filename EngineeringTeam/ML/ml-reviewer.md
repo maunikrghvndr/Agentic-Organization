@@ -43,7 +43,7 @@ Every finding: file/path, problem, why it matters, suggested fix direction.
 - Observability (added 2026-11-19; `_shared/rules-detail.md` → Observability): do training and serving report CPU, memory and GPU utilization and memory tied to the run id or model version? Is each main step transition one event with the same id? Any per-item logging, unbounded metric label, or exporter that can block or grow without limit is Blocking.
 - **Promotion gate:** does the training pipeline evaluate against a metric and baseline before a model can ship?
 - **Evaluation framework present (mandatory):** does the model ship with a documented evaluation framework — held-out eval, business-tied metric, baseline comparison, segment/error analysis, and a gated repeatable runner? A model without one is a **blocking finding**, the equivalent of shipping code with no tests.
-- **Adopted, not hand-written:** an evaluation harness, metrics library, tracking store or report generator written by hand where a maintained one exists is a **blocking finding**, unless the task file records the owner's explicit yes (`_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written").
+- **Adopted, not hand-written:** an evaluation harness, metrics library, tracking store or report generator written by hand in this change is a **blocking finding**, unless the task file records the owner's explicit yes (`_shared/rules-detail.md` → Proportional complexity, "A framework is adopted, not written").
 
 ---
 
